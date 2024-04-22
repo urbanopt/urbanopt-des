@@ -1,0 +1,14 @@
+.DS_Store
+.python-version
+.ipynb_checkpoints
+.vscode
+~$*
+*.pyc
+
+node_modules
+
+# config files
+data/templates/uo_base/.bundle
+
+# ingore the scratch input/output directory
+scratch

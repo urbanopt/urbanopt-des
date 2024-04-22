@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "urbanopt-des"
+version = "0.1.0"
+description = ""
+authors = ["Nicholas Long <nicholas.long@nrel.gov>"]
+readme = "README.md"
+packages = [{ include = "urbanopt_des", from = "." }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+
+modelica-builder = { path = "../modelica-builder", develop = true }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# TODO: add in other Ruff configs from CBL or GMT
+[tool.ruff]
+extend-include = ["*.ipynb"]

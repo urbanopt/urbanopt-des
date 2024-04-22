@@ -1,0 +1,305 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "http://eta.lbl.gov/cdfm/historical_annual_schema.json",
+  "type": "object",
+  "title": "Historical year annual average carbon equivalent emission rates from eGrid",
+  "fields": [
+    {
+      "name": "year",
+      "title": "year",
+      "description": "Year of eGrid data",
+      "constraints": {
+        "required": true,
+        "type": "integer",
+        "maximum": 2021,
+        "minimum": 2007
+      }
+    },
+    {
+      "name": "AKGD",
+      "title": "AKGD CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in ASCC Alaska Grid subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "AKMS",
+      "title": "AKMS CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in ASCC Miscellaneous subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "AZNM",
+      "title": "AZNM CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in WECC Southwest subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "CAMEX",
+      "title": "CAMEX CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in WECC California subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "ERCT",
+      "title": "ERCT CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in ERCOT All subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "FRCC",
+      "title": "FRCC CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in FRCC All subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "HIMS",
+      "title": "HIMS CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in HICC Miscellaneous subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "HIOA",
+      "title": "HIOA CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in HICC Oahu subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "MROE",
+      "title": "MROE CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in MRO East subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "MROW",
+      "title": "MROW CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in MRO West subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "NEWE",
+      "title": "NEWE CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in NPCC New England subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "NWPP",
+      "title": "NWPP CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in WECC Northwest",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "NYCW",
+      "title": "NYCW CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in NPCC NYC/Westchester subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "NYLI",
+      "title": "NYLI CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in NPCC Long Island subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "NYUP",
+      "title": "NYUP CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in NPCC Upstate NY subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "RFCE",
+      "title": "RFCE CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in RFC East subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "RFCM",
+      "title": "RFCM CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in RFC Michigan subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "RFCW",
+      "title": "RFCW CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in RFC West subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "RMPA",
+      "title": "RMPA CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in WECC Rockies subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SPNO",
+      "title": "AZNM CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in SPP North subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SPSO",
+      "title": "SPSO CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in SPP South subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRMV",
+      "title": "SRMV CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in SERC Mississippi Valley subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRMW",
+      "title": "SRMW CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in SERC Midwest subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRSO",
+      "title": "SRSO CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in SERC South subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRTV",
+      "title": "AZNM CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in SERC Tennessee Valley subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRVC",
+      "title": "SRVC CO2e emission rate",
+      "description": "Annual average CO2 equivalent emission rate (kg/MWh) in SERC Virginia/Carolina subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 5000,
+        "minimum": 0
+      }
+    }
+  ]
+}

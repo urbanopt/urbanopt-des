@@ -1,0 +1,239 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "http://eta.lbl.gov/cdfm/future_hourly_schema.json",
+  "type": "object",
+  "title": "Future year hourly long term marginal carbon equivalent emission rates from Cambium",
+  "fields": [
+    {
+      "name": "hour",
+      "title": "hour",
+      "description": "hour of year",
+      "constraints": {
+        "required": true,
+        "type": "integer",
+        "maximum": 8760,
+        "minimum": 1
+      }
+    },
+    {
+      "name": "AZNMc",
+      "title": "AZNM CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in WECC Southwest Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "CAMEXc",
+      "title": "CAMEX CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in WECC California Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "ERCTc",
+      "title": "ERCT CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in ERCOT All Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "FRCCc",
+      "title": "FRCC CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in FRCC All Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "MROEc",
+      "title": "MROE CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in MRO East Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "MROWc",
+      "title": "MROW CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in MRO West Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "NEWEc",
+      "title": "NEWE CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in NPCC New England Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "NWPPc",
+      "title": "NWPP CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in WECC Northwest",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "NYSTc",
+      "title": "NYST CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in NPCC New York Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "RFCEc",
+      "title": "RFCE CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in RFC East Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "RFCMc",
+      "title": "RFCM CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in RFC Michigan Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "RFCWc",
+      "title": "RFCW CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in RFC West Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "RMPAc",
+      "title": "RMPA CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in WECC Rockies Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SPNOc",
+      "title": "AZNM CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in SPP North Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SPSOc",
+      "title": "SPSO CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in SPP South Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRMVc",
+      "title": "SRMV CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in SERC Mississippi Valley Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRMWc",
+      "title": "SRMW CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in SERC Midwest Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRSOc",
+      "title": "SRSO CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in SERC South Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRTVc",
+      "title": "AZNM CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in SERC Tennessee Valley Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    },
+    {
+      "name": "SRVCc",
+      "title": "SRVC CO2e emission rate",
+      "description": "Hourly long term marginal CO2 equivalent emission rate (kg/MWh) in SERC Virginia/Carolina Cambium subregion",
+      "constraints": {
+        "required": true,
+        "type": "number",
+        "maximum": 1000,
+        "minimum": 0
+      }
+    }
+  ]
+}
