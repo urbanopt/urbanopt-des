@@ -104,7 +104,7 @@ description = "Modelica builder enables programmatic parsing and modification of
 optional = false
 python-versions = ">=3.9, <3.13"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 antlr4-python3-runtime = "4.13.1"
@@ -112,8 +112,10 @@ jinja2 = "3.1.2"
 pathspec = "^0.11.2"
 
 [package.source]
-type = "directory"
-url = "../modelica-builder"
+type = "git"
+url = "https://github.com/urbanopt/modelica-builder.git"
+reference = "add-measure-base-class"
+resolved_reference = "0707be900a103eee1de40c9ae0c411072da84ee5"
 
 [[package]]
 name = "pathspec"
@@ -129,4 +131,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "657b98e424bc9ec76a11cd5142bbd9822b6edf861a0c9b1e5bf1ec66a7228d5d"
+content-hash = "a279918b0607ecb7c616403a12830274c3b7228a2dd02f1778ece8d081e99940"

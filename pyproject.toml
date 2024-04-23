@@ -9,7 +9,14 @@ packages = [{ include = "urbanopt_des", from = "." }]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 
-modelica-builder = { path = "../modelica-builder", develop = true }
+# release mode
+# modelica-builder = { version = "0.5.1" }
+
+# pre-release mode, use github
+modelica-builder = { git = "https://github.com/urbanopt/modelica-builder.git", branch = "add-measure-base-class" }
+
+# dev mode
+# modelica-builder = { path = "../modelica-builder", develop = true }
 
 [build-system]
 requires = ["poetry-core"]
