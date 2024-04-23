@@ -10,7 +10,9 @@ class AnalysisInstance:
         # the machine name of the variable
         self.variables: dict = {}
 
-    def add_variable_instance(self, variable_name: str, variable_value: Any, **kwargs) -> None:
+    def add_variable_instance(
+        self, variable_name: str, variable_value: Any, **kwargs
+    ) -> None:
         """Store the variable instance and value in a dictionary. There can only
         be one variable_name per instance of the analysis
 
@@ -69,7 +71,9 @@ class AnalysisInstance:
 
         return result
 
-    def save_analysis_name_to_file(self, filename: Path, override_name: Union[None, str] = None) -> None:
+    def save_analysis_name_to_file(
+        self, filename: Path, override_name: Union[None, str] = None
+    ) -> None:
         """Save off the analysis name to a file that can be used for
         later reference and post processing. Right now this is a simple file
         but ideally the instance of the analysis that is written should be the same
