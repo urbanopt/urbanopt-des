@@ -37,14 +37,22 @@ class URBANoptResults:
             )
 
         # check if the run with the scenario name exists
-        if not (self.path / "run" / f"{scenario_name}").exists():
+        self.scenario_path = self.path / "run" / scenario_name
+        if not self.scenario_path.exists():
             raise Exception(
                 f"Could not find {self.path / 'run' / scenario_name} for the URBANopt results. Will not continue."
             )
-
+        
+        # path to store scenario specific outputs
+        self.scenario_output_path = self.scenario_path / "output"
+        
         # path to store outputs not specific to the scenario
         self.output_path = self.path / "output"
 
+        # make sure the output paths exists
+        for path in [self.output_path, self.scenario_output_path]:
+            path.mkdir(parents=True, exist_ok=True)
+        
         # initialize the analysis display name to the scenario name, but this can be changed
         self.display_name = scenario_name
         print(f"URBANopt analysis name {self.display_name}")
@@ -60,6 +68,8 @@ class URBANoptResults:
 
         self.grid_metrics_daily = None
         self.grid_metrics_annual = None
+
+        self.building_characteristics = {}
 
     def calculate_grid_metrics(
         self,
@@ -588,17 +598,26 @@ class URBANoptResults:
         """
         # reset the data to None in case we are reprocessing
         self.data = None
+        # TODO: I think we should None out all of the data_* objects too
+
+        # reset the building characteristics
+        self.building_characteristics = {}
         for building_id in building_names:
-            print(f"Processing building {building_id}")
+            print(f"Reading building characteristics for {building_id}")
+            # read in the JSON file with the feature results, these are the building characteristics such
+            # as square footages, window areas, etc.
+            feature_json = self.get_urbanopt_default_feature_report_json(
+                self.path / "run" / f"{self.scenario_name}" / f"{building_id}"
+            )
+            # Read the JSON as dictionary to the building characteristics
+            self.building_characteristics[building_id] = json.load(open(feature_json, "r"))
+
+            print(f"Processing building time series results {building_id}")
             feature_report = self.get_urbanopt_default_feature_report(
                 self.path / "run" / f"{self.scenario_name}" / f"{building_id}"
             )
-            # print(feature_report.head())
             # rename and convert units in the feature_report before concatenating with the others
-            for (
-                column_name,
-                feature_column,
-            ) in self.get_urbanopt_feature_report_columns().items():
+            for (column_name, feature_column,) in self.get_urbanopt_feature_report_columns().items():  # noqa
                 if feature_column.get("skip_renaming", False):
                     continue
                 # set the new column name to include the building number
@@ -636,6 +655,7 @@ class URBANoptResults:
 
         # create the aggregations for the data
         self.create_aggregations(building_names)
+        
         # TODO: add variables to the urbanopt_single_feature_file_variables.json
 
         return True
@@ -901,23 +921,44 @@ class URBANoptResults:
         with open(self.path / save_filename, "w") as f:
             json.dump(self.get_urbanopt_feature_report_columns(), f, indent=2)
 
-    def get_urbanopt_default_feature_report(self, search_dir: Path):
+    def _search_for_file_in_reports(self, search_dir: Path, filename: str) -> Path:
+        """Search for a report file in a directory and return the path, if exists.
+        
+        If the filename has more than one period, e.g., .tar.gz, then this will not work
+        as expected
+        """
+        # FIXME, this method needs some tests and can be cleaned up... for sure
+        report_file = search_dir / "feature_reports" / filename
+        if not report_file.exists():
+            # OpenStudio puts the results in the filename without the extension
+            dirs = list(search_dir.glob(f"*_{filename.stem}"))
+            if len(dirs) == 1:
+                report_file = dirs[0] / filename
+            elif len(dirs) == 0:
+                raise Exception(f"Could not find {filename} in {search_dir}")
+            else:
+                raise Exception(f"More than one {filename} found in dirs: {dirs}")
+        
+        return report_file
+        
+    def get_urbanopt_default_feature_report_json(self, search_dir: Path) -> dict:
+        """Return the default_feature_report.json file with building characteristics and high
+        level results. The file can be located in a measure directory (maybe in just older versions
+        of URBANopt), so this method will search for it in the run directory.
+
+        Args:
+            search_dir (Path): Path for where to start looking for the file
+
+        Returns:
+            dict: dictionary of the default_feature_report.json file
+        """   
+        report_file = self._search_for_file_in_reports(search_dir, "default_feature_report.json")  
+        return report_file
+
+    def get_urbanopt_default_feature_report(self, search_dir: Path) -> pd.DataFrame:
         """Return the default report from the URBANopt / EnergyPlus simulation."""
         # get the default report
-        report_file = search_dir / "feature_reports" / "default_feature_report.csv"
-        if not report_file.exists():
-            # check if it is in a named directory in the form of XXX_default_feature_report/
-            dirs = list(search_dir.glob("*_default_feature_reports"))
-            if len(dirs) == 1:
-                report_file = dirs[0] / "default_feature_reports.csv"
-            elif len(dirs) == 0:
-                raise Exception(
-                    f"Could not find default_feature_report.csv in {search_dir}"
-                )
-            else:
-                raise Exception(
-                    f"More than one default_feature_reports.csv found in dirs: {dirs}"
-                )
+        report_file = self._search_for_file_in_reports(search_dir, "default_feature_report.csv")  
 
         if report_file.exists():
             # read the header row of the CSV file and grab the column names
@@ -956,6 +997,4 @@ class URBANoptResults:
             report[cols[1:]] = report[cols[1:]].apply(pd.to_numeric, errors="coerce")
             return report
         else:
-            raise Exception(
-                f"Could not find default_feature_report.csv in {search_dir}"
-            )
+            raise Exception(f"Could not find default_feature_report.csv in {search_dir}")  # noqa
