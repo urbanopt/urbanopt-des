@@ -65,6 +65,19 @@ class URBANoptGeoJSON:
 
         return result
 
+    def get_buildings(self, ids: list[str] = None, keep_properties: list[str] = None) -> list:
+        """Return a list of all the properties of type Building"""
+        result = []
+        for feature in self.data["features"]:
+            if feature["properties"]["type"] == "Building":
+                # check if it is in the list of ids
+                if ids is None or feature["properties"]["id"] in ids:
+                    # only keep the fields that in the keep_properties list
+                    result.append(feature)
+                        
+
+        return result
+    
     def get_building_properties_by_id(self, building_id: str) -> dict:
         """Get the list of building ids in the GeoJSON file. The Building id is what
         is used in URBANopt as the identifier. It is common that this is used to name
@@ -118,3 +131,37 @@ class URBANoptGeoJSON:
                     result = feature["properties"]["monthly_electricity"]
 
         return result
+    
+    def set_property_on_building_id(self, building_id: str, property_name: str, property_value: str, overwrite=True) -> None:
+        """Set a property on a building_id"""
+        for feature in self.data["features"]:
+            if feature["properties"]["type"] == "Building":
+                if feature["properties"]["id"] == building_id:
+                    if overwrite:
+                        feature["properties"][property_name] = property_value
+                    else:
+                        if property_name not in feature["properties"]:
+                            feature["properties"][property_name] = property_value
+
+    def get_property_on_building_id(self, building_id: str, property_name: str) -> str:
+        """Get a property on a building_id"""
+        for feature in self.data["features"]:
+            if feature["properties"]["type"] == "Building":
+                if feature["properties"]["id"] == building_id:
+                    return feature["properties"].get(property_name, None)
+
+    def get_site_lat_lon(self) -> tuple:
+        """Return the site's latitude and longitude"""
+        for feature in self.data["features"]:
+            if feature["properties"]["name"] == "Site Origin":
+                # reverse the order of the coordinates
+                return feature["geometry"]["coordinates"][::-1]
+
+    def save(self) -> None:
+        """Save the GeoJSON file"""
+        self.save_as(self._filename)
+        
+    def save_as(self, filename: Path) -> None:
+        """Save the GeoJSON file"""
+        with open(filename, "w") as f:
+            json.dump(self.data, f, indent=2)

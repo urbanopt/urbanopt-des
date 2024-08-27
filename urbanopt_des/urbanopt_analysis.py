@@ -52,6 +52,7 @@ class URBANoptAnalysis:
         self.number_of_buildings = len(self.geojson.get_building_ids())
 
         # Container for URBANopt results
+        # TODO: make this a list in the future to hold multiple URBANopt results
         self.urbanopt = None
 
         # Container for Modelica results
@@ -681,7 +682,10 @@ class URBANoptAnalysis:
         # roll up the urbanopt results (single analysis)
         self.urbanopt.data_monthly = self.urbanopt.data.resample("M").sum()
         self.urbanopt.data_annual = self.urbanopt.data.resample("Y").sum()
-
+        # loads
+        self.urbanopt.data_loads_monthly = self.urbanopt.data_loads.resample("M").sum()
+        self.urbanopt.data_loads_annual = self.urbanopt.data_loads.resample("Y").sum()
+        
         # roll up the Modelica results (each analysis)
         for analysis_name in self.modelica.keys():
             self.modelica[analysis_name].monthly = (
@@ -736,6 +740,8 @@ class URBANoptAnalysis:
         # combine all the data together for the final dataframe. The list comprehension here
         # will create the table that is shown in the docstring above
         df = pd.DataFrame([data[key] for key in data.keys()])
+        # set the index to be the metric and the unit
+        df.set_index(['Metric', 'Unit'], inplace=True)
         
         return df
 

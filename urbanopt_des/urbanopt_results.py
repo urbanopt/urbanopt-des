@@ -59,13 +59,20 @@ class URBANoptResults:
 
         # This is the default data resolution, which has to be 60 minutes!
         self.data = None
-        # create object to store 15min data.
         self.data_15min = None
-
         self.data_monthly = None
         self.data_annual = None
+
+        # objects to store building loads
+        self.data_loads = None
+        self.data_loads_15min = None
+        self.data_loads_monthly = None
+        self.data_loads_annual = None
+         
+        # end use summaries
         self.end_use_summary = None
 
+        # grid metrics
         self.grid_metrics_daily = None
         self.grid_metrics_annual = None
 
@@ -390,6 +397,19 @@ class URBANoptResults:
         if self.data_annual is not None:
             self.data_annual.to_csv(self.output_path / "power_annual.csv")
 
+        # loads
+        if self.data_loads is not None:
+            self.data_loads.to_csv(self.output_path / "loads_60min.csv")
+
+        if self.data_loads_15min is not None:
+            self.data_loads_15min.to_csv(self.output_path / "loads_15min.csv")
+        
+        if self.data_loads_monthly is not None:
+            self.data_loads_monthly.to_csv(self.output_path / "loads_monthly.csv")
+
+        if self.data_loads_annual is not None:
+            self.data_loads_annual.to_csv(self.output_path / "loads_annual.csv")
+
         if self.grid_metrics_daily is not None:
             self.grid_metrics_daily.to_csv(self.output_path / "grid_metrics_daily.csv")
 
@@ -397,6 +417,8 @@ class URBANoptResults:
             self.grid_metrics_annual.to_csv(
                 self.output_path / "grid_metrics_annual.csv"
             )
+        
+        
 
     def create_aggregations(self, building_names: list[str]) -> None:
         """Aggregate the results from all the buildings together to get the totals
@@ -583,9 +605,7 @@ class URBANoptResults:
         finally:
             pass
 
-    def process_results(
-        self, building_names: list[str], year_of_data: int = 2017
-    ) -> None:
+    def process_results(self, building_names: list[str], year_of_data: int = 2017) -> None:
         """The building-by-building end uses are only available in each run directory's feature
         report. This method will create a dataframe with the end uses for each building.
 
@@ -658,6 +678,63 @@ class URBANoptResults:
         
         # TODO: add variables to the urbanopt_single_feature_file_variables.json
 
+        return True
+    
+    def process_load_results(self, building_names: list[str], year_of_data: int = 2017) -> None:
+        """The building-by-building loads are results of an OpenStudio measure. The data are only
+        available in each run directory's modelica_report. This method will create a dataframe with
+        the end uses for each building.
+
+        Args:
+            scenario_name (str): Name of the scenario that was run with URBANopt
+            building_name (list): Must be passed since the names come from the GeoJSON which we don't load
+            year_of_data (int): Year of the data. This is used to set the year of the datetime index. Defaults to 2017
+        """
+        self.data_loads = None   # TODO: init this above and make a note what it is
+
+        for building_id in building_names:
+            print(f"Processing building time series loads for {building_id}")
+            load_report = self.get_urbanopt_export_building_loads(
+                self.path / "run" / f"{self.scenario_name}" / f"{building_id}"
+            )
+
+            # update the column names to include the building id
+            for column in load_report.columns:
+                # skip if Datetime
+                if column == "Datetime":
+                    continue
+                load_report.rename(columns={column: f"{column} Building {building_id}"}, inplace=True)
+
+            # convert Datetime column in data frame to be datetime from the string. The year
+            # should be set to a year that has the day of week starting correctly for the real data
+            # This defaults to year_of_data
+            load_report["Datetime"] = pd.to_datetime(load_report["Datetime"], format="%m/%d/%Y %H:%M")
+            load_report["Datetime"] = load_report["Datetime"].apply(lambda x: x.replace(year=year_of_data))
+
+            # set the datetime column and make it the index
+            load_report = load_report.set_index("Datetime")
+
+            if self.data_loads is None:
+                self.data_loads = load_report
+            else:
+                # remove the datetime from the second data frame
+                self.data_loads = pd.concat([self.data_loads, load_report], axis=1, join="inner")
+
+        # aggregate the data to create totals
+        self.data_loads["TotalCoolingSensibleLoad"] = self.data_loads.filter(like="TotalCoolingSensibleLoad").sum(axis=1)
+        self.data_loads["TotalHeatingSensibleLoad"] = self.data_loads.filter(like="TotalHeatingSensibleLoad").sum(axis=1)
+        self.data_loads["TotalWaterHeating"] = self.data_loads.filter(like="TotalWaterHeating").sum(axis=1)
+        self.data_loads["TotalSensibleLoad"] = self.data_loads["TotalCoolingSensibleLoad"] + self.data_loads["TotalHeatingSensibleLoad"]
+        self.data_loads["TotalSensibleLoadWithWaterHeating"] = self.data_loads["TotalSensibleLoad"] + self.data_loads["TotalWaterHeating"]
+        
+
+        # self.data_loads["Total Building Natural Gas"] = self.data_loads.filter(like="NaturalGas").sum(axis=1)
+
+        # Upsample to 15 minutes, provides a higher resolution date for
+        # the end uses for comparison sake. This only works for specific
+        # variables such as energy (kWh, Btu, etc.)
+        self.data_loads_15min = self.data_loads.resample("15min").ffill()
+    
         return True
 
     def calculate_carbon_emissions(
@@ -921,21 +998,38 @@ class URBANoptResults:
         with open(self.path / save_filename, "w") as f:
             json.dump(self.get_urbanopt_feature_report_columns(), f, indent=2)
 
-    def _search_for_file_in_reports(self, search_dir: Path, filename: str) -> Path:
+    def _search_for_file_in_reports(self, search_dir: Path, filename: str, measure_name: str = None) -> Path:
         """Search for a report file in a directory and return the path, if exists.
         
         If the filename has more than one period, e.g., .tar.gz, then this will not work
-        as expected
+        as expected.
+
+        Args:
+            search_dir (Path): Path for where to start looking for the file
+            filename (str): Name of the file to search for
+            measure_name (str): Name of the measure directory to search in. Defaults to None.
         """
         # FIXME, this method needs some tests and can be cleaned up... for sure
         report_file = search_dir / "feature_reports" / filename
         if not report_file.exists():
+            filename = Path(filename)
             # OpenStudio puts the results in the filename without the extension
             dirs = list(search_dir.glob(f"*_{filename.stem}"))
             if len(dirs) == 1:
                 report_file = dirs[0] / filename
             elif len(dirs) == 0:
-                raise Exception(f"Could not find {filename} in {search_dir}")
+                # If we are here, then it is likely that the report is in 
+                # another measure directory which we need to find. This is
+                # when the measure_name is used, to make sure we return the 
+                # file from the appropriate measure since it could be in multiple
+                # measure directories.
+                dirs_2 = list(search_dir.glob(f"*_{measure_name}"))
+                if len(dirs_2) == 1:
+                    report_file = dirs_2[0] / filename
+                elif len(dirs_2) == 0:
+                    raise Exception(f"Could not find {filename} in {search_dir} with measure name {measure_name}")
+                else:
+                    raise Exception(f"More than one {filename} found in dirs: {dirs_2}")
             else:
                 raise Exception(f"More than one {filename} found in dirs: {dirs}")
         
@@ -998,3 +1092,35 @@ class URBANoptResults:
             return report
         else:
             raise Exception(f"Could not find default_feature_report.csv in {search_dir}")  # noqa
+
+    def get_urbanopt_export_building_loads(self, search_dir: Path) -> pd.DataFrame:
+        """Return the building_loads.csv file path.
+        
+        Args:
+            search_dir (Path): Path for where to start looking for the file
+
+        Returns:
+            dict: dictionary of the default_feature_report.json file
+        """   
+        report_file = self._search_for_file_in_reports(search_dir, "building_loads.csv", measure_name='export_modelica_loads')
+        print(f"Processing building loads from {report_file}")
+        if report_file.exists():
+            # only grab the columns that we care about
+            columns_to_keep_and_map = {
+                "Date Time": "Datetime",
+                "TotalSensibleLoad": "TotalSensibleLoad (W)",
+                "TotalCoolingSensibleLoad": "TotalCoolingSensibleLoad (W)",
+                "TotalHeatingSensibleLoad": "TotalHeatingSensibleLoad (W)",
+                "TotalWaterHeating": "TotalWaterHeating (W)",
+            }
+
+            # re-read the file with the column names and rename the columns to not have the units
+            report = pd.read_csv(report_file, usecols=columns_to_keep_and_map.keys())
+            report = report.rename(columns=columns_to_keep_and_map)
+
+            # convert all values to floats except the first column which is the date time
+            cols = report.columns
+            report[cols[1:]] = report[cols[1:]].apply(pd.to_numeric, errors="coerce")
+            return report
+        else:
+            raise Exception(f"Could not find building_loads.csv in {search_dir}")  # noqa
