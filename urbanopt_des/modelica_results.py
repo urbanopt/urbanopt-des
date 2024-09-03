@@ -155,37 +155,20 @@ class ModelicaResults:
             (_, ets_q_cooling) = self.modelica_data.values(f"bui[{n_b}].QCoo_flow")
             (_, ets_q_heating) = self.modelica_data.values(f"bui[{n_b}].QHea_flow")
 
-            agg_columns["ETS Pump Electricity Total"].append(
-                f"ETS Pump Electricity Building {building_id}"
-            )
-            agg_columns["ETS Heat Pump Electricity Total"].append(
-                f"ETS Heat Pump Electricity Building {building_id}"
-            )
-            agg_columns["ETS Thermal Cooling Total"].append(
-                f"ETS Thermal Cooling Building {building_id}"
-            )
-            agg_columns["ETS Thermal Heating Total"].append(
-                f"ETS Thermal Heating Building {building_id}"
-            )
-            building_data[f"ETS Pump Electricity Building {building_id}"] = (
-                ets_pump_data
-            )
-            building_data[f"ETS Heat Pump Electricity Building {building_id}"] = (
-                ets_hp_data
-            )
+            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump Electricity Building {building_id}")
+            agg_columns["ETS Heat Pump Electricity Total"].append(f"ETS Heat Pump Electricity Building {building_id}")
+            agg_columns["ETS Thermal Cooling Total"].append(f"ETS Thermal Cooling Building {building_id}")
+            agg_columns["ETS Thermal Heating Total"].append(f"ETS Thermal Heating Building {building_id}")
+            building_data[f"ETS Pump Electricity Building {building_id}"] = ets_pump_data
+            building_data[f"ETS Heat Pump Electricity Building {building_id}"] = ets_hp_data
             building_data[f"ETS Thermal Cooling Building {building_id}"] = ets_q_cooling
             building_data[f"ETS Thermal Heating Building {building_id}"] = ets_q_heating
 
         # convert time to timestamps for pandas
-        time = [
-            datetime(year_of_data, 1, 1, 0, 0, 0) + timedelta(seconds=int(t))
-            for t in time1
-        ]
+        time = [datetime(year_of_data, 1, 1, 0, 0, 0) + timedelta(seconds=int(t)) for t in time1]
 
         # convert into data frame
-        df_energy = pd.pandas.DataFrame(
-            {"datetime": time, "Total DES Electricity": total_energy}
-        )
+        df_energy = pd.pandas.DataFrame({"datetime": time, "Total DES Electricity": total_energy})
         df_energy = df_energy.set_index("datetime")
         df_energy = df_energy.resample("60min").max()
         # set the index name so that it exports nicely
@@ -208,37 +191,22 @@ class ModelicaResults:
                     if len(other_var_data) == len(time):
                         data[other_var] = other_var_data
                     else:
-                        print(
-                            f'Other var "{other_var}" length does not match {len(other_var_data)} != {len(time)}'
-                        )
+                        print(f'Other var "{other_var}" length does not match {len(other_var_data)} != {len(time)}')
 
         df_power = pd.pandas.DataFrame(data)
 
         # create aggregation columns for total pumps, total heat pumps, and total
-        df_power["ETS Pump Electricity Total"] = df_power[
-            agg_columns["ETS Pump Electricity Total"]
-        ].sum(axis=1)
-        df_power["ETS Heat Pump Electricity Total"] = df_power[
-            agg_columns["ETS Heat Pump Electricity Total"]
-        ].sum(axis=1)
-        df_power["Total Thermal Cooling Energy"] = df_power[
-            agg_columns["ETS Thermal Cooling Total"]
-        ].sum(axis=1)
-        df_power["Total Thermal Heating Energy"] = df_power[
-            agg_columns["ETS Thermal Heating Total"]
-        ].sum(axis=1)
+        df_power["ETS Pump Electricity Total"] = df_power[agg_columns["ETS Pump Electricity Total"]].sum(axis=1)
+        df_power["ETS Heat Pump Electricity Total"] = df_power[agg_columns["ETS Heat Pump Electricity Total"]].sum(axis=1)
+        df_power["Total Thermal Cooling Energy"] = df_power[agg_columns["ETS Thermal Cooling Total"]].sum(axis=1)
+        df_power["Total Thermal Heating Energy"] = df_power[agg_columns["ETS Thermal Heating Total"]].sum(axis=1)
 
         # Calculate the District Loop Power - if the columns exists
         # check if multiple columns are in a dataframe
-        if all(
-            column in df_power.columns
-            for column in ["TDisWatRet.port_a.m_flow", "TDisWatRet.T", "TDisWatSup.T"]
-        ):
+        if all(column in df_power.columns for column in ["TDisWatRet.port_a.m_flow", "TDisWatRet.T", "TDisWatSup.T"]):
             # \dot{m} * c_p * \Delta T with Water at (4186 J/kg/K)
             df_power["District Loop Energy"] = (
-                df_power["TDisWatRet.port_a.m_flow"]
-                * 4186
-                * abs(df_power["TDisWatRet.T"] - df_power["TDisWatSup.T"])
+                df_power["TDisWatRet.port_a.m_flow"] * 4186 * abs(df_power["TDisWatRet.T"] - df_power["TDisWatSup.T"])
             )
 
         column_names = [
@@ -252,7 +220,7 @@ class ModelicaResults:
 
         # sum up all ETS data (pump and heat pump)
         df_power.to_csv(self.path / "power_original.csv")
-        df_power.drop_duplicates(subset="datetime", inplace=True)
+        df_power = df_power.drop_duplicates(subset="datetime")
         df_power = df_power.set_index("datetime")
 
         # upsample to 1min with filling the last. This will
@@ -293,11 +261,7 @@ class ModelicaResults:
             "ExteriorEquipment:Electricity Building",
             "InteriorEquipment:NaturalGas Building",
         ]
-        meter_names = [
-            f"{meter_name} {building_id}"
-            for building_id in building_ids
-            for meter_name in building_meter_names
-        ]
+        meter_names = [f"{meter_name} {building_id}" for building_id in building_ids for meter_name in building_meter_names]
         # add in the end use totals that are non-HVAC
         meter_names += [
             "Total Building Interior Lighting",
@@ -308,20 +272,14 @@ class ModelicaResults:
             "Total Building Interior Equipment",
         ]
 
-        self.min_60_with_buildings = pd.concat(
-            [self.min_60, openstudio_df[meter_names]], axis=1, join="inner"
-        )
+        self.min_60_with_buildings = pd.concat([self.min_60, openstudio_df[meter_names]], axis=1, join="inner")
         self.min_60_with_buildings.index.name = "datetime"
 
         # also conduct this for the 15 minute time step
-        self.min_15_with_buildings = pd.concat(
-            [self.min_15, openstudio_df_15[meter_names]], axis=1, join="inner"
-        )
+        self.min_15_with_buildings = pd.concat([self.min_15, openstudio_df_15[meter_names]], axis=1, join="inner")
         self.min_15_with_buildings.index.name = "datetime"
 
         # should we resort the columns?
-
-        return None
 
     def create_summary(self):
         """Create an annual summary by selecting key variables and values and transposing them for easy comparison"""
@@ -467,9 +425,7 @@ class ModelicaResults:
         for column in summary_columns:
             # check if the column exists in the data frame and if not, then set the value to zero!
             if column["name"] in self.annual.columns:
-                self.end_use_summary[self.display_name][column["display_name"]] = float(
-                    self.annual[column["name"]].iloc[0]
-                )
+                self.end_use_summary[self.display_name][column["display_name"]] = float(self.annual[column["name"]].iloc[0])
             else:
                 self.end_use_summary[self.display_name][column["display_name"]] = 0.0
 
@@ -507,30 +463,20 @@ class ModelicaResults:
 
         # Calculate the natural gas emissions, emissions data is in kg/MWh so Wh->MWh, then divide by another 1000 to get mtCO2e
         self.min_60_with_buildings["Total Building Natural Gas Carbon Emissions"] = (
-            self.min_60_with_buildings["Total Building Natural Gas"]
-            * hourly_emissions_data.other_fuels["natural_gas"]
-            / 1e6
-            / 1000
+            self.min_60_with_buildings["Total Building Natural Gas"] * hourly_emissions_data.other_fuels["natural_gas"] / 1e6 / 1000
         )
-        self.min_60_with_buildings["Total Natural Gas Carbon Emissions"] = (
-            self.min_60_with_buildings["Total Building Natural Gas Carbon Emissions"]
-        )
+        self.min_60_with_buildings["Total Natural Gas Carbon Emissions"] = self.min_60_with_buildings[
+            "Total Building Natural Gas Carbon Emissions"
+        ]
 
         # Calculate the electricity carbon emissions, emissions data is in kg/MWh, so Wh->Mwh, then divide by another 1000 to get mtCO2e
-        self.min_60_with_buildings[
-            f"Total Electricity Carbon Emissions {future_year}"
-        ] = (
-            self.min_60_with_buildings["Total Electricity"]
-            * hourly_emissions_data.data[lookup_egrid_subregion]
-            / 1e6
-            / 1000
+        self.min_60_with_buildings[f"Total Electricity Carbon Emissions {future_year}"] = (
+            self.min_60_with_buildings["Total Electricity"] * hourly_emissions_data.data[lookup_egrid_subregion] / 1e6 / 1000
         )
         # Sum the total carbon emissions
         self.min_60_with_buildings[f"Total Carbon Emissions {future_year}"] = (
             self.min_60_with_buildings["Total Natural Gas Carbon Emissions"]
-            + self.min_60_with_buildings[
-                f"Total Electricity Carbon Emissions {future_year}"
-            ]
+            + self.min_60_with_buildings[f"Total Electricity Carbon Emissions {future_year}"]
         )
 
     def calculate_grid_metrics(
@@ -553,9 +499,7 @@ class ModelicaResults:
         # warm up times that have yet to be resolved.
         n_days = 2
         skip_time = n_days * 96
-        self.min_15_with_buildings_to_process = (
-            self.min_15_with_buildings_to_process.iloc[skip_time:]
-        )
+        self.min_15_with_buildings_to_process = self.min_15_with_buildings_to_process.iloc[skip_time:]
         # # END NEED TO FIX
 
         # # THIS IS HARD CODED -- NEED TO FIX!
@@ -576,9 +520,7 @@ class ModelicaResults:
         self.grid_metrics_daily = None
         for meter in meters:
             df_tmp = self.min_15_with_buildings_to_process.copy()
-            df_tmp = df_tmp.groupby([pd.Grouper(freq="1d")])[meter].agg(
-                ["max", "idxmax", "min", "idxmin", "mean", "sum"]
-            )
+            df_tmp = df_tmp.groupby([pd.Grouper(freq="1d")])[meter].agg(["max", "idxmax", "min", "idxmin", "mean", "sum"])
 
             # update the column names and save back into the results data frame
             df_tmp.columns = [
@@ -594,28 +536,19 @@ class ModelicaResults:
             df_tmp[f"{meter} PVR"] = df_tmp[f"{meter} Max"] / df_tmp[f"{meter} Min"]
 
             # calculate the load factor
-            df_tmp[f"{meter} Load Factor"] = (
-                df_tmp[f"{meter} Mean"] / df_tmp[f"{meter} Max"]
-            )
+            df_tmp[f"{meter} Load Factor"] = df_tmp[f"{meter} Mean"] / df_tmp[f"{meter} Max"]
 
             # add in the system ramping, which has to be calculated from the original data frame
             df_tmp2 = self.min_15_with_buildings_to_process.copy()
             df_tmp2[f"{meter} System Ramping"] = df_tmp2[meter].diff().abs().fillna(0)
-            df_tmp2 = (
-                df_tmp2.groupby([pd.Grouper(freq="1d")])[f"{meter} System Ramping"].agg(
-                    ["sum"]
-                )
-                / 1e6
-            )
+            df_tmp2 = df_tmp2.groupby([pd.Grouper(freq="1d")])[f"{meter} System Ramping"].agg(["sum"]) / 1e6
             df_tmp2.columns = [f"{meter} System Ramping"]
 
             df_tmp = pd.concat([df_tmp, df_tmp2], axis=1, join="inner")
             if self.grid_metrics_daily is None:
                 self.grid_metrics_daily = df_tmp
             else:
-                self.grid_metrics_daily = pd.concat(
-                    [self.grid_metrics_daily, df_tmp], axis=1, join="inner"
-                )
+                self.grid_metrics_daily = pd.concat([self.grid_metrics_daily, df_tmp], axis=1, join="inner")
 
         # aggregate the df_daily daily data to annual metrics. For the maxes/mins, we only want the max of the max
         # and the min of the min.
@@ -637,13 +570,9 @@ class ModelicaResults:
             # there is only one year of data, so grab the idmax/idmin of the first element. If
             # we expand to multiple years, then this will need to be updated
             id_lookup = df_tmp[f"{meter} Max idxmax"][0]
-            df_tmp[f"{meter} Max idxmax"] = self.grid_metrics_daily.loc[id_lookup][
-                f"{meter} Max Datetime"
-            ]
+            df_tmp[f"{meter} Max idxmax"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Max Datetime"]
             id_lookup = df_tmp[f"{meter} Min idxmin"][0]
-            df_tmp[f"{meter} Min idxmin"] = self.grid_metrics_daily.loc[id_lookup][
-                f"{meter} Min Datetime"
-            ]
+            df_tmp[f"{meter} Min idxmin"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Min Datetime"]
             # rename these two columns to remove the idxmax/idxmin nomenclature
             df_tmp = df_tmp.rename(
                 columns={
@@ -653,23 +582,13 @@ class ModelicaResults:
             )
 
         # Add the MWh related metrics, can't sum up the 15 minute data, so we have to sum up the hourly
-        df_tmp["Total Electricity"] = (
-            self.min_60_with_buildings["Total Electricity"].resample("1y").sum() / 1e6
-        )  # MWh
-        df_tmp["Total Natural Gas"] = (
-            self.min_60_with_buildings["Total Natural Gas"].resample("1y").sum() / 1e6
-        )  # MWh
+        df_tmp["Total Electricity"] = self.min_60_with_buildings["Total Electricity"].resample("1y").sum() / 1e6  # MWh
+        df_tmp["Total Natural Gas"] = self.min_60_with_buildings["Total Natural Gas"].resample("1y").sum() / 1e6  # MWh
         df_tmp["Total Thermal Cooling Energy"] = (
-            self.min_60_with_buildings["Total Thermal Cooling Energy"]
-            .resample("1y")
-            .sum()
-            / 1e6
+            self.min_60_with_buildings["Total Thermal Cooling Energy"].resample("1y").sum() / 1e6
         )  # MWh
         df_tmp["Total Thermal Heating Energy"] = (
-            self.min_60_with_buildings["Total Thermal Heating Energy"]
-            .resample("1y")
-            .sum()
-            / 1e6
+            self.min_60_with_buildings["Total Thermal Heating Energy"].resample("1y").sum() / 1e6
         )  # MWh
 
         # graph the top 5 peak values for each of the meters
@@ -684,9 +603,9 @@ class ModelicaResults:
             df_to_proc = self.min_15_with_buildings_to_process.copy()
             if "Cooling" in meter:
                 # values are negative, so ascending is actually descending
-                df_to_proc.sort_values(by=meter, ascending=True, inplace=True)
+                df_to_proc = df_to_proc.sort_values(by=meter, ascending=True)
             else:
-                df_to_proc.sort_values(by=meter, ascending=False, inplace=True)
+                df_to_proc = df_to_proc.sort_values(by=meter, ascending=False)
             df_to_proc = df_to_proc.head(50)
 
             # save the top 5 values to the df_tmp
@@ -738,20 +657,10 @@ class ModelicaResults:
             self.min_15.to_csv(self.path / "power_15min.csv")
         if self.min_60 is not None and "min_60" in dfs_to_save:
             self.min_60.to_csv(self.path / "power_60min.csv")
-        if (
-            self.min_15_with_buildings is not None
-            and "min_15_with_buildings" in dfs_to_save
-        ):
-            self.min_15_with_buildings.to_csv(
-                self.path / "power_15min_with_buildings.csv"
-            )
-        if (
-            self.min_60_with_buildings is not None
-            and "min_60_with_buildings" in dfs_to_save
-        ):
-            self.min_60_with_buildings.to_csv(
-                self.path / "power_60min_with_buildings.csv"
-            )
+        if self.min_15_with_buildings is not None and "min_15_with_buildings" in dfs_to_save:
+            self.min_15_with_buildings.to_csv(self.path / "power_15min_with_buildings.csv")
+        if self.min_60_with_buildings is not None and "min_60_with_buildings" in dfs_to_save:
+            self.min_60_with_buildings.to_csv(self.path / "power_60min_with_buildings.csv")
 
         # save the monthly and annual
         if self.monthly is not None and "monthly" in dfs_to_save:
@@ -766,8 +675,5 @@ class ModelicaResults:
         # save the metrics
         if self.grid_metrics_daily is not None and "grid_metrics_daily" in dfs_to_save:
             self.grid_metrics_daily.to_csv(self.path / "grid_metrics_daily.csv")
-        if (
-            self.grid_metrics_annual is not None
-            and "grid_metrics_annual" in dfs_to_save
-        ):
+        if self.grid_metrics_annual is not None and "grid_metrics_annual" in dfs_to_save:
             self.grid_metrics_annual.to_csv(self.path / "grid_metrics_annual.csv")
