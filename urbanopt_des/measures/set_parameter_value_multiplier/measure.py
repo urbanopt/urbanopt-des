@@ -32,15 +32,9 @@ class SetParameterValueMultiplier(MeasureBase):
             "The model_name in the ModelicaProject passed into the run method.",
             units="string",
         )
-        self.measure_args.add_argument(
-            "type", "Name of the type being modified", units="string"
-        )
-        self.measure_args.add_argument(
-            "identifier", "Name of the type identifier being modified", units="string"
-        )
-        self.measure_args.add_argument(
-            "value", "Value to multiply the argument by", units="float"
-        )
+        self.measure_args.add_argument("type", "Name of the type being modified", units="string")
+        self.measure_args.add_argument("identifier", "Name of the type identifier being modified", units="string")
+        self.measure_args.add_argument("value", "Value to multiply the argument by", units="float")
         return self.measure_args
 
     def run(self, project: ModelicaProject, user_arguments: list[dict]):
@@ -60,15 +54,11 @@ class SetParameterValueMultiplier(MeasureBase):
         to_set_value = float(previous_value) * float(new_value)
         model.update_parameter(type_, identifier, str(to_set_value))
 
-        self.measure_attributes.register_value(
-            model_name, self.unique_name, f"{identifier}_previous_value", previous_value
-        )
+        self.measure_attributes.register_value(model_name, self.unique_name, f"{identifier}_previous_value", previous_value)
 
         for args in user_arguments.get_args_with_register_values():
             # register the value that was set after the fact
-            self.measure_attributes.register_value(
-                model_name, self.unique_name, args["name"], str(to_set_value)
-            )
+            self.measure_attributes.register_value(model_name, self.unique_name, args["name"], str(to_set_value))
 
         # execute the actions
         model.execute()

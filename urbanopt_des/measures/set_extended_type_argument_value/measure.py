@@ -32,24 +32,12 @@ class SetExtendedTypeArgumentValue(MeasureBase):
             "The model_name in the ModelicaProject passed into the run method.",
             units="string",
         )
-        self.measure_args.add_argument(
-            "extended_type", "Name of the extended type being modified", units="string"
-        )
-        self.measure_args.add_argument(
-            "type", "Name of the type being modified", units="string"
-        )
-        self.measure_args.add_argument(
-            "identifier", "Name of the type identifier being modified", units="string"
-        )
-        self.measure_args.add_argument(
-            "object_name", "Name of the data object being modified", units="string"
-        )
-        self.measure_args.add_argument(
-            "argument_name", "Name of the argument to set", units="string"
-        )
-        self.measure_args.add_argument(
-            "value", "Value to set the argument to", units="float"
-        )
+        self.measure_args.add_argument("extended_type", "Name of the extended type being modified", units="string")
+        self.measure_args.add_argument("type", "Name of the type being modified", units="string")
+        self.measure_args.add_argument("identifier", "Name of the type identifier being modified", units="string")
+        self.measure_args.add_argument("object_name", "Name of the data object being modified", units="string")
+        self.measure_args.add_argument("argument_name", "Name of the argument to set", units="string")
+        self.measure_args.add_argument("value", "Value to set the argument to", units="float")
         return self.measure_args
 
     def run(self, project: ModelicaProject, user_arguments: list[dict]):
@@ -68,15 +56,11 @@ class SetExtendedTypeArgumentValue(MeasureBase):
         model = project.get_model(model_name)
 
         # add actions to manipulate the model
-        model.update_extended_component_modification(
-            extended_type, type_, identifier, object_name, argument_name, str(new_value)
-        )
+        model.update_extended_component_modification(extended_type, type_, identifier, object_name, argument_name, str(new_value))
 
         for args in user_arguments.get_args_with_register_values():
             # register the value that was set after the fact
-            self.measure_attributes.register_value(
-                model_name, self.unique_name, args["name"], args["value"]
-            )
+            self.measure_attributes.register_value(model_name, self.unique_name, args["name"], args["value"])
 
         # execute the actions
         model.execute()

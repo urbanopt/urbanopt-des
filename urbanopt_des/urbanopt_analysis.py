@@ -15,9 +15,7 @@ from .urbanopt_results import URBANoptResults
 
 
 class URBANoptAnalysis:
-    def __init__(
-        self, geojson_file: Path, analysis_dir: Path, year_of_data: int = 2017, **kwargs
-    ) -> None:
+    def __init__(self, geojson_file: Path, analysis_dir: Path, year_of_data: int = 2017, **kwargs) -> None:
         """Class to hold contents from a comprehensive UO analysis. The analysis can
         include contents from both URBANopt (OpenStudio/EnergyPlus) and URBANopt
         DES (Modelica).
@@ -107,49 +105,29 @@ class URBANoptAnalysis:
         }
 
         # collect some statistics about the meter readings to inform which are heating and cooling variables
-        filter = (df_scaling["building_id"] == building_id) & (
-            df_scaling.index.year == year
-        )
+        filter = (df_scaling["building_id"] == building_id) & (df_scaling.index.year == year)
         ng_filter = df_scaling["meter_type"] == "Natural Gas"
         el_filter = df_scaling["meter_type"] == "Electric - Grid"
-        number_of_meters = len(
-            df_scaling[df_scaling["building_id"] == building_id]["meter_type"].unique()
-        )
+        number_of_meters = len(df_scaling[df_scaling["building_id"] == building_id]["meter_type"].unique())
         if number_of_meters == 1:
             # then just heating, so the scaling should apply to both heating and cooling
             fields = ["end_time", "scaling_factor_electricity"]
-            scaling_factors["heating"] += (
-                df_scaling[filter & el_filter][fields]
-                .reset_index()
-                .to_dict("records", index=True)
-            )
+            scaling_factors["heating"] += df_scaling[filter & el_filter][fields].reset_index().to_dict("records", index=True)
             for item in scaling_factors["heating"]:
                 item["scaling_factor"] = item.pop("scaling_factor_electricity")
-            scaling_factors["cooling"] += (
-                df_scaling[filter & el_filter][fields]
-                .reset_index()
-                .to_dict("records", index=True)
-            )
+            scaling_factors["cooling"] += df_scaling[filter & el_filter][fields].reset_index().to_dict("records", index=True)
             for item in scaling_factors["cooling"]:
                 item["scaling_factor"] = item.pop("scaling_factor_electricity")
 
             # set the variables to the be max scaling factor
-            scaling_factors["variables"]["Peak space cooling load"] = df_scaling[
-                filter & el_filter
-            ]["scaling_factor_electricity"].max()
-            scaling_factors["variables"]["Peak space heating load"] = df_scaling[
-                filter & el_filter
-            ]["scaling_factor_electricity"].max()
+            scaling_factors["variables"]["Peak space cooling load"] = df_scaling[filter & el_filter]["scaling_factor_electricity"].max()
+            scaling_factors["variables"]["Peak space heating load"] = df_scaling[filter & el_filter]["scaling_factor_electricity"].max()
         elif number_of_meters == 2:
             # exclude zero values in the calculation
             zero_filter = df_scaling["converted_value"] != 0
 
-            min_ng_non_zero = df_scaling[
-                filter & zero_filter & (df_scaling["meter_type"] == "Natural Gas")
-            ]["converted_value"].min()
-            max_ng_non_zero = df_scaling[
-                filter & zero_filter & (df_scaling["meter_type"] == "Natural Gas")
-            ]["converted_value"].max()
+            min_ng_non_zero = df_scaling[filter & zero_filter & (df_scaling["meter_type"] == "Natural Gas")]["converted_value"].min()
+            max_ng_non_zero = df_scaling[filter & zero_filter & (df_scaling["meter_type"] == "Natural Gas")]["converted_value"].max()
             ng_pvr = max_ng_non_zero / min_ng_non_zero
             # max_ng = df_scaling[filter & (df_scaling['meter_type'] == 'Natural Gas')]['converted_value'].max()
             # max_el = df_scaling[filter & (df_scaling['meter_type'] == 'Electric - Grid')]['converted_value'].max()
@@ -167,41 +145,23 @@ class URBANoptAnalysis:
             if ng_pvr > 1.5:
                 # if the peak to valley ration of the natural gas is high, then assume that it has an impact on the heating load only
                 fields = ["end_time", "scaling_factor_natural_gas"]
-                scaling_factors["heating"] += (
-                    df_scaling[filter & ng_filter][fields]
-                    .reset_index()
-                    .to_dict("records", index=True)
-                )
+                scaling_factors["heating"] += df_scaling[filter & ng_filter][fields].reset_index().to_dict("records", index=True)
                 for item in scaling_factors["heating"]:
                     item["scaling_factor"] = item.pop("scaling_factor_natural_gas")
-                scaling_factors["variables"]["Peak space heating load"] = df_scaling[
-                    filter & ng_filter
-                ]["scaling_factor_natural_gas"].max()
+                scaling_factors["variables"]["Peak space heating load"] = df_scaling[filter & ng_filter]["scaling_factor_natural_gas"].max()
             else:
                 # just use the electric load scaling factors for everything
                 fields = ["end_time", "scaling_factor_electricity"]
-                scaling_factors["heating"] += (
-                    df_scaling[filter & el_filter][fields]
-                    .reset_index()
-                    .to_dict("records", index=True)
-                )
+                scaling_factors["heating"] += df_scaling[filter & el_filter][fields].reset_index().to_dict("records", index=True)
                 for item in scaling_factors["heating"]:
                     item["scaling_factor"] = item.pop("scaling_factor_electricity")
-                scaling_factors["variables"]["Peak space heating load"] = df_scaling[
-                    filter & el_filter
-                ]["scaling_factor_electricity"].max()
+                scaling_factors["variables"]["Peak space heating load"] = df_scaling[filter & el_filter]["scaling_factor_electricity"].max()
 
             fields = ["end_time", "scaling_factor_electricity"]
-            scaling_factors["cooling"] += (
-                df_scaling[filter & el_filter][fields]
-                .reset_index()
-                .to_dict("records", index=True)
-            )
+            scaling_factors["cooling"] += df_scaling[filter & el_filter][fields].reset_index().to_dict("records", index=True)
             for item in scaling_factors["cooling"]:
                 item["scaling_factor"] = item.pop("scaling_factor_electricity")
-            scaling_factors["variables"]["Peak space cooling load"] = df_scaling[
-                filter & el_filter
-            ]["scaling_factor_electricity"].max()
+            scaling_factors["variables"]["Peak space cooling load"] = df_scaling[filter & el_filter]["scaling_factor_electricity"].max()
 
             # # plot sf_ng vs sf_el
             # plt.clf()
@@ -220,9 +180,7 @@ class URBANoptAnalysis:
             scenario_name (str): Name of the scenario that was run with URBANopt.
         """
         self.urbanopt = URBANoptResults(path_to_urbanopt, scenario_name)
-        self.urbanopt.process_results(
-            self.geojson.get_building_ids(), year_of_data=self.year_of_data
-        )
+        self.urbanopt.process_results(self.geojson.get_building_ids(), year_of_data=self.year_of_data)
 
         # note that the number of buildings in the geojson will match here since the file being passed
         # into the process_results method is the geojson file that was used to run the analysis. So no need
@@ -234,18 +192,13 @@ class URBANoptAnalysis:
 
         The name of the scaling CSV files and format is very specific to this method."""
         if not self.urbanopt:
-            raise Exception(
-                "URBANopt results are not loaded, run `add_urbanopt_results` method"
-            )
+            raise Exception("URBANopt results are not loaded, run `add_urbanopt_results` method")
 
         for building_id in self.geojson.get_building_ids():
             # retrieve the scaling factors, fixed at electric_grid and natural_gas
             for meter_type in ["electric_grid", "natural_gas"]:
                 filepath = path_to_urbanopt / "output"
-                filepath = (
-                    filepath
-                    / f"building_{building_id}_scaling_factors_{meter_type}.csv"
-                )
+                filepath = filepath / f"building_{building_id}_scaling_factors_{meter_type}.csv"
 
                 if filepath.exists():
                     # load into a data frame, and load only the columns that
@@ -264,11 +217,9 @@ class URBANoptAnalysis:
                     # set start_time and end time to be datetime objects
                     df_scalars["start_time"] = pd.to_datetime(df_scalars["start_time"])
                     # add midnight to the start_time
-                    df_scalars["start_time"] = df_scalars["start_time"].apply(
-                        lambda x: x.replace(hour=0, minute=0, second=0)
-                    )
+                    df_scalars["start_time"] = df_scalars["start_time"].apply(lambda x: x.replace(hour=0, minute=0, second=0))
                     df_scalars["end_time"] = pd.to_datetime(df_scalars["end_time"])
-                    df_scalars.reset_index(inplace=True)
+                    df_scalars = df_scalars.reset_index()
 
                     self.urbanopt.scale_results(df_scalars, self.year_of_data, 2021)
 
@@ -303,14 +254,12 @@ class URBANoptAnalysis:
     def save_urbanopt_results_in_modelica_paths(self):
         """Iterate through each of the modelica result paths and save a copy of the URBANopt OpenStudio data frames into
         the path."""
-        for analysis_name in self.modelica.keys():
-            self.urbanopt.data.to_csv(
-                self.modelica[analysis_name].path / "openstudio_df.csv"
-            )
+        for analysis_name in self.modelica:
+            self.urbanopt.data.to_csv(self.modelica[analysis_name].path / "openstudio_df.csv")
 
     def combine_modelica_and_openstudio_results(self) -> None:
         """Combine the modelica and openstudio results into a single data frame for each analysis_name"""
-        for analysis_name in self.modelica.keys():
+        for analysis_name in self.modelica:
             self.modelica[analysis_name].combine_with_openstudio_results(
                 self.geojson.get_building_ids(),
                 self.urbanopt.data,
@@ -331,38 +280,21 @@ class URBANoptAnalysis:
             for meter in meters:
                 # print(f"Processing meter {meter} for building {building_id}")
 
-                meter_readings = self.geojson.get_meter_readings_for_building(
-                    building_id, meter
-                )
+                meter_readings = self.geojson.get_meter_readings_for_building(building_id, meter)
                 # add the meter_type to all the json objects
-                [
-                    meter_reading.update(
-                        {"meter_type": meter, "building_id": building_id}
-                    )
-                    for meter_reading in meter_readings
-                ]
+                [meter_reading.update({"meter_type": meter, "building_id": building_id}) for meter_reading in meter_readings]
                 # print(f"Found {len(meter_readings)} meter readings")
 
                 # save the readings into a dataframe with end_time as the index
-                self.actual_data = pd.concat(
-                    [self.actual_data, pd.DataFrame(meter_readings)]
-                )
+                self.actual_data = pd.concat([self.actual_data, pd.DataFrame(meter_readings)])
 
         if self.actual_data is not None:
-            self.actual_data["start_time"] = pd.to_datetime(
-                self.actual_data["start_time"]
-            )
-            self.actual_data["start_time"] = self.actual_data["start_time"].apply(
-                lambda x: x.replace(tzinfo=None)
-            )
+            self.actual_data["start_time"] = pd.to_datetime(self.actual_data["start_time"])
+            self.actual_data["start_time"] = self.actual_data["start_time"].apply(lambda x: x.replace(tzinfo=None))
             self.actual_data["end_time"] = pd.to_datetime(self.actual_data["end_time"])
-            self.actual_data["end_time"] = self.actual_data["end_time"].apply(
-                lambda x: x.replace(tzinfo=None)
-            )
+            self.actual_data["end_time"] = self.actual_data["end_time"].apply(lambda x: x.replace(tzinfo=None))
             # check if there is a time on the end_time and if not make it 23:59:59
-            self.actual_data["end_time"] = self.actual_data["end_time"].apply(
-                lambda x: x.replace(hour=23, minute=59, second=59)
-            )
+            self.actual_data["end_time"] = self.actual_data["end_time"].apply(lambda x: x.replace(hour=23, minute=59, second=59))
             self.actual_data = self.actual_data.set_index(["start_time"])
 
             # monthly agg across each building_id, meter_type (and other non-important fields)
@@ -376,20 +308,12 @@ class URBANoptAnalysis:
             ]
             drop_cols = ["end_time", "id"]
             # drop the columns first, then run the groupby
-            self.actual_data_monthly = (
-                self.actual_data.drop(columns=drop_cols)
-                .groupby([pd.Grouper(freq="M"), *groupby_cols])
-                .sum()
-            )
-            self.actual_data_monthly.reset_index(inplace=True)
-            self.actual_data_monthly.set_index(["start_time"], inplace=True)
-            self.actual_data_yearly = (
-                self.actual_data.drop(columns=drop_cols)
-                .groupby([pd.Grouper(freq="Y"), *groupby_cols])
-                .sum()
-            )
-            self.actual_data_yearly.reset_index(inplace=True)
-            self.actual_data_yearly.set_index(["start_time"], inplace=True)
+            self.actual_data_monthly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="M"), *groupby_cols]).sum()
+            self.actual_data_monthly.reset_index()
+            self.actual_data_monthly.set_index(["start_time"])
+            self.actual_data_yearly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="Y"), *groupby_cols]).sum()
+            self.actual_data_yearly.reset_index()
+            self.actual_data_yearly.set_index(["start_time"])
 
             # for each building, create a new row with the building_id and new meter called 'total' which has the
             # converted_value for all the meters for that building summed together
@@ -402,8 +326,8 @@ class URBANoptAnalysis:
                 "converted_units",
             ]
             new_data = self.actual_data_monthly.groupby(groupby_cols).sum()
-            new_data.reset_index(inplace=True)
-            new_data.set_index(["start_time"], inplace=True)
+            new_data.reset_index()
+            new_data.set_index(["start_time"])
             new_data["meter_type"] = "Total"
             self.new_data = new_data
             # add the new_data rows to the existing self.actual_monthly dataframe, mapping the common columns
@@ -411,8 +335,8 @@ class URBANoptAnalysis:
 
             # now do the same for the yearly data for the totals
             new_data = self.actual_data_yearly.groupby(groupby_cols).sum()
-            new_data.reset_index(inplace=True)
-            new_data.set_index(["start_time"], inplace=True)
+            new_data.reset_index()
+            new_data.set_index(["start_time"])
             new_data["meter_type"] = "Total"
             self.new_data = new_data
             # add the new_data rows to the existing self.actual_monthly dataframe, mapping the common columns
@@ -432,10 +356,8 @@ class URBANoptAnalysis:
 
         Raises:
             Exception: errors"""
-        for analysis_name in self.modelica.keys():
-            self.modelica[analysis_name].resample_and_convert_to_df(
-                building_ids, other_vars, self.year_of_data
-            )
+        for analysis_name in self.modelica:
+            self.modelica[analysis_name].resample_and_convert_to_df(building_ids, other_vars, self.year_of_data)
 
     def create_building_summaries(self) -> None:
         """Create the summary of the results for URBANopt and each modelica simulation. This stores the data on the
@@ -444,12 +366,12 @@ class URBANoptAnalysis:
         self.urbanopt.create_summary()
 
         # create summary for each Modelica result
-        for analysis_name in self.modelica.keys():
+        for analysis_name in self.modelica:
             self.modelica[analysis_name].create_summary()
 
     def save_modelica_variables(self) -> None:
         """For each Modelica analysis, save the variables in the location alongside the .mat file"""
-        for analysis_name in self.modelica.keys():
+        for analysis_name in self.modelica:
             self.modelica[analysis_name].save_variables()
 
     def save_dataframes(
@@ -473,20 +395,16 @@ class URBANoptAnalysis:
 
         self.urbanopt.save_dataframes()
 
-        for analysis_name in self.modelica.keys():
+        for analysis_name in self.modelica:
             self.modelica[analysis_name].save_dataframes(dfs_to_save)
 
         # save the UO Analysis dataframes, which go into a summary directory
         if self.grid_summary is not None and "grid_summary" in dfs_to_save:
             self.grid_summary.to_csv(self.analysis_output_dir / "grid_summary.csv")
-            self.grid_metrics_annual.to_csv(
-                self.analysis_output_dir / "grid_metrics_annual_all.csv"
-            )
+            self.grid_metrics_annual.to_csv(self.analysis_output_dir / "grid_metrics_annual_all.csv")
 
         if self.end_use_summary is not None and "end_use_summary" in dfs_to_save:
-            self.end_use_summary.to_csv(
-                self.analysis_output_dir / "annual_end_use_summary.csv"
-            )
+            self.end_use_summary.to_csv(self.analysis_output_dir / "annual_end_use_summary.csv")
 
     def calculate_carbon_emissions(
         self,
@@ -522,15 +440,11 @@ class URBANoptAnalysis:
         )
 
         # calculate the carbon emission on the URBANopt results
-        self.urbanopt.calculate_carbon_emissions(
-            hourly_emissions_data, future_year=future_year
-        )
+        self.urbanopt.calculate_carbon_emissions(hourly_emissions_data, future_year=future_year)
 
         # Now for each of the modelica results
-        for analysis_name in self.modelica.keys():
-            self.modelica[analysis_name].calculate_carbon_emissions(
-                hourly_emissions_data, future_year=future_year
-            )
+        for analysis_name in self.modelica:
+            self.modelica[analysis_name].calculate_carbon_emissions(hourly_emissions_data, future_year=future_year)
 
     def calculate_all_grid_metrics(self) -> None:
         """Call each Modelica analysis to create the grid metric"""
@@ -539,7 +453,7 @@ class URBANoptAnalysis:
         # skip n-days at the beginning of the grid metrics, due to
         # warm up times that have yet to be resolved.
 
-        for analysis_name in self.modelica.keys():
+        for analysis_name in self.modelica:
             self.modelica[analysis_name].calculate_grid_metrics()
 
     def calculate_utility_cost(self, **kwargs) -> None:
@@ -551,7 +465,7 @@ class URBANoptAnalysis:
         # create three columns of utility costs, hot water, chilled water, and ambient water
         # 1 ton-hour = 3.5 kWh, 1 ton=3.5kW
         # energy, energy charges, demand charges, transition rate, and taxes
-        #   - Demand is based on a building’s multiple one-hour peaks from June through September of the previous two 12-month periods.
+        #   - Demand is based on a building's multiple one-hour peaks from June through September of the previous two 12-month periods.
         # hot water, 0.094 per ton-hour, 30.02 per ton per month, 0.394 per ton-hour, 3.5%
 
         # get the utility rates for thermal host water and chilled water
@@ -563,16 +477,12 @@ class URBANoptAnalysis:
         df_60min_with_buildings. This does not act on the URBANopt results since this method
         must be called after the combine_modelica_and_openstudio_results method."""
         # First check that the data are in the dataframes
-        for analysis_name in self.modelica.keys():
+        for analysis_name in self.modelica:
             if self.modelica[analysis_name].min_15_with_buildings is None:
-                raise Exception(
-                    "Must call combine_modelica_and_openstudio_results() before calling create_aggregations()"
-                )
+                raise Exception("Must call combine_modelica_and_openstudio_results() before calling create_aggregations()")
 
             if self.modelica[analysis_name].min_60_with_buildings is None:
-                raise Exception(
-                    "Must call combine_modelica_and_openstudio_results() before calling create_aggregations()"
-                )
+                raise Exception("Must call combine_modelica_and_openstudio_results() before calling create_aggregations()")
 
         # try block is here for folding in IDE :)
         # Note that the order of aggregations matter if a new aggregation is dependent on another
@@ -637,26 +547,20 @@ class URBANoptAnalysis:
                 "Total Building and ETS Energy",
                 "Total DES Electricity",
             ]
-            building_aggs["Total Natural Gas"]["agg_columns"] = [
-                "Total Building Natural Gas"
-            ]
+            building_aggs["Total Natural Gas"]["agg_columns"] = ["Total Building Natural Gas"]
             building_aggs["Total Energy"]["agg_columns"] = [
                 "Total Electricity",
                 "Total Natural Gas",
             ]
-            building_aggs["Total Thermal Energy Cooling"]["agg_columns"] = [
-                "Total Thermal Cooling Energy"
-            ]
-            building_aggs["Total Thermal Energy Heating"]["agg_columns"] = [
-                "Total Thermal Heating Energy"
-            ]
+            building_aggs["Total Thermal Energy Cooling"]["agg_columns"] = ["Total Thermal Cooling Energy"]
+            building_aggs["Total Thermal Energy Heating"]["agg_columns"] = ["Total Thermal Heating Energy"]
         finally:
             pass
 
         # Do this for each of the analyses' 15 and 60 min dataframes
-        for analysis_name in self.modelica.keys():
+        for analysis_name in self.modelica:
             for resolution in ["min_15_with_buildings", "min_60_with_buildings"]:
-                df = getattr(self.modelica[analysis_name], resolution)
+                temp_df = getattr(self.modelica[analysis_name], resolution)
 
                 # Go through each building_aggs and create the aggregation
                 for key, value in building_aggs.items():
@@ -666,16 +570,14 @@ class URBANoptAnalysis:
 
                     # sum up the columns in the agg_columns defined above for the dataframe of
                     # the analysis
-                    df[key] = df[value["agg_columns"]].sum(axis=1)
+                    temp_df[key] = temp_df[value["agg_columns"]].sum(axis=1)
 
     def create_rollups(self) -> None:
         """Rollups take the 60 minute data sets and roll up to monthly and annual"""
         # make sure that the data exist in the correct dataframes
-        for analysis_name in self.modelica.keys():
+        for analysis_name in self.modelica:
             if self.modelica[analysis_name].min_60_with_buildings is None:
-                raise Exception(
-                    f"Data do not exist in {analysis_name} for min_60_with_buildings."
-                )
+                raise Exception(f"Data do not exist in {analysis_name} for min_60_with_buildings.")
 
         # confirm that URBANopt has the results too
         if self.urbanopt.data is None:
@@ -689,13 +591,9 @@ class URBANoptAnalysis:
         self.urbanopt.data_loads_annual = self.urbanopt.data_loads.resample("Y").sum()
 
         # roll up the Modelica results (each analysis)
-        for analysis_name in self.modelica.keys():
-            self.modelica[analysis_name].monthly = (
-                self.modelica[analysis_name].min_60_with_buildings.resample("M").sum()
-            )
-            self.modelica[analysis_name].annual = (
-                self.modelica[analysis_name].min_60_with_buildings.resample("Y").sum()
-            )
+        for analysis_name in self.modelica:
+            self.modelica[analysis_name].monthly = self.modelica[analysis_name].min_60_with_buildings.resample("M").sum()
+            self.modelica[analysis_name].annual = self.modelica[analysis_name].min_60_with_buildings.resample("Y").sum()
 
     def create_building_level_results(self) -> None:
         """Save off building level totals for mapping for each scenario. The results are
@@ -715,9 +613,7 @@ class URBANoptAnalysis:
         # Building Peak Demand Time, hr, 12, 13, 14, 13.5
         """
         if self.urbanopt.data_annual is None:
-            raise Exception(
-                "There are no annual results calculated, did you run create_rollups()"
-            )
+            raise Exception("There are no annual results calculated, did you run create_rollups()")
 
         # iterate through each building and create the building level results
         data = {
@@ -751,44 +647,28 @@ class URBANoptAnalysis:
             },
         }
         for building_id in self.geojson.get_building_ids():
-            data["total_natural_gas"][building_id] = self.urbanopt.data_annual[
-                f"NaturalGas:Facility Building {building_id}"
-            ][0]
-            data["total_electricity"][building_id] = self.urbanopt.data_annual[
-                f"Electricity:Facility Building {building_id}"
-            ][0]
-            data["total_energy"][building_id] = (
-                data["total_natural_gas"][building_id]
-                + data["total_electricity"][building_id]
-            )
+            data["total_natural_gas"][building_id] = self.urbanopt.data_annual[f"NaturalGas:Facility Building {building_id}"][0]
+            data["total_electricity"][building_id] = self.urbanopt.data_annual[f"Electricity:Facility Building {building_id}"][0]
+            data["total_energy"][building_id] = data["total_natural_gas"][building_id] + data["total_electricity"][building_id]
             # read the square footage out of the default_feature_report.json
             data["gross_floor_area"][building_id] = (
-                self.urbanopt.building_characteristics[building_id]["program"][
-                    "floor_area_sqft"
-                ]
-                / 10.76
+                self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"] / 10.76
             )
-            data["gross_floor_area_ft2"][building_id] = (
-                self.urbanopt.building_characteristics[
-                    building_id
-                ]["program"]["floor_area_sqft"]
-            )
+            data["gross_floor_area_ft2"][building_id] = self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"]
 
             # calculate the EUI
-            data["total_site_eui"][building_id] = (
-                data["total_energy"][building_id] * 0.001
-            ) / data["gross_floor_area"][building_id]
-            data["total_site_eui_ft2"][building_id] = (
-                data["total_energy"][building_id] * 0.00341214
-            ) / data["gross_floor_area_ft2"][building_id]
+            data["total_site_eui"][building_id] = (data["total_energy"][building_id] * 0.001) / data["gross_floor_area"][building_id]
+            data["total_site_eui_ft2"][building_id] = (data["total_energy"][building_id] * 0.00341214) / data["gross_floor_area_ft2"][
+                building_id
+            ]
 
         # combine all the data together for the final dataframe. The list comprehension here
         # will create the table that is shown in the docstring above
-        df = pd.DataFrame([data[key] for key in data.keys()])
+        return_df = pd.DataFrame([data[key] for key in data])
         # set the index to be the metric and the unit
-        df.set_index(["Metric", "Unit"], inplace=True)
+        return_df.set_index(["Metric", "Unit"])
 
-        return df
+        return return_df
 
     def __getitem__(self, key: str) -> ModelicaResults:
         # Accessor to the self.modelica dictionary that takes the key value as in the input
@@ -833,9 +713,7 @@ class URBANoptAnalysis:
             "weather_filename",
             "USA_VA_Arlington-Ronald.Reagan.Washington.Natl.AP.724050_TMY3.epw",
         )
-        site_origin = kwargs.get(
-            "site_origin", [-77.03896375997412, 38.901950685284746]
-        )
+        site_origin = kwargs.get("site_origin", [-77.03896375997412, 38.901950685284746])
 
         # Add in the Project information
         project_info = {
@@ -874,9 +752,7 @@ class URBANoptAnalysis:
             # order the keys
             # Skip the
             new_dict = {
-                "type": geojson[
-                    "type"
-                ],  # ignore for now since FeatureCollection doesn't validate in URBANopt
+                "type": geojson["type"],  # ignore for now since FeatureCollection doesn't validate in URBANopt
                 "name": geojson["name"],
                 "project": geojson["project"],
                 "features": [],
@@ -936,16 +812,12 @@ class URBANoptAnalysis:
                 )
 
                 # map to the terms that UO expects
-                new_feature["properties"]["name"] = new_feature["properties"][
-                    "Property Name"
-                ]
+                new_feature["properties"]["name"] = new_feature["properties"]["Property Name"]
                 new_feature["properties"]["id"] = f"{feature_count}"
 
                 # process the floor area
                 if gfa_location:
-                    new_feature["properties"]["floor_area"] = new_feature["properties"][
-                        "Gross Floor Area"
-                    ]
+                    new_feature["properties"]["floor_area"] = new_feature["properties"]["Gross Floor Area"]
                 else:
                     raise Exception("No GFA found in the data, which is required!")
 
@@ -953,22 +825,13 @@ class URBANoptAnalysis:
                 if footprint_location and stories_location:
                     # print("Found footprint area and number of stories, using those values.")
                     # We know everything about the building areas, so just store the data in the right location
-                    new_feature["properties"]["footprint_area"] = new_feature[
-                        "properties"
-                    ][footprint_location]
-                    new_feature["properties"]["number_of_stories"] = new_feature[
-                        "properties"
-                    ][stories_location]
+                    new_feature["properties"]["footprint_area"] = new_feature["properties"][footprint_location]
+                    new_feature["properties"]["number_of_stories"] = new_feature["properties"][stories_location]
                 elif footprint_location and not stories_location:
-                    new_feature["properties"]["footprint_area"] = new_feature[
-                        "properties"
-                    ][footprint_location]
+                    new_feature["properties"]["footprint_area"] = new_feature["properties"][footprint_location]
 
                     # Calculate the stories by dividing out the GFA by the footprint area
-                    number_of_stories = math.ceil(
-                        new_feature["properties"]["floor_area"]
-                        / new_feature["properties"]["Footprint Area"]
-                    )
+                    number_of_stories = math.ceil(new_feature["properties"]["floor_area"] / new_feature["properties"]["Footprint Area"])
                     if number_of_stories > 18:
                         print(
                             f"WARNING: number of stories ({number_of_stories}) is greater than 18, which is not likely in Washington DC!, setting to 18 for this analysis."
@@ -981,18 +844,12 @@ class URBANoptAnalysis:
                     # Calculate the footprint area from the GFA and number of stories
                     new_feature["properties"]["floor_area"] / number_of_stories
                 else:
-                    print(
-                        "Unknown footprint area and number of stories, inferring from GFA and 18 stories."
-                    )
+                    print("Unknown footprint area and number of stories, inferring from GFA and 18 stories.")
                     new_feature["properties"]["number_of_stories"] = 18
-                    new_feature["properties"]["footprint_area"] = (
-                        new_feature["properties"]["floor_area"] / number_of_stories
-                    )
+                    new_feature["properties"]["footprint_area"] = new_feature["properties"]["floor_area"] / number_of_stories
 
                 # Data for residential properties
-                new_feature["properties"]["number_of_stories_above_ground"] = (
-                    new_feature["properties"]["number_of_stories"]
-                )
+                new_feature["properties"]["number_of_stories_above_ground"] = new_feature["properties"]["number_of_stories"]
                 new_feature["properties"]["foundation_type"] = "slab"
                 new_feature["properties"]["attic_type"] = "flat roof"
 
@@ -1019,30 +876,18 @@ class URBANoptAnalysis:
                     }
                     lookup_value = new_feature["properties"]["Property Type"]
                     if lookup_value in mapping:
-                        new_feature["properties"]["building_type"] = mapping[
-                            lookup_value
-                        ]
+                        new_feature["properties"]["building_type"] = mapping[lookup_value]
                     else:
-                        raise Exception(
-                            f"No property type mapping for building type: {lookup_value}"
-                        )
+                        raise Exception(f"No property type mapping for building type: {lookup_value}")
 
                 if new_feature["properties"].get("Year Built"):
-                    new_feature["properties"]["year_built"] = new_feature["properties"][
-                        "Year Built"
-                    ]
+                    new_feature["properties"]["year_built"] = new_feature["properties"]["Year Built"]
 
                 if new_feature.get("geometry"):
                     if new_feature.get("geometry").get("type") == "GeometryCollection":
                         # grab the one that is a polygon and save to the new_dict
-                        index_geom = [
-                            i
-                            for i, x in enumerate(new_feature["geometry"]["geometries"])
-                            if x["type"] == "Polygon"
-                        ][0]
-                        new_feature["geometry"] = new_feature["geometry"]["geometries"][
-                            index_geom
-                        ]
+                        index_geom = next(i for i, x in enumerate(new_feature["geometry"]["geometries"]) if x["type"] == "Polygon")
+                        new_feature["geometry"] = new_feature["geometry"]["geometries"][index_geom]
                     elif new_feature.get("geometry").get("type") == "Point":
                         # remove the point
                         del new_feature["geometry"]
@@ -1084,87 +929,51 @@ class URBANoptAnalysis:
                                 if reading["converted_value"] > peaks["electricity"]:
                                     # kwh
                                     peaks["electricity"] = reading["converted_value"]
-                                    peaks["electricity_month"] = (
-                                        datetime.datetime.fromisoformat(
-                                            reading["start_time"]
-                                        ).month
-                                    )
+                                    peaks["electricity_month"] = datetime.datetime.fromisoformat(reading["start_time"]).month
                         elif meter["type"] == "Natural Gas":
                             meter_info["number_of_gas_meters"] += 1
                             for reading in meter["readings"]:
                                 if reading["converted_value"] > peaks["natural_gas"]:
                                     peaks["natural_gas"] = reading["converted_value"]
-                                    peaks["natural_gas_month"] = (
-                                        datetime.datetime.fromisoformat(
-                                            reading["start_time"]
-                                        ).month
-                                    )
+                                    peaks["natural_gas_month"] = datetime.datetime.fromisoformat(reading["start_time"]).month
                         else:
                             meter_info["number_of_other_meters"] += 1
-                            print(
-                                f"WARNING: Not calculating peak for meter type: {meter['type']}"
-                            )
+                            print(f"WARNING: Not calculating peak for meter type: {meter['type']}")
 
                     new_feature["properties"]["electricity_peak"] = peaks["electricity"]
-                    new_feature["properties"]["electricity_peak_month"] = peaks[
-                        "electricity_month"
-                    ]
+                    new_feature["properties"]["electricity_peak_month"] = peaks["electricity_month"]
                     new_feature["properties"]["natural_gas_peak"] = peaks["natural_gas"]
-                    new_feature["properties"]["natural_gas_peak_month"] = peaks[
-                        "natural_gas_month"
-                    ]
+                    new_feature["properties"]["natural_gas_peak_month"] = peaks["natural_gas_month"]
                     no_meters = False
                 else:
-                    print(
-                        f"WARNING: No meters found for building {index}, assuming NG heating."
-                    )
+                    print(f"WARNING: No meters found for building {index}, assuming NG heating.")
 
                 if no_meters:
                     # determine the system type by floor_area only, assume Gas is
                     # available
                     if new_feature["properties"].get("floor_area", 0) > 125000:
-                        new_feature["properties"]["system_type"] = (
-                            "VAV chiller with gas boiler reheat"
-                        )
+                        new_feature["properties"]["system_type"] = "VAV chiller with gas boiler reheat"
                     elif new_feature["properties"].get("floor_area", 0) > 75000:
-                        new_feature["properties"]["system_type"] = (
-                            "PVAV with gas heat with electric reheat"
-                        )
+                        new_feature["properties"]["system_type"] = "PVAV with gas heat with electric reheat"
                     else:
-                        new_feature["properties"]["system_type"] = (
-                            "PSZ-AC with gas coil"
-                        )
+                        new_feature["properties"]["system_type"] = "PSZ-AC with gas coil"
+                elif new_feature["properties"].get("floor_area", 0) > 125000:
+                    if meter_info["number_of_gas_meters"] > 0:
+                        new_feature["properties"]["system_type"] = "VAV chiller with gas boiler reheat"
+                    else:
+                        # no gas
+                        new_feature["properties"]["system_type"] = "VAV chiller with PFP boxes"
+                elif new_feature["properties"].get("floor_area", 0) > 75000:
+                    if meter_info["number_of_gas_meters"] > 0:
+                        new_feature["properties"]["system_type"] = "PVAV with gas heat with electric reheat"
+                    else:
+                        # no gas
+                        new_feature["properties"]["system_type"] = "PVAV with PFP boxes"
+                elif meter_info["number_of_gas_meters"] > 0:
+                    new_feature["properties"]["system_type"] = "PSZ-AC with gas coil"
                 else:
-                    # based on the meters, select a system type
-                    if new_feature["properties"].get("floor_area", 0) > 125000:
-                        if meter_info["number_of_gas_meters"] > 0:
-                            new_feature["properties"]["system_type"] = (
-                                "VAV chiller with gas boiler reheat"
-                            )
-                        else:
-                            # no gas
-                            new_feature["properties"]["system_type"] = (
-                                "VAV chiller with PFP boxes"
-                            )
-                    elif new_feature["properties"].get("floor_area", 0) > 75000:
-                        if meter_info["number_of_gas_meters"] > 0:
-                            new_feature["properties"]["system_type"] = (
-                                "PVAV with gas heat with electric reheat"
-                            )
-                        else:
-                            # no gas
-                            new_feature["properties"]["system_type"] = (
-                                "PVAV with PFP boxes"
-                            )
-                    else:
-                        # small building
-                        if meter_info["number_of_gas_meters"] > 0:
-                            new_feature["properties"]["system_type"] = (
-                                "PSZ-AC with gas coil"
-                            )
-                        else:
-                            # no gas
-                            new_feature["properties"]["system_type"] = "PSZ-HP"
+                    # no gas
+                    new_feature["properties"]["system_type"] = "PSZ-HP"
 
                 # # set the construction template based on the year built
                 if new_feature["properties"].get("year_built"):
@@ -1225,7 +1034,7 @@ class URBANoptAnalysis:
             # only save off the useful columns for the summary table
             year_end = f"{self.year_of_data}-12-31"
             summary_data_columns = ["Metric", "Units"]
-            for analysis_name in ["Non-Connected"] + list(self.modelica.keys()):
+            for analysis_name in ["Non-Connected"], *list(self.modelica.keys()):
                 summary_data_columns.append(analysis_name)
                 if analysis_name == "Non-Connected":
                     self.urbanopt.grid_metrics_daily
@@ -1235,87 +1044,37 @@ class URBANoptAnalysis:
                     df_annual = self.modelica[analysis_name].grid_metrics_annual
 
                 # print(df_annual)
-                summary_data["Electricity Consumption"].append(
-                    df_annual[year_end]["Total Electricity"]
-                )
-                summary_data["Electricity Peak Demand"].append(
-                    df_annual[year_end]["Total Electricity Peak 1"]
-                )
-                summary_data["Electricity Peak Demand Date Time"].append(
-                    df_annual[year_end]["Total Electricity Peak Date Time 1"]
-                )
+                summary_data["Electricity Consumption"].append(df_annual[year_end]["Total Electricity"])
+                summary_data["Electricity Peak Demand"].append(df_annual[year_end]["Total Electricity Peak 1"])
+                summary_data["Electricity Peak Demand Date Time"].append(df_annual[year_end]["Total Electricity Peak Date Time 1"])
 
-                summary_data["Natural Gas Consumption"].append(
-                    df_annual[year_end]["Total Natural Gas"]
-                )
-                summary_data["Natural Gas Peak Demand"].append(
-                    df_annual[year_end]["Total Natural Gas Peak 1"]
-                )
-                summary_data["Natural Gas Peak Demand Date Time"].append(
-                    df_annual[year_end]["Total Natural Gas Peak Date Time 1"]
-                )
+                summary_data["Natural Gas Consumption"].append(df_annual[year_end]["Total Natural Gas"])
+                summary_data["Natural Gas Peak Demand"].append(df_annual[year_end]["Total Natural Gas Peak 1"])
+                summary_data["Natural Gas Peak Demand Date Time"].append(df_annual[year_end]["Total Natural Gas Peak Date Time 1"])
 
-                summary_data["Thermal Cooling"].append(
-                    df_annual[year_end]["Total Thermal Cooling Energy"]
-                )
-                summary_data["Thermal Heating"].append(
-                    df_annual[year_end]["Total Thermal Heating Energy"]
-                )
+                summary_data["Thermal Cooling"].append(df_annual[year_end]["Total Thermal Cooling Energy"])
+                summary_data["Thermal Heating"].append(df_annual[year_end]["Total Thermal Heating Energy"])
 
-                summary_data["Peak to Valley Ratio (Max)"].append(
-                    df_annual[year_end]["Total Electricity PVR max"]
-                )
-                summary_data["Peak to Valley Ratio (Min)"].append(
-                    df_annual[year_end]["Total Electricity PVR min"]
-                )
-                summary_data["Peak to Valley Ratio (Mean)"].append(
-                    df_annual[year_end]["Total Electricity PVR mean"]
-                )
-                summary_data["Load Factor (Max)"].append(
-                    df_annual[year_end]["Total Electricity Load Factor max"]
-                )
-                summary_data["Load Factor (Min)"].append(
-                    df_annual[year_end]["Total Electricity Load Factor min"]
-                )
-                summary_data["Load Factor (Mean)"].append(
-                    df_annual[year_end]["Total Electricity Load Factor mean"]
-                )
-                summary_data["System Ramping (Max)"].append(
-                    df_annual[year_end]["Total Electricity System Ramping max"]
-                )
-                summary_data["System Ramping (Sum)"].append(
-                    df_annual[year_end]["Total Electricity System Ramping sum"]
-                )
-                summary_data["System Ramping Cooling (Max)"].append(
-                    df_annual[year_end][
-                        "Total Thermal Cooling Energy System Ramping max"
-                    ]
-                )
-                summary_data["System Ramping Cooling (Sum)"].append(
-                    df_annual[year_end][
-                        "Total Thermal Cooling Energy System Ramping sum"
-                    ]
-                )
-                summary_data["System Ramping Heating (Max)"].append(
-                    df_annual[year_end][
-                        "Total Thermal Heating Energy System Ramping max"
-                    ]
-                )
-                summary_data["System Ramping Heating (Sum)"].append(
-                    df_annual[year_end][
-                        "Total Thermal Heating Energy System Ramping sum"
-                    ]
-                )
+                summary_data["Peak to Valley Ratio (Max)"].append(df_annual[year_end]["Total Electricity PVR max"])
+                summary_data["Peak to Valley Ratio (Min)"].append(df_annual[year_end]["Total Electricity PVR min"])
+                summary_data["Peak to Valley Ratio (Mean)"].append(df_annual[year_end]["Total Electricity PVR mean"])
+                summary_data["Load Factor (Max)"].append(df_annual[year_end]["Total Electricity Load Factor max"])
+                summary_data["Load Factor (Min)"].append(df_annual[year_end]["Total Electricity Load Factor min"])
+                summary_data["Load Factor (Mean)"].append(df_annual[year_end]["Total Electricity Load Factor mean"])
+                summary_data["System Ramping (Max)"].append(df_annual[year_end]["Total Electricity System Ramping max"])
+                summary_data["System Ramping (Sum)"].append(df_annual[year_end]["Total Electricity System Ramping sum"])
+                summary_data["System Ramping Cooling (Max)"].append(df_annual[year_end]["Total Thermal Cooling Energy System Ramping max"])
+                summary_data["System Ramping Cooling (Sum)"].append(df_annual[year_end]["Total Thermal Cooling Energy System Ramping sum"])
+                summary_data["System Ramping Heating (Max)"].append(df_annual[year_end]["Total Thermal Heating Energy System Ramping max"])
+                summary_data["System Ramping Heating (Sum)"].append(df_annual[year_end]["Total Thermal Heating Energy System Ramping sum"])
 
             # need to convert the summary_data into format: [['tom', 10, 15], ['nicholas', 15, 17], ['julian', 14, 30]]
             new_summary_data = []
             for key, value in summary_data.items():
-                new_summary_data.append([key] + value)
+                new_summary_data.append([key, *value])
 
-            self.grid_summary = pd.DataFrame(
-                data=new_summary_data, columns=summary_data_columns
-            )
-            self.grid_summary.set_index(["Metric", "Units"], inplace=True)
+            self.grid_summary = pd.DataFrame(data=new_summary_data, columns=summary_data_columns)
+            self.grid_summary = self.grid_summary.set_index(["Metric", "Units"])
         finally:
             pass
 
@@ -1323,7 +1082,7 @@ class URBANoptAnalysis:
         try:
             # grab the end_use_summary data from each analysis, starting with urbanopt then each modelica analysis
             self.end_use_summary = self.urbanopt.end_use_summary
-            for analysis_name in self.modelica.keys():
+            for analysis_name in self.modelica:
                 self.end_use_summary = pd.concat(
                     [
                         self.end_use_summary,
@@ -1333,9 +1092,7 @@ class URBANoptAnalysis:
                 )
 
             # check if there are duplicate units columns, and if so, only keep the first
-            self.end_use_summary = self.end_use_summary.loc[
-                :, ~self.end_use_summary.columns.duplicated()
-            ]
+            self.end_use_summary = self.end_use_summary.loc[:, ~self.end_use_summary.columns.duplicated()]
         finally:
             pass
 
@@ -1345,7 +1102,7 @@ class URBANoptAnalysis:
             # set the column name to the analysis name
             self.grid_metrics_annual.columns = ["Non-Connected"]
 
-            for analysis_name in self.modelica.keys():
+            for analysis_name in self.modelica:
                 self.grid_metrics_annual = pd.concat(
                     [
                         self.grid_metrics_annual,
@@ -1354,19 +1111,14 @@ class URBANoptAnalysis:
                     axis=1,
                 )
                 # rename the column to the analysis name
-                self.grid_metrics_annual.rename(
-                    columns={self.grid_metrics_annual.columns[-1]: analysis_name},
-                    inplace=True,
-                )
+                self.grid_metrics_annual = self.grid_metrics_annual.rename(columns={self.grid_metrics_annual.columns[-1]: analysis_name})
         finally:
             pass
 
         return True
 
     @classmethod
-    def get_list_of_valid_result_folders(
-        cls, root_analysis_path: Path
-    ) -> Tuple[dict, dict]:
+    def get_list_of_valid_result_folders(cls, root_analysis_path: Path) -> Tuple[dict, dict]:
         """Parse through the root_analysis_path and return a dict of valid
         result folders that can be loaded and processed. Also return dict of
         folders that have simulation errors or empty results
@@ -1388,45 +1140,31 @@ class URBANoptAnalysis:
             dslog_file = sim_folder.parent / "dslog.txt"
             error = False
             if dslog_file.exists():
-                with open(dslog_file, "r") as f:
+                with open(dslog_file) as f:
                     lines = f.readlines()
                     for line in lines:
                         if "Error" in line:
                             error = True
                             bad_or_empty_results[sim_folder.parent] = {}
-                            bad_or_empty_results[sim_folder.parent][
-                                "path_to_analysis"
-                            ] = sim_folder.parent
+                            bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
                             # from folder
-                            bad_or_empty_results[sim_folder.parent]["name"] = (
-                                sim_folder.parent.name
-                            )
-                            bad_or_empty_results[sim_folder.parent]["error"] = (
-                                "Error in dslog.txt"
-                            )
+                            bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
+                            bad_or_empty_results[sim_folder.parent]["error"] = "Error in dslog.txt"
                             break
                         if 'Integration terminated before reaching "StopTime"' in line:
                             error = True
                             bad_or_empty_results[sim_folder.parent] = {}
-                            bad_or_empty_results[sim_folder.parent][
-                                "path_to_analysis"
-                            ] = sim_folder.parent
+                            bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
                             # from folder
-                            bad_or_empty_results[sim_folder.parent]["name"] = (
-                                sim_folder.parent.name
-                            )
-                            bad_or_empty_results[sim_folder.parent]["error"] = (
-                                "Error did not reach the stop time"
-                            )
+                            bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
+                            bad_or_empty_results[sim_folder.parent]["error"] = "Error did not reach the stop time"
                             break
 
             else:
                 # hmm, no dslog.txt file, then this is an empty folder
                 error = True
                 bad_or_empty_results[sim_folder.parent] = {}
-                bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = (
-                    sim_folder.parent
-                )
+                bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
                 # from folder
                 bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
                 bad_or_empty_results[sim_folder.parent]["error"] = "No dslog.txt"
@@ -1438,14 +1176,10 @@ class URBANoptAnalysis:
             mat_file = sim_folder.parent / "district.mat"
             if not mat_file.exists():
                 bad_or_empty_results[sim_folder.parent] = {}
-                bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = (
-                    sim_folder.parent
-                )
+                bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
                 # from folder
                 bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
-                bad_or_empty_results[sim_folder.parent]["error"] = (
-                    "Does not contain a district.mat file"
-                )
+                bad_or_empty_results[sim_folder.parent]["error"] = "Does not contain a district.mat file"
                 continue
 
             # If we are here then there is likely a successful simulation. Now store it in a
@@ -1454,12 +1188,10 @@ class URBANoptAnalysis:
             # Get the simulation name from the analysis_name.txt file
             analysis_name_file = sim_folder.parent / "analysis_name.txt"
             if analysis_name_file.exists():
-                with open(analysis_name_file, "r") as f:
+                with open(analysis_name_file) as f:
                     analysis_name = f.read().strip()
             else:
-                print(
-                    f"Error: could not load analysis_name.txt file for {mat_file.parent}"
-                )
+                print(f"Error: could not load analysis_name.txt file for {mat_file.parent}")
 
             results[analysis_name] = {
                 "path_to_analysis": sim_folder.parent,

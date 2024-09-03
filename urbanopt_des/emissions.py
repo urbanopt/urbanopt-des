@@ -39,21 +39,14 @@ class HourlyEmissionsData:
             path = path / "with_distribution_losses"
         else:
             path = path / "without_distribution_losses"
-        path = (
-            path
-            / "future"
-            / "hourly"
-            / f"future_hourly_{emissions_type}_co2e_{future_year}.csv"
-        )
+        path = path / "future" / "hourly" / f"future_hourly_{emissions_type}_co2e_{future_year}.csv"
 
         if not path.exists():
             raise Exception(f"Future emissions data file does not exist: {path}")
 
         # verify that the eGRID subregion is valid
         if egrid_subregion not in self.region_names():
-            raise Exception(
-                f"Invalid eGRID subregion: {egrid_subregion}, expected one of {self.region_names()}"
-            )
+            raise Exception(f"Invalid eGRID subregion: {egrid_subregion}, expected one of {self.region_names()}")
 
         if analysis_year is None:
             analysis_year = future_year
@@ -61,21 +54,15 @@ class HourlyEmissionsData:
         self.data = pd.read_csv(path, header=0)
 
         # create two new columns, one for the datetime based on the future_year and one based on the analysis_year.
-        self.data["datetime"] = datetime.datetime(future_year, 1, 1) + pd.to_timedelta(
-            self.data["hour"], unit="h"
-        )
+        self.data["datetime"] = datetime.datetime(future_year, 1, 1) + pd.to_timedelta(self.data["hour"], unit="h")
         # If the year is a leap year, then shift the datetime by one day, effectively eliminating the leap day.
         # This isn't working yet, moving on...
         # if self.data['datetime'][0].is_leap_year:
         # after 2/28/future_year, shift all hours back by 24 hours
         # self.data.loc[self.data['datetime'] > datetime.datetime(future_year, 3, 1), 'datetime'] = self.data.loc[self.data['datetime'] > datetime.datetime(future_year, 3, 1), 'datetime'] - pd.to_timedelta(1, unit='d')
 
-        self.data["analysis_datetime_end"] = datetime.datetime(
-            analysis_year, 1, 1
-        ) + pd.to_timedelta(self.data["hour"], unit="h")
-        self.data["analysis_datetime_start"] = self.data[
-            "analysis_datetime_end"
-        ] - pd.to_timedelta(1, unit="h")
+        self.data["analysis_datetime_end"] = datetime.datetime(analysis_year, 1, 1) + pd.to_timedelta(self.data["hour"], unit="h")
+        self.data["analysis_datetime_start"] = self.data["analysis_datetime_end"] - pd.to_timedelta(1, unit="h")
 
         # move the datetime columns to the front
         cols = self.data.columns.tolist()
@@ -98,26 +85,20 @@ class HourlyEmissionsData:
         # remove the MBtu column, and then transpose
         # if the column exists, then drop it
         if "emission_kg_per_mbtu" in self.other_fuel_data.columns:
-            self.other_fuel_data = self.other_fuel_data.drop(
-                columns=["emission_kg_per_mbtu"]
-            )
+            self.other_fuel_data = self.other_fuel_data.drop(columns=["emission_kg_per_mbtu"])
 
         self.other_fuel_data = self.other_fuel_data.T
         # make the first row the column names
         self.other_fuel_data.columns = self.other_fuel_data.iloc[0]
         # drop the first row
         self.other_fuel_data = self.other_fuel_data.drop(self.other_fuel_data.index[0])
-        self.other_fuel_data.reset_index(inplace=True)
-        self.other_fuel_data.drop(columns=["index"], inplace=True)
+        self.other_fuel_data = self.other_fuel_data.reset_index()
+        self.other_fuel_data = self.other_fuel_data.drop(columns=["index"])
 
         # copy the self.data and remove all the columns except
         self.other_fuels = self.data.copy()
         # drop all columns except 'analysis_datetime_start', 'analysis_datetime_end', 'hour'
-        to_drop = [
-            col
-            for col in self.other_fuels.columns
-            if col not in ["analysis_datetime_start", "analysis_datetime_end", "hour"]
-        ]
+        to_drop = [col for col in self.other_fuels.columns if col not in ["analysis_datetime_start", "analysis_datetime_end", "hour"]]
         self.other_fuels = self.other_fuels.drop(columns=to_drop)
 
         # merge in the other_fuels_data with the self.other_fuels and fill down
