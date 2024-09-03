@@ -65,7 +65,9 @@ class URBANoptGeoJSON:
 
         return result
 
-    def get_buildings(self, ids: list[str] = None, keep_properties: list[str] = None) -> list:
+    def get_buildings(
+        self, ids: list[str] = None, keep_properties: list[str] = None
+    ) -> list:
         """Return a list of all the properties of type Building"""
         result = []
         for feature in self.data["features"]:
@@ -74,10 +76,9 @@ class URBANoptGeoJSON:
                 if ids is None or feature["properties"]["id"] in ids:
                     # only keep the fields that in the keep_properties list
                     result.append(feature)
-                        
 
         return result
-    
+
     def get_building_properties_by_id(self, building_id: str) -> dict:
         """Get the list of building ids in the GeoJSON file. The Building id is what
         is used in URBANopt as the identifier. It is common that this is used to name
@@ -131,8 +132,10 @@ class URBANoptGeoJSON:
                     result = feature["properties"]["monthly_electricity"]
 
         return result
-    
-    def set_property_on_building_id(self, building_id: str, property_name: str, property_value: str, overwrite=True) -> None:
+
+    def set_property_on_building_id(
+        self, building_id: str, property_name: str, property_value: str, overwrite=True
+    ) -> None:
         """Set a property on a building_id"""
         for feature in self.data["features"]:
             if feature["properties"]["type"] == "Building":
@@ -157,10 +160,28 @@ class URBANoptGeoJSON:
                 # reverse the order of the coordinates
                 return feature["geometry"]["coordinates"][::-1]
 
+    def create_aggregated_representation(self, building_names: list[str]) -> None:
+        """Go through the GeoJSON file and if it is of type Building, then aggregate the characteristics.
+        
+        #TODO: This is a work in progress and can more easily be accomplished with GeoPandas."""
+        # fields that are summed in the aggregations
+        sum_fields = ['floor_area', 'footprint_area']
+        avg_fields = ['year_built', 'number_of_stories', 'window_wall_ratio',]
+
+        # create a dictionary to hold the aggregated values
+        aggregated_values = {}
+        for field in sum_fields:
+            aggregated_values[field] = 0
+        for field in avg_fields:
+            aggregated_values[field] = 0
+        
+        for building_id in building_names:
+            pass
+        
     def save(self) -> None:
         """Save the GeoJSON file"""
         self.save_as(self._filename)
-        
+
     def save_as(self, filename: Path) -> None:
         """Save the GeoJSON file"""
         with open(filename, "w") as f:

@@ -349,7 +349,9 @@ class URBANoptAnalysis:
                 )
 
         if self.actual_data is not None:
-            self.actual_data["start_time"] = pd.to_datetime(self.actual_data["start_time"])
+            self.actual_data["start_time"] = pd.to_datetime(
+                self.actual_data["start_time"]
+            )
             self.actual_data["start_time"] = self.actual_data["start_time"].apply(
                 lambda x: x.replace(tzinfo=None)
             )
@@ -685,7 +687,7 @@ class URBANoptAnalysis:
         # loads
         self.urbanopt.data_loads_monthly = self.urbanopt.data_loads.resample("M").sum()
         self.urbanopt.data_loads_annual = self.urbanopt.data_loads.resample("Y").sum()
-        
+
         # roll up the Modelica results (each analysis)
         for analysis_name in self.modelica.keys():
             self.modelica[analysis_name].monthly = (
@@ -696,11 +698,11 @@ class URBANoptAnalysis:
             )
 
     def create_building_level_results(self) -> None:
-        """Save off building level totals for mapping for each scenario. The results are 
+        """Save off building level totals for mapping for each scenario. The results are
         not stored anywhere and need to be persisted or called again if needed.
 
         The data will look similar to this and include DES, as that is a "building/property".
-        
+
         # Metric,Units,Building1,Building2,BuildingN,DES
         # Total Energy, MWh, 100, 200, 300, 600
         # Total Electricity, MWh, x, y, z
@@ -713,38 +715,80 @@ class URBANoptAnalysis:
         # Building Peak Demand Time, hr, 12, 13, 14, 13.5
         """
         if self.urbanopt.data_annual is None:
-            raise Exception("There are no annual results calculated, did you run create_rollups()")
+            raise Exception(
+                "There are no annual results calculated, did you run create_rollups()"
+            )
 
         # iterate through each building and create the building level results
         data = {
-            'total_natural_gas': { 'Metric': 'Total Natural Gas', 'Unit': 'Wh', },
-            'total_electricity': { 'Metric': 'Total Electricity', 'Unit': 'Wh', },
-            'total_energy': { 'Metric': 'Total Energy', 'Unit': 'Wh', },
-            'gross_floor_area': { 'Metric': 'Gross Floor Area', 'Unit': 'm2', },
-            'gross_floor_area_ft2': { 'Metric': 'Gross Floor Area', 'Unit': 'ft2', },
-            'total_site_eui': { 'Metric': 'Building EUI', 'Unit': 'kWh/m2', },
-            'total_site_eui_ft2': { 'Metric': 'Building EUI', 'Unit': 'kBtu/ft2', },
+            "total_natural_gas": {
+                "Metric": "Total Natural Gas",
+                "Unit": "Wh",
+            },
+            "total_electricity": {
+                "Metric": "Total Electricity",
+                "Unit": "Wh",
+            },
+            "total_energy": {
+                "Metric": "Total Energy",
+                "Unit": "Wh",
+            },
+            "gross_floor_area": {
+                "Metric": "Gross Floor Area",
+                "Unit": "m2",
+            },
+            "gross_floor_area_ft2": {
+                "Metric": "Gross Floor Area",
+                "Unit": "ft2",
+            },
+            "total_site_eui": {
+                "Metric": "Building EUI",
+                "Unit": "kWh/m2",
+            },
+            "total_site_eui_ft2": {
+                "Metric": "Building EUI",
+                "Unit": "kBtu/ft2",
+            },
         }
         for building_id in self.geojson.get_building_ids():
-            data['total_natural_gas'][building_id] = self.urbanopt.data_annual[f'NaturalGas:Facility Building {building_id}'][0]
-            data['total_electricity'][building_id] = self.urbanopt.data_annual[f'Electricity:Facility Building {building_id}'][0]
-            data['total_energy'][building_id] = data['total_natural_gas'][building_id] + data['total_electricity'][building_id]
+            data["total_natural_gas"][building_id] = self.urbanopt.data_annual[
+                f"NaturalGas:Facility Building {building_id}"
+            ][0]
+            data["total_electricity"][building_id] = self.urbanopt.data_annual[
+                f"Electricity:Facility Building {building_id}"
+            ][0]
+            data["total_energy"][building_id] = (
+                data["total_natural_gas"][building_id]
+                + data["total_electricity"][building_id]
+            )
             # read the square footage out of the default_feature_report.json
-            data['gross_floor_area'][building_id] = self.urbanopt.building_characteristics[building_id]['program']['floor_area_sqft'] / 10.76
-            data['gross_floor_area_ft2'][building_id] = self.urbanopt.building_characteristics[building_id]['program']['floor_area_sqft']
-            
+            data["gross_floor_area"][building_id] = (
+                self.urbanopt.building_characteristics[building_id]["program"][
+                    "floor_area_sqft"
+                ]
+                / 10.76
+            )
+            data["gross_floor_area_ft2"][building_id] = (
+                self.urbanopt.building_characteristics[
+                    building_id
+                ]["program"]["floor_area_sqft"]
+            )
+
             # calculate the EUI
-            data['total_site_eui'][building_id] = (data['total_energy'][building_id] * 0.001) / data['gross_floor_area'][building_id]
-            data['total_site_eui_ft2'][building_id] = (data['total_energy'][building_id] * 0.00341214) / data['gross_floor_area_ft2'][building_id]
-    
+            data["total_site_eui"][building_id] = (
+                data["total_energy"][building_id] * 0.001
+            ) / data["gross_floor_area"][building_id]
+            data["total_site_eui_ft2"][building_id] = (
+                data["total_energy"][building_id] * 0.00341214
+            ) / data["gross_floor_area_ft2"][building_id]
+
         # combine all the data together for the final dataframe. The list comprehension here
         # will create the table that is shown in the docstring above
         df = pd.DataFrame([data[key] for key in data.keys()])
         # set the index to be the metric and the unit
-        df.set_index(['Metric', 'Unit'], inplace=True)
-        
-        return df
+        df.set_index(["Metric", "Unit"], inplace=True)
 
+        return df
 
     def __getitem__(self, key: str) -> ModelicaResults:
         # Accessor to the self.modelica dictionary that takes the key value as in the input
