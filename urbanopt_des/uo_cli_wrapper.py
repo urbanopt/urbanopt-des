@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 
-class UOCliWrapper(object):
+class UOCliWrapper:
     """Wrapper for running the UO CLI from within Python.
 
     If you are testing this locally, then you might need to configure your URBANopt CLI.
@@ -43,19 +43,17 @@ class UOCliWrapper(object):
                 app_root = f"/Applications/URBANoptCLI_{self.uo_version}"
                 new_env["GEM_HOME"] = f"{app_root}/gems/ruby/2.7.0"
                 new_env["GEM_PATH"] = f"{app_root}/gems/ruby/2.7.0"
-                new_env["PATH"] = (
-                    f"{app_root}/ruby/bin:{app_root}/gems/ruby/2.7.0/bin:{os.environ['PATH']}"
-                )
+                new_env["PATH"] = f"{app_root}/ruby/bin:{app_root}/gems/ruby/2.7.0/bin:{os.environ['PATH']}"
                 new_env["RUBYLIB"] = f"{app_root}/OpenStudio/Ruby"
                 new_env["RUBY_DLL_PATH"] = f"{app_root}/OpenStudio/Ruby"
                 # For REopt
                 new_env["GEM_DEVELOPER_KEY"] = os.environ["GEM_DEVELOPER_KEY"]
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: S602
                     command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                    capture_output=True,
                     shell=True,
                     env=new_env,
+                    check=False,
                 )
                 log.write(result.stdout.decode("utf-8"))
                 log.write(result.stderr.decode("utf-8"))
@@ -69,9 +67,7 @@ class UOCliWrapper(object):
             self._run_command(f"uo create -p {self.uo_project}")
         else:
             print(f"Project {self.uo_project} already exists, skipping creation")
-            print(
-                f"Remove the project folder if you want to recreate it, {self.working_dir / self.uo_project}"
-            )
+            print(f"Remove the project folder if you want to recreate it, {self.working_dir / self.uo_project}")
 
         if (self.working_dir / self.uo_project / "example_project.json").exists():
             os.remove(self.working_dir / self.uo_project / "example_project.json")
@@ -96,14 +92,10 @@ class UOCliWrapper(object):
 
     def create_reopt_scenario(self, feature_file, baseline_scenario):
         """Create a scenario file for REopt assumptions based on the baseline scenario"""
-        self._run_command(
-            f"uo create -f {self.uo_project}/{feature_file} -r {self.uo_project}/{baseline_scenario}"
-        )
+        self._run_command(f"uo create -f {self.uo_project}/{feature_file} -r {self.uo_project}/{baseline_scenario}")
 
     def run(self, feature_file, scenario_name):
-        self._run_command(
-            f"uo run -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}"
-        )
+        self._run_command(f"uo run -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
 
     def info(self):
         print(f"Template path: {self.template_dir}")
@@ -114,28 +106,18 @@ class UOCliWrapper(object):
 
     def process_scenario(self, feature_file, scenario_name):
         # -d is for the default settings and needs to be used (most of the time)
-        self._run_command(
-            f"uo process -d -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}"
-        )
+        self._run_command(f"uo process -d -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
 
-    def process_reopt_scenario(
-        self, feature_file, scenario_name, individual_features=False
-    ):
+    def process_reopt_scenario(self, feature_file, scenario_name, individual_features=False):
         # In UO, the -r flag is used for the aggregated load analysis, whereas
         # the -e flag if for (e)aach individual feature.
         if not individual_features:
-            self._run_command(
-                f"uo process -r -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}"
-            )
+            self._run_command(f"uo process -r -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
         else:
-            self._run_command(
-                f"uo process -e -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}"
-            )
+            self._run_command(f"uo process -e -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
 
     def visualize_scenario(self, feature_file, scenario_name):
-        self._run_command(
-            f"uo visualize -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}"
-        )
+        self._run_command(f"uo visualize -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
 
     def visualize_feature(self, feature_file):
         # -d is for the default settings
@@ -145,10 +127,7 @@ class UOCliWrapper(object):
         if (self.working_dir / self.uo_project / "run" / "scenarioData.js").exists():
             shutil.copy(
                 self.working_dir / self.uo_project / "run" / "scenarioData.js",
-                self.working_dir
-                / self.uo_project
-                / "visualization"
-                / "scenarioData.js",
+                self.working_dir / self.uo_project / "visualization" / "scenarioData.js",
             )
 
     def set_number_parallel(self, num):
@@ -160,33 +139,19 @@ class UOCliWrapper(object):
         with open(self.working_dir / self.uo_project / "runner.conf", "w") as f:
             json.dump(data, f, indent=2)
 
-    def replace_weather_file_in_mapper(
-        self, mapper_file, weather_file_name, climate_zone
-    ):
+    def replace_weather_file_in_mapper(self, mapper_file, weather_file_name, climate_zone):
         """Replace the weather file in the mapper file with the given weather file name"""
         mapper_filepath = self.working_dir / self.uo_project / "mappers" / mapper_file
         if not mapper_filepath.exists():
             raise Exception(f"Mapper file {mapper_filepath} does not exist")
 
         # verify that the weather_file exists in the weather path
-        if not (
-            self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.epw"
-        ).exists():
-            raise Exception(
-                f"Weather file {weather_file_name}.epw does not exist in the weather path"
-            )
-        if not (
-            self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.ddy"
-        ).exists():
-            raise Exception(
-                f"Weather file {weather_file_name}.ddy does not exist in the weather path"
-            )
-        if not (
-            self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.stat"
-        ).exists():
-            raise Exception(
-                f"Weather file {weather_file_name}.stat does not exist in the weather path"
-            )
+        if not (self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.epw").exists():
+            raise Exception(f"Weather file {weather_file_name}.epw does not exist in the weather path")
+        if not (self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.ddy").exists():
+            raise Exception(f"Weather file {weather_file_name}.ddy does not exist in the weather path")
+        if not (self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.stat").exists():
+            raise Exception(f"Weather file {weather_file_name}.stat does not exist in the weather path")
 
         with open(mapper_filepath) as f:
             data = json.load(f)

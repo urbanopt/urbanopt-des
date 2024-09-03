@@ -8,7 +8,7 @@ class URBANoptGeoJSON:
         self.data = None
 
         # read in the JSON file and store it in data
-        with open(filename, "r") as f:
+        with open(filename) as f:
             self.data = json.load(f)
 
     def get_building_paths(self, scenario_name: str) -> list[Path]:
@@ -16,12 +16,7 @@ class URBANoptGeoJSON:
         result = []
         for feature in self.data["features"]:
             if feature["properties"]["type"] == "Building":
-                building_path = (
-                    self._filename.parent
-                    / "run"
-                    / scenario_name
-                    / feature["properties"]["id"]
-                )
+                building_path = self._filename.parent / "run" / scenario_name / feature["properties"]["id"]
                 result.append(building_path)
                 # result.append(Path(feature["properties"]["file"]))
 
@@ -36,23 +31,15 @@ class URBANoptGeoJSON:
         """Return a list of building names"""
         result = []
         for feature in self.data["features"]:
-            if (
-                "type" in feature["properties"]
-                and feature["properties"]["type"] == "Building"
-            ):
+            if "type" in feature["properties"] and feature["properties"]["type"] == "Building":
                 result.append(feature["properties"]["id"])
+            elif "name" in feature["properties"] and feature["properties"]["name"] == "Site Origin":
+                pass
             else:
-                # check if the name is site origin, if so, then this is okay
-                if (
-                    "name" in feature["properties"]
-                    and feature["properties"]["name"] == "Site Origin"
-                ):
-                    pass
-                else:
-                    # need to implement a reasonable logger.
-                    pass
-                    # print(f"Feature does not have a type Building: {feature}")
-                    # print("Did you forget to call the `update_geojson_from_seed_data` method?")
+                # need to implement a reasonable logger.
+                pass
+                # print(f"Feature does not have a type Building: {feature}")
+                # print("Did you forget to call the `update_geojson_from_seed_data` method?")
 
         return result
 
@@ -78,9 +65,8 @@ class URBANoptGeoJSON:
         """
         result = {}
         for feature in self.data["features"]:
-            if feature["properties"]["type"] == "Building":
-                if feature["properties"]["id"] == building_id:
-                    result = feature["properties"]
+            if feature["properties"]["type"] == "Building" and feature["properties"]["id"] == building_id:
+                result = feature["properties"]
 
         return result
 
@@ -88,24 +74,20 @@ class URBANoptGeoJSON:
         """Return a list of meters for the building_id"""
         result = []
         for feature in self.data["features"]:
-            if feature["properties"]["type"] == "Building":
-                if feature["properties"]["id"] == building_id:
-                    for meter in feature["properties"].get("meters", []):
-                        result.append(meter["type"])
+            if feature["properties"]["type"] == "Building" and feature["properties"]["id"] == building_id:
+                for meter in feature["properties"].get("meters", []):
+                    result.append(meter["type"])
 
         return result
 
-    def get_meter_readings_for_building(
-        self, building_id: str, meter_type: str
-    ) -> list:
+    def get_meter_readings_for_building(self, building_id: str, meter_type: str) -> list:
         """Return a list of meter readings for the building_id"""
         result = []
         for feature in self.data["features"]:
-            if feature["properties"]["type"] == "Building":
-                if feature["properties"]["id"] == building_id:
-                    for meter in feature["properties"].get("meters", []):
-                        if meter["type"] == meter_type:
-                            result = meter["readings"]
+            if feature["properties"]["type"] == "Building" and feature["properties"]["id"] == building_id:
+                for meter in feature["properties"].get("meters", []):
+                    if meter["type"] == meter_type:
+                        result = meter["readings"]
 
         return result
 
@@ -113,8 +95,7 @@ class URBANoptGeoJSON:
         """Return a list of monthly electricity consumption for the building_id"""
         result = []
         for feature in self.data["features"]:
-            if feature["properties"]["type"] == "Building":
-                if feature["properties"]["id"] == building_id:
-                    result = feature["properties"]["monthly_electricity"]
+            if feature["properties"]["type"] == "Building" and feature["properties"]["id"] == building_id:
+                result = feature["properties"]["monthly_electricity"]
 
         return result
