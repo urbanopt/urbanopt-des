@@ -629,7 +629,7 @@ class URBANoptResults:
                 # skip if Datetime
                 if column == "Datetime":
                     continue
-                load_report.rename(columns={column: f"{column} Building {building_id}"})
+                load_report = load_report.rename(columns={column: f"{column} Building {building_id}"})
 
             # convert Datetime column in data frame to be datetime from the string. The year
             # should be set to a year that has the day of week starting correctly for the real data
@@ -902,10 +902,14 @@ class URBANoptResults:
         # duplicate the load_dataframe so that we can calculate the seconds in the year
         tmp_dataframe = load_dataframe.copy()
         # time column is seconds from the start of the year, as integers
-        tmp_dataframe["time"] = (tmp_dataframe.index - tmp_dataframe.index[0]).total_seconds() + 3600
+        tmp_dataframe["time"] = (tmp_dataframe.index - tmp_dataframe.index[0]).total_seconds()
+        # the last timestamp is weird as it will be negative. Take the second to last value and add 3600
+        tmp_dataframe["time"].iloc[-1] = tmp_dataframe["time"].iloc[-2] + 3600
+        # the first value of the hot water must be zero, else there will be an error
+        tmp_dataframe["TotalWaterHeating"].iloc[0] = 0
+
         # coerce time into int
         tmp_dataframe["time"] = tmp_dataframe["time"].astype(int)
-        print(tmp_dataframe["time"])
         header = "#1\n"
         header += "#Created from results of URBANopt\n\n"
         header += "#First column: Seconds in the year (loads are hourly)\n"

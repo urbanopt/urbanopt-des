@@ -1034,7 +1034,7 @@ class URBANoptAnalysis:
             # only save off the useful columns for the summary table
             year_end = f"{self.year_of_data}-12-31"
             summary_data_columns = ["Metric", "Units"]
-            for analysis_name in ["Non-Connected"], *list(self.modelica.keys()):
+            for analysis_name in ["Non-Connected", *list(self.modelica.keys())]:
                 summary_data_columns.append(analysis_name)
                 if analysis_name == "Non-Connected":
                     self.urbanopt.grid_metrics_daily
