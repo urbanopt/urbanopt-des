@@ -12,7 +12,7 @@ geopandas = "^1.0.1"
 # release mode
 # modelica-builder = { version = "0.5.1" }
 # pre-release mode, use github
-modelica-builder = { git = "git@github.com:urbanopt/modelica-builder.git", branch = "develop" }
+modelica-builder = { git = "https://github.com/urbanopt/modelica-builder.git", branch = "develop" }
 # dev mode
 # modelica-builder = { path = "../modelica-builder", develop = true }
 
@@ -29,6 +29,12 @@ sphinx_rtd_theme = "~1.3"
 sphinx-jsonschema = "~1.19"
 syrupy = "~4.5"
 toml = "~0.10"
+
+
+[[tool.poetry.source]]
+name = "github"
+url = "https://github.com"
+priority = "primary"
 
 [build-system]
 requires = ["poetry-core"]
