@@ -25,10 +25,6 @@ jobs:
           poetry install
       - name: Run pre-commit
         run: poetry run pre-commit run --all-files
-    #   - name: Run pytest
-    #     run: poetry run pytest -v --cov-report term-missing --cov
-    #   - name: Coveralls
-    #     if: ${{ success() }}
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #     run: poetry run coveralls --service=github
+      - name: Run pytest
+        run: poetry run pytest -v --cov-report term-missing --cov
+    
