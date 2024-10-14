@@ -9,13 +9,10 @@ packages = [{ include = "urbanopt_des", from = "." }]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 geopandas = "^1.0.1"
-
 # release mode
 # modelica-builder = { version = "0.5.1" }
-
 # pre-release mode, use github
-modelica-builder = { git = "https://github.com/urbanopt/modelica-builder.git", branch = "develop" }
-
+modelica-builder = { git = "git@github.com:urbanopt/modelica-builder.git", branch = "develop" }
 # dev mode
 # modelica-builder = { path = "../modelica-builder", develop = true }
 
