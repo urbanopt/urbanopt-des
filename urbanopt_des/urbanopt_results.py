@@ -561,8 +561,7 @@ class URBANoptResults:
             feature_json = self.get_urbanopt_default_feature_report_json(self.path / "run" / f"{self.scenario_name}" / f"{building_id}")
             # Read the JSON as dictionary to the building characteristics
             #  Use a context manager for opening files
-            with open(feature_json) as f:
-                self.building_characteristics[building_id] = json.load(f)
+            self.building_characteristics[building_id] = json.load(feature_json.read_text())
 
             print(f"Processing building time series results {building_id}")
             feature_report = self.get_urbanopt_default_feature_report(self.path / "run" / f"{self.scenario_name}" / f"{building_id}")
@@ -1040,8 +1039,9 @@ class URBANoptResults:
             dict: dictionary of the default_feature_report.json file
         """
         report_file = self._search_for_file_in_reports(search_dir, "building_loads.csv", measure_name="export_modelica_loads")
-        print(f"Processing building loads from {report_file}")
         if report_file.exists():
+            print(f"Processing building loads from {report_file}")
+
             # only grab the columns that we care about
             columns_to_keep_and_map = {
                 "Date Time": "Datetime",

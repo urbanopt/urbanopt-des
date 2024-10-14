@@ -57,12 +57,13 @@ class URBANoptGeoJSON:
 
         return result
 
-    def get_buildings(self, ids: Union[list[str], None] = None, keep_properties: Union[list[str], None] = None) -> list:
+    def get_buildings(self, ids: Union[list[str], None] = None) -> list:
         """Return a list of all the properties of type Building"""
         result = []
         for feature in self.data["features"]:
             if feature["properties"]["type"] == "Building" and (ids is None or feature["properties"]["id"] in ids):
-                # only keep the fields that in the keep_properties list
+                # TODO: eventually add a list of building ids to keep, for now it
+                # will be all buildings.
                 result.append(feature)
 
         return result
