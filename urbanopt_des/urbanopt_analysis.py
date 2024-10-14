@@ -50,6 +50,7 @@ class URBANoptAnalysis:
         self.number_of_buildings = len(self.geojson.get_building_ids())
 
         # Container for URBANopt results
+        # TODO: make this a list in the future to hold multiple URBANopt results
         self.urbanopt = None
 
         # Container for Modelica results
@@ -287,58 +288,59 @@ class URBANoptAnalysis:
                 # save the readings into a dataframe with end_time as the index
                 self.actual_data = pd.concat([self.actual_data, pd.DataFrame(meter_readings)])
 
-        self.actual_data["start_time"] = pd.to_datetime(self.actual_data["start_time"])
-        self.actual_data["start_time"] = self.actual_data["start_time"].apply(lambda x: x.replace(tzinfo=None))
-        self.actual_data["end_time"] = pd.to_datetime(self.actual_data["end_time"])
-        self.actual_data["end_time"] = self.actual_data["end_time"].apply(lambda x: x.replace(tzinfo=None))
-        # check if there is a time on the end_time and if not make it 23:59:59
-        self.actual_data["end_time"] = self.actual_data["end_time"].apply(lambda x: x.replace(hour=23, minute=59, second=59))
-        self.actual_data = self.actual_data.set_index(["start_time"])
+        if self.actual_data is not None:
+            self.actual_data["start_time"] = pd.to_datetime(self.actual_data["start_time"])
+            self.actual_data["start_time"] = self.actual_data["start_time"].apply(lambda x: x.replace(tzinfo=None))
+            self.actual_data["end_time"] = pd.to_datetime(self.actual_data["end_time"])
+            self.actual_data["end_time"] = self.actual_data["end_time"].apply(lambda x: x.replace(tzinfo=None))
+            # check if there is a time on the end_time and if not make it 23:59:59
+            self.actual_data["end_time"] = self.actual_data["end_time"].apply(lambda x: x.replace(hour=23, minute=59, second=59))
+            self.actual_data = self.actual_data.set_index(["start_time"])
 
-        # monthly agg across each building_id, meter_type (and other non-important fields)
-        groupby_cols = [
-            "meter_type",
-            "building_id",
-            "source_unit",
-            "conversion_factor",
-            "units",
-            "converted_units",
-        ]
-        drop_cols = ["end_time", "id"]
-        # drop the columns first, then run the groupby
-        self.actual_data_monthly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="M"), *groupby_cols]).sum()
-        self.actual_data_monthly = self.actual_data_monthly.reset_index()
-        self.actual_data_monthly = self.actual_data_monthly.set_index(["start_time"])
-        self.actual_data_yearly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="Y"), *groupby_cols]).sum()
-        self.actual_data_yearly = self.actual_data_yearly.reset_index()
-        self.actual_data_yearly = self.actual_data_yearly.set_index(["start_time"])
+            # monthly agg across each building_id, meter_type (and other non-important fields)
+            groupby_cols = [
+                "meter_type",
+                "building_id",
+                "source_unit",
+                "conversion_factor",
+                "units",
+                "converted_units",
+            ]
+            drop_cols = ["end_time", "id"]
+            # drop the columns first, then run the groupby
+            self.actual_data_monthly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="M"), *groupby_cols]).sum()
+            self.actual_data_monthly.reset_index()
+            self.actual_data_monthly.set_index(["start_time"])
+            self.actual_data_yearly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="Y"), *groupby_cols]).sum()
+            self.actual_data_yearly.reset_index()
+            self.actual_data_yearly.set_index(["start_time"])
 
-        # for each building, create a new row with the building_id and new meter called 'total' which has the
-        # converted_value for all the meters for that building summed together
-        groupby_cols = [
-            "start_time",
-            "building_id",
-            "source_unit",
-            "conversion_factor",
-            "units",
-            "converted_units",
-        ]
-        new_data = self.actual_data_monthly.groupby(groupby_cols).sum()
-        new_data = new_data.reset_index()
-        new_data = new_data.set_index(["start_time"])
-        new_data["meter_type"] = "Total"
-        self.new_data = new_data
-        # add the new_data rows to the existing self.actual_monthly dataframe, mapping the common columns
-        self.actual_data_monthly = pd.concat([self.actual_data_monthly, new_data])
+            # for each building, create a new row with the building_id and new meter called 'total' which has the
+            # converted_value for all the meters for that building summed together
+            groupby_cols = [
+                "start_time",
+                "building_id",
+                "source_unit",
+                "conversion_factor",
+                "units",
+                "converted_units",
+            ]
+            new_data = self.actual_data_monthly.groupby(groupby_cols).sum()
+            new_data.reset_index()
+            new_data.set_index(["start_time"])
+            new_data["meter_type"] = "Total"
+            self.new_data = new_data
+            # add the new_data rows to the existing self.actual_monthly dataframe, mapping the common columns
+            self.actual_data_monthly = pd.concat([self.actual_data_monthly, new_data])
 
-        # now do the same for the yearly data for the totals
-        new_data = self.actual_data_yearly.groupby(groupby_cols).sum()
-        new_data = new_data.reset_index()
-        new_data = new_data.set_index(["start_time"])
-        new_data["meter_type"] = "Total"
-        self.new_data = new_data
-        # add the new_data rows to the existing self.actual_monthly dataframe, mapping the common columns
-        self.actual_data_yearly = pd.concat([self.actual_data_yearly, new_data])
+            # now do the same for the yearly data for the totals
+            new_data = self.actual_data_yearly.groupby(groupby_cols).sum()
+            new_data.reset_index()
+            new_data.set_index(["start_time"])
+            new_data["meter_type"] = "Total"
+            self.new_data = new_data
+            # add the new_data rows to the existing self.actual_monthly dataframe, mapping the common columns
+            self.actual_data_yearly = pd.concat([self.actual_data_yearly, new_data])
 
     def resample_and_convert_modelica_results(
         self,
@@ -584,11 +586,89 @@ class URBANoptAnalysis:
         # roll up the urbanopt results (single analysis)
         self.urbanopt.data_monthly = self.urbanopt.data.resample("M").sum()
         self.urbanopt.data_annual = self.urbanopt.data.resample("Y").sum()
+        # loads
+        self.urbanopt.data_loads_monthly = self.urbanopt.data_loads.resample("M").sum()
+        self.urbanopt.data_loads_annual = self.urbanopt.data_loads.resample("Y").sum()
 
         # roll up the Modelica results (each analysis)
         for analysis_name in self.modelica:
             self.modelica[analysis_name].monthly = self.modelica[analysis_name].min_60_with_buildings.resample("M").sum()
             self.modelica[analysis_name].annual = self.modelica[analysis_name].min_60_with_buildings.resample("Y").sum()
+
+    def create_building_level_results(self) -> None:
+        """Save off building level totals for mapping for each scenario. The results are
+        not stored anywhere and need to be persisted or called again if needed.
+
+        The data will look similar to this and include DES, as that is a "building/property".
+
+        # Metric,Units,Building1,Building2,BuildingN,DES
+        # Total Energy, MWh, 100, 200, 300, 600
+        # Total Electricity, MWh, x, y, z
+        # Total Natural Gas, MWh, x, y, z
+        # Gross Floor Area, m2, 1000, 2000, 3000, SUM of all buildings
+        # Total Carbon, mtCO2e, 10, 20, 30, 60
+        # Building EUI, kWh/m2, 100, 200, 300, 123
+        # Building EUI, kBtu/ft2, 100, 200, 300, 123
+        # Building Peak Demand, kW, 100, 200, 300, 123
+        # Building Peak Demand Time, hr, 12, 13, 14, 13.5
+        """
+        if self.urbanopt.data_annual is None:
+            raise Exception("There are no annual results calculated, did you run create_rollups()")
+
+        # iterate through each building and create the building level results
+        data = {
+            "total_natural_gas": {
+                "Metric": "Total Natural Gas",
+                "Unit": "Wh",
+            },
+            "total_electricity": {
+                "Metric": "Total Electricity",
+                "Unit": "Wh",
+            },
+            "total_energy": {
+                "Metric": "Total Energy",
+                "Unit": "Wh",
+            },
+            "gross_floor_area": {
+                "Metric": "Gross Floor Area",
+                "Unit": "m2",
+            },
+            "gross_floor_area_ft2": {
+                "Metric": "Gross Floor Area",
+                "Unit": "ft2",
+            },
+            "total_site_eui": {
+                "Metric": "Building EUI",
+                "Unit": "kWh/m2",
+            },
+            "total_site_eui_ft2": {
+                "Metric": "Building EUI",
+                "Unit": "kBtu/ft2",
+            },
+        }
+        for building_id in self.geojson.get_building_ids():
+            data["total_natural_gas"][building_id] = self.urbanopt.data_annual[f"NaturalGas:Facility Building {building_id}"][0]
+            data["total_electricity"][building_id] = self.urbanopt.data_annual[f"Electricity:Facility Building {building_id}"][0]
+            data["total_energy"][building_id] = data["total_natural_gas"][building_id] + data["total_electricity"][building_id]
+            # read the square footage out of the default_feature_report.json
+            data["gross_floor_area"][building_id] = (
+                self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"] / 10.76
+            )
+            data["gross_floor_area_ft2"][building_id] = self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"]
+
+            # calculate the EUI
+            data["total_site_eui"][building_id] = (data["total_energy"][building_id] * 0.001) / data["gross_floor_area"][building_id]
+            data["total_site_eui_ft2"][building_id] = (data["total_energy"][building_id] * 0.00341214) / data["gross_floor_area_ft2"][
+                building_id
+            ]
+
+        # combine all the data together for the final dataframe. The list comprehension here
+        # will create the table that is shown in the docstring above
+        return_df = pd.DataFrame([data[key] for key in data])
+        # set the index to be the metric and the unit
+        return_df.set_index(["Metric", "Unit"])
+
+        return return_df
 
     def __getitem__(self, key: str) -> ModelicaResults:
         # Accessor to the self.modelica dictionary that takes the key value as in the input
@@ -954,7 +1034,7 @@ class URBANoptAnalysis:
             # only save off the useful columns for the summary table
             year_end = f"{self.year_of_data}-12-31"
             summary_data_columns = ["Metric", "Units"]
-            for analysis_name in ["Non-Connected"], *list(self.modelica.keys()):
+            for analysis_name in ["Non-Connected", *list(self.modelica.keys())]:
                 summary_data_columns.append(analysis_name)
                 if analysis_name == "Non-Connected":
                     self.urbanopt.grid_metrics_daily
