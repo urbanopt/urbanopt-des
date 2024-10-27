@@ -927,6 +927,8 @@ class URBANoptResults:
         ]
 
         list_data = tmp_dataframe[columns].values.tolist()  # noqa: PD011
+        # make the first column integers
+        list_data = [[int(x) if i == 0 else x for i, x in enumerate(row)] for row in list_data]
         modelica_mos = ModelicaMOS.from_list(list_data, header_data=header)
 
         # save the mos file and CSV file

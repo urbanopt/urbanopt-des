@@ -10,7 +10,7 @@ packages = [{ include = "urbanopt_des", from = "." }]
 python = ">=3.10,<3.13"
 geopandas = "^1.0.1"
 # release mode
-modelica-builder = { version = "0.5.2rc1" }
+modelica-builder = "^0.5.2rc3"
 # pre-release mode, use github
 # modelica-builder = { git = "https://github.com/urbanopt/modelica-builder.git", branch = "develop" }
 # dev mode
