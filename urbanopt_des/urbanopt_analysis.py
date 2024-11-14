@@ -796,11 +796,19 @@ class URBANoptAnalysis:
                 # find locations of the data that might have been exported or mapped from SEED.
                 gfa_location = self._find_data_location(
                     new_feature["properties"],
-                    ["Gross Floor Area", "Gross Floor Area (ft2)"],
+                    [
+                        "Gross Floor Area",
+                        "Gross Floor Area (ft2)",
+                        "gross_floor_area_ft2",
+                    ],
                 )
                 footprint_location = self._find_data_location(
                     new_feature["properties"],
-                    ["Footprint Area", "Footprint Area (ft2)"],
+                    [
+                        "Footprint Area",
+                        "Footprint Area (ft2)",
+                        "footprint_area_ft2",
+                    ],
                 )
                 stories_location = self._find_data_location(
                     new_feature["properties"],
@@ -808,6 +816,7 @@ class URBANoptAnalysis:
                         "Number of Stories",
                         "Number of Stories Above Grade",
                         "Building Levels",
+                        "number_of_stories",
                     ],
                 )
 
@@ -817,7 +826,7 @@ class URBANoptAnalysis:
 
                 # process the floor area
                 if gfa_location:
-                    new_feature["properties"]["floor_area"] = new_feature["properties"]["Gross Floor Area"]
+                    new_feature["properties"]["floor_area"] = new_feature["properties"][gfa_location]
                 else:
                     raise Exception("No GFA found in the data, which is required!")
 
@@ -861,18 +870,46 @@ class URBANoptAnalysis:
                     # map SEED to UO building type
                     mapping = {
                         "apartments": "Lodging",
-                        "cinema": "Retail other than mall",
+                        "Apartments": "Lodging",
+                        "Cinema": "Retail other than mall",
+                        "Covered Parking": "Covered Parking",
+                        "Education": "Education",
+                        "Enclosed mall": "Enclosed mall",
                         "fast_food": "Food service",
+                        "Food sales": "Food sales",
+                        "Food service": "Food service",
+                        "Inpatient health care": "Inpatient health care",
                         "K-12": "Education",
                         "K-12 School": "Education",
+                        "Laboratory": "Laboratory",
+                        "Lodging": "Lodging",
+                        "Mixed use": "Mixed use",
+                        # "Multifamily": "Multifamily",  # multifamily wasn't working
+                        # "Multifamily (2 to 4 units)": "Multifamily (2 to 4 units)",
+                        # "Multifamily (5 or more units)": "Multifamily (5 or more units)",
                         "Multifamily Housing": "Lodging",
+                        "Nonrefrigerated warehouse": "Nonrefrigerated warehouse",
+                        "Nursing": "Nursing",
                         "Office": "Office",
-                        "Other - Education": "Education",
                         "office": "Office",
-                        "Worship Facility": "Religious worship",
+                        "Other - Education": "Education",
+                        "Outpatient health care": "Outpatient health care",
                         "place_of_worship": "Religious worship",
+                        "Public assembly": "Public assembly",
+                        "Public order and safety": "Public order and safety",
+                        "Refrigerated warehouse": "Refrigerated warehouse",
+                        "Religious worship": "Religious worship",
                         "retail": "Strip shopping mall",
+                        "Retail": "Strip shopping mall",
+                        "Retail other than mall": "Retail other than mall",
+                        "Service": "Service",
+                        "Single-Family": "Single-Family",
+                        "Single-Family Detached": "Single-Family Detached",
                         "Strip Mall": "Strip shopping mall",
+                        "Strip shopping mall": "Strip shopping mall",
+                        "Uncovered Parking": "Uncovered Parking",
+                        "Vacant": "Vacant",
+                        "Worship Facility": "Religious worship",
                     }
                     lookup_value = new_feature["properties"]["Property Type"]
                     if lookup_value in mapping:
@@ -1191,7 +1228,8 @@ class URBANoptAnalysis:
                 with open(analysis_name_file) as f:
                     analysis_name = f.read().strip()
             else:
-                print(f"Error: could not load analysis_name.txt file for {mat_file.parent}")
+                print(f"Error: could not load analysis_name.txt file for {mat_file.parent}. Setting to directory name.")
+                analysis_name = mat_file.parent.name
 
             results[analysis_name] = {
                 "path_to_analysis": sim_folder.parent,

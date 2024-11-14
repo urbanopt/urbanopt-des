@@ -152,7 +152,8 @@ class URBANoptGeoJSON:
         gdf = GeoDataFrame.from_features(self.data)
 
         # related is a list typically, which isn't supported in geodataframes
-        gdf = gdf.drop(columns=["related"])
+        if "related" in gdf.columns:
+            gdf = gdf.drop(columns=["related"])
 
         # init new obj, can delete this once the if statement below is
         # fully fleshed out.
@@ -166,14 +167,16 @@ class URBANoptGeoJSON:
                 by="type",
                 aggfunc={
                     "footprint_area": "sum",
-                    "Footprint Area (m2)": "sum",
-                    "Footprint Area (ft2)": "sum",
-                    "Height": "mean",
+                    # "Footprint Area (m2)": "sum",
+                    # "Footprint Area (ft2)": "sum",
+                    "height": "mean",
                     "floor_area": "sum",
-                    "Gross Floor Area": "sum",
+                    # "Gross Floor Area": "sum",
+                    "gross_floor_area_m2": "sum",
+                    "gross_floor_area_ft2": "sum",
                     "number_of_stories": "mean",
                     "number_of_stories_above_ground": "mean",
-                    "Building Levels": "mean",
+                    # "Building Levels": "mean",
                     "attic_type": "any",
                     "foundation_type": "any",
                     "number_of_bedrooms": "mean",
