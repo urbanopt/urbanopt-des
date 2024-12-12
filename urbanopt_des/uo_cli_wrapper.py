@@ -28,8 +28,8 @@ class UOCliWrapper:
         self.project_path = self.working_dir / self.uo_project
         self.log_file = self.working_dir / f"{uo_project}.log"
 
-        # self.uo_version = "0.9.3"
-        self.uo_version = "0.11.1"
+        self.uo_version = "0.13.0"
+        self.uo_directory = f"/Applications/URBANoptCLI_{self.uo_version}"
 
     def _run_command(self, command):
         current_dir = os.getcwd()
@@ -39,13 +39,12 @@ class UOCliWrapper:
                 log.write(f"Running command: {command}\n")
                 new_env = os.environ.copy()
                 # These env vars come directly from the ~/.env_uo.sh file. Update if a new version is installed. The .env_uo.sh
-                # file is created by calling /Applications/URBANoptCLI_0.9.3/setup-env.sh
-                app_root = f"/Applications/URBANoptCLI_{self.uo_version}"
-                new_env["GEM_HOME"] = f"{app_root}/gems/ruby/2.7.0"
-                new_env["GEM_PATH"] = f"{app_root}/gems/ruby/2.7.0"
-                new_env["PATH"] = f"{app_root}/ruby/bin:{app_root}/gems/ruby/2.7.0/bin:{os.environ['PATH']}"
-                new_env["RUBYLIB"] = f"{app_root}/OpenStudio/Ruby"
-                new_env["RUBY_DLL_PATH"] = f"{app_root}/OpenStudio/Ruby"
+                # file is created by calling /Applications/URBANoptCLI_0.13..3/setup-env.sh
+                new_env["GEM_HOME"] = f"{self.uo_directory}/gems/ruby/2.7.0"
+                new_env["GEM_PATH"] = f"{self.uo_directory}/gems/ruby/2.7.0"
+                new_env["PATH"] = f"{self.uo_directory}/ruby/bin:{self.uo_directory}/gems/ruby/2.7.0/bin:{os.environ['PATH']}"
+                new_env["RUBYLIB"] = f"{self.uo_directory}/OpenStudio/Ruby"
+                new_env["RUBY_DLL_PATH"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 # For REopt
                 new_env["GEM_DEVELOPER_KEY"] = os.environ["GEM_DEVELOPER_KEY"]
                 result = subprocess.run(  # noqa: S602

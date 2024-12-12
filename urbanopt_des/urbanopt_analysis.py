@@ -617,6 +617,14 @@ class URBANoptAnalysis:
 
         # iterate through each building and create the building level results
         data = {
+            "property_type": {
+                "Metric": "Property Type",
+                "Unit": "",
+            },
+            "building_type": {
+                "Metric": "Building Type",
+                "Unit": "",
+            },
             "total_natural_gas": {
                 "Metric": "Total Natural Gas",
                 "Unit": "Wh",
@@ -647,9 +655,16 @@ class URBANoptAnalysis:
             },
         }
         for building_id in self.geojson.get_building_ids():
+            geojson_data = self.geojson.get_building_properties_by_id(building_id)
+
+            # assume property type is in "Property Type" and that the modeling type is in "building_type"
+            data["property_type"][building_id] = geojson_data.get("Property Type", "Unknown [not in GeoJSON Property Type]")
+            data["building_type"][building_id] = geojson_data.get("building_type", "Unknown [not in GeoJSON building_type]")
+
             data["total_natural_gas"][building_id] = self.urbanopt.data_annual[f"NaturalGas:Facility Building {building_id}"][0]
             data["total_electricity"][building_id] = self.urbanopt.data_annual[f"Electricity:Facility Building {building_id}"][0]
             data["total_energy"][building_id] = data["total_natural_gas"][building_id] + data["total_electricity"][building_id]
+
             # read the square footage out of the default_feature_report.json
             data["gross_floor_area"][building_id] = (
                 self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"] / 10.76
