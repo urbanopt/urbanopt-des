@@ -31,13 +31,13 @@ class UOCliWrapper:
         # self.uo_version = "0.9.3"
         # self.uo_version = "0.11.1"
         self.uo_version = "0.13.0"
-        
+
         # if windows, then the path is different
         if os.name == "nt":
             self.uo_directory = f"C:/URBANoptCLI_{self.uo_version}"
         else:
             self.uo_directory = f"/Applications/URBANoptCLI_{self.uo_version}"
-        
+
     def _run_command(self, command):
         current_dir = os.getcwd()
         try:
