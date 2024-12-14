@@ -10,7 +10,7 @@ class UOCliWrapper:
 
     If you are testing this locally, then you might need to configure your URBANopt CLI.
     After installing the CLI, you need to run the following command:
-        /Applications/URBANoptCLI_0.9.2/setup-env.sh
+        /Applications/URBANoptCLI_0.X.Y/setup-env.sh
         . ~/.env_uo.sh
     """
 
@@ -28,9 +28,16 @@ class UOCliWrapper:
         self.project_path = self.working_dir / self.uo_project
         self.log_file = self.working_dir / f"{uo_project}.log"
 
+        # self.uo_version = "0.9.3"
+        # self.uo_version = "0.11.1"
         self.uo_version = "0.13.0"
-        self.uo_directory = f"/Applications/URBANoptCLI_{self.uo_version}"
-
+        
+        # if windows, then the path is different
+        if os.name == "nt":
+            self.uo_directory = f"C:/URBANoptCLI_{self.uo_version}"
+        else:
+            self.uo_directory = f"/Applications/URBANoptCLI_{self.uo_version}"
+        
     def _run_command(self, command):
         current_dir = os.getcwd()
         try:
