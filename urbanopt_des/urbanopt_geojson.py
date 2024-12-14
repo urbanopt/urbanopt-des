@@ -177,12 +177,13 @@ class URBANoptGeoJSON:
                     "number_of_stories": "mean",
                     "number_of_stories_above_ground": "mean",
                     # "Building Levels": "mean",
-                    "attic_type": "any",
-                    "foundation_type": "any",
+                    "attic_type": "first",
+                    "foundation_type": "first",
                     "number_of_bedrooms": "mean",
                     "number_of_residential_units": "mean",
-                    "enabled": "any",
+                    "enabled": "first",
                     "id": "first",
+                    "building_type": "first",
                 },
             )
 
