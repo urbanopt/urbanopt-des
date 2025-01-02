@@ -412,7 +412,7 @@ class ModelicaResults(ResultsBase):
             * `name` is the name of the variable in the data frame
             * `units` is the units of the variable
             * `display_name` will be the new name of the variable in the end use summary table.
-        """        
+        """
         # get the list of all the columns to allocate the data frame correctly
         columns = [c["display_name"] for c in self.end_use_summary_dict]
 

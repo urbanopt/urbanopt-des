@@ -218,14 +218,14 @@ class URBANoptResults(ResultsBase):
             * `name` is the name of the variable in the data frame
             * `units` is the units of the variable
             * `display_name` will be the new name of the variable in the end use summary table.
-        """       
+        """
         # get the list of all the columns to allocate the data frame correctly
         columns = [c["display_name"] for c in self.end_use_summary_dict]
 
         # Create a single column of data
         self.end_use_summary = pd.DataFrame(
             index=columns,
-            columns=["Units", "Non-Connected"],
+            columns=["Units", self.display_name],
             data=np.zeros((len(columns), 2)),
         )
 
@@ -236,10 +236,10 @@ class URBANoptResults(ResultsBase):
         # the columns as the rows and the results as the columns
         for column in self.end_use_summary_dict:
             # check if the column exists in the data frame and if not, then set the value to zero!
-            if column["name"] in self.data_annual.columns:
-                self.end_use_summary["Non-Connected"][column["display_name"]] = float(self.data_annual[column["name"]].iloc[0])
+            if column["name"] in self.annual.columns:
+                self.end_use_summary[self.display_name][column["display_name"]] = float(self.annual[column["name"]].iloc[0])
             else:
-                self.end_use_summary["Non-Connected"][column["display_name"]] = 0.0
+                self.end_use_summary[self.display_name][column["display_name"]] = 0.0
 
         return self.end_use_summary
 

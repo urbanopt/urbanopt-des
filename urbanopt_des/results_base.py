@@ -1,19 +1,4 @@
-import json
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, Union
-
-import numpy as np
-import pandas as pd
-from buildingspy.io.outputfile import Reader
-
-from .emissions import HourlyEmissionsData
-
-VariablesDict = Dict[str, Union[bool, str, int, str]]
-
-
 class ResultsBase:
-    
     def __init__(self) -> None:
         """Base class for processing results. This is used for the Modelica and OpenStudio results to create
         common methods/datasets that can be used for easy comparison."""
@@ -21,7 +6,7 @@ class ResultsBase:
     @property
     def end_use_summary_dict(self) -> dict:
         """Return a dictionary with the end use summary data structure."""
-        
+
         summary_columns = [
             {
                 "name": "Total Building Interior Lighting",
