@@ -100,7 +100,7 @@ class ModelicaResults:
             _, n_buildings = self.modelica_data.values(building_count_var)
             n_buildings = int(n_buildings[0])
         else:
-            # find all of the nBui_disNet_* in the varNames. There is one for heating and cooling, 
+            # find all of the nBui_disNet_* in the varNames. There is one for heating and cooling,
             # so the number of buildings should be equal (for now).
             n_buildings = 0
             for var in self.modelica_data.varNames():
@@ -112,18 +112,18 @@ class ModelicaResults:
                     elif n_b != n_buildings:
                         raise Exception(f"Number of buildings on the multiple distribution networks do not match: {n_b} != {n_buildings}")
 
-        # TODO: implement a debugging method and then report this value           
+        # TODO: implement a debugging method and then report this value
         # print(f"DEBUG: the .mat files has {n_buildings}")
         return n_buildings
 
     def retrieve_time_variable_list(self) -> list:
         """Retrieve the time variable from the .mat file which is tied to a variable. There are cases
-        where the time on a variable is of different length than the other variables, so this method 
+        where the time on a variable is of different length than the other variables, so this method
         looks at the time variable and returns the time data."""
         lengths_of_time = []
         variables_of_time = []
-        
-        # Extend these with RegEx's as needed to look for other time dimensions in 
+
+        # Extend these with RegEx's as needed to look for other time dimensions in
         # .mat files.
         variables_for_time_array = [
             "TimeSerLoa_.*.PPum",
@@ -146,7 +146,7 @@ class ModelicaResults:
                 elif len(time_vars) > 1:
                     # pick the first if there is more than one
                     time_var = time_vars[0]
-            
+
             if time_var:
                 (time1, _) = self.modelica_data.values(time_var)
                 lengths_of_time.append(len(time1))
@@ -156,38 +156,38 @@ class ModelicaResults:
         # if empty throw error
         if len(variables_of_time) == 0:
             raise Exception("No time variables found in the Modelica data.")
-        
+
         # do a quick check on the collected time variables. If they are not the same lengths, then
         # throw an error
         if len(set(lengths_of_time)) != 1:
             raise Exception(f"Time variables are not the same length: {lengths_of_time} for {variables_of_time}")
-    
+
         return time1
-        
 
     def retrieve_variable_data(self, variable_name: str, len_of_time: int, default_value: float = 0) -> list:
         """Retrieve the variable data from the .mat file. If the data doesn't exist,
         then fill a dataframe with default 0 values.
-        
+
         Args:
             variable_name (str): Name of the variable to retrieve
             len_of_time (int): Length of the time variable to fill the dataframe with if not found
             default_value (int, optional): Default value to fill the dataframe with. Defaults to 0.
 
-        Returns:    
+        Returns:
             list: List of the variable data
         """
         if variable_name in self.modelica_data.varNames():
             (time1, data1) = self.modelica_data.values(variable_name)
             # check that the length of time is the same in the data
             if len(time1) != len_of_time:
-                raise Exception(f"Length of time variable {len(time1)} does not match the length of the data {len_of_time} for {variable_name}")
+                raise Exception(
+                    f"Length of time variable {len(time1)} does not match the length of the data {len_of_time} for {variable_name}"
+                )
         else:
             print(f"DEBUG: variable {variable_name} not found, filling with default value")
             data1 = [default_value] * len_of_time
-        
+
         return data1
-   
 
     def resample_and_convert_to_df(
         self,
@@ -223,14 +223,14 @@ class ModelicaResults:
         time1 = self.retrieve_time_variable_list()
         print(f"Found time variable of length {len(time1)}")
 
-        # variables for 5G        
+        # variables for 5G
         total_energy = self.retrieve_variable_data("ETot.y", len(time1))
 
         # Plant/pumps
         sewer_pump = self.retrieve_variable_data("pla.PPum", len(time1))
         ghx_pump = self.retrieve_variable_data("pumSto.P", len(time1))
         distribution_pump = self.retrieve_variable_data("pumDis.P", len(time1))
-        
+
         # building related data
         building_data: dict[str, list[float]] = {}
 
@@ -284,8 +284,6 @@ class ModelicaResults:
                 if other_var in self.modelica_data.varNames():
                     other_var_data = self.retrieve_variable_data(other_var, len(time1))
                     data[other_var] = other_var_data
-                    
-                    
 
         df_power = pd.pandas.DataFrame(data)
 
@@ -294,7 +292,6 @@ class ModelicaResults:
         df_power["ETS Heat Pump Electricity Total"] = df_power[agg_columns["ETS Heat Pump Electricity Total"]].sum(axis=1)
         df_power["Total Thermal Cooling Energy"] = df_power[agg_columns["ETS Thermal Cooling Total"]].sum(axis=1)
         df_power["Total Thermal Heating Energy"] = df_power[agg_columns["ETS Thermal Heating Total"]].sum(axis=1)
-
 
         # Calculate the District Loop Power - Default to zero to start with
         df_power["District Loop Energy"] = 0
