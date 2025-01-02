@@ -231,6 +231,22 @@ class ModelicaResults:
         ghx_pump = self.retrieve_variable_data("pumSto.P", len(time1))
         distribution_pump = self.retrieve_variable_data("pumDis.P", len(time1))
 
+        # chillers
+        chiller_data: dict[str, list[float]] = {}
+        # 1. get the variables of all the chillers
+        chiller_vars = self.modelica_data.varNames("cooPla_.*mulChiSys.P.*")
+        # 2. get the data for all the chillers
+        if len(chiller_vars) > 0:
+            for chiller_id, chiller_var in enumerate(chiller_vars):
+                chiller_energy = self.retrieve_variable_data(chiller_var, len(time1))
+                chiller_data[f"Chiller {chiller_id+1}"] = chiller_energy
+        else:
+            chiller_data["Chiller"] = [0] * len(time1)
+
+        # for n_c in range(1, len(chiller_data.keys()) + 1):
+        #     agg_columns["ETS Pump Electricity Total"].append(f"Chiller {n_c}")
+        #     building_data[f"Chiller {n_c}"] = chiller_data[f"Chiller {n_c}"]
+
         # building related data
         building_data: dict[str, list[float]] = {}
 
@@ -260,6 +276,11 @@ class ModelicaResults:
             building_data[f"ETS Thermal Cooling Building {building_id}"] = ets_q_cooling
             building_data[f"ETS Thermal Heating Building {building_id}"] = ets_q_heating
 
+        # Add in chiller aggregations
+        agg_columns["Chillers Total"] = []
+        for n_c in range(1, len(chiller_data.keys()) + 1):
+            agg_columns["Chillers Total"].append(f"Chiller {n_c}")
+
         # convert time to timestamps for pandas
         time = [datetime(year_of_data, 1, 1, 0, 0, 0) + timedelta(seconds=int(t)) for t in time1]
 
@@ -271,12 +292,16 @@ class ModelicaResults:
         df_energy.index.name = "datetime"
 
         # all data combined
-        data = {
-            "datetime": time,
-            "Sewer Pump Electricity": sewer_pump,
-            "GHX Pump Electricity": ghx_pump,
-            "Distribution Pump Electricity": distribution_pump,
-        } | building_data
+        data = (
+            {
+                "datetime": time,
+                "Sewer Pump Electricity": sewer_pump,
+                "GHX Pump Electricity": ghx_pump,
+                "Distribution Pump Electricity": distribution_pump,
+            }
+            | building_data
+            | chiller_data
+        )
 
         # add in the 'other variables' if they exist
         if other_vars is not None:
@@ -286,6 +311,9 @@ class ModelicaResults:
                     data[other_var] = other_var_data
 
         df_power = pd.pandas.DataFrame(data)
+
+        # create aggregation columns for chillers
+        df_power["Total Chillers"] = df_power[agg_columns["Chillers Total"]].sum(axis=1)
 
         # create aggregation columns for total pumps, total heat pumps, and total
         df_power["ETS Pump Electricity Total"] = df_power[agg_columns["ETS Pump Electricity Total"]].sum(axis=1)
@@ -308,6 +336,7 @@ class ModelicaResults:
             "Sewer Pump Electricity",
             "GHX Pump Electricity",
             "Distribution Pump Electricity",
+            "Total Chillers",
         ]
         df_power["Total DES Electricity"] = df_power[column_names].sum(axis=1)
 
