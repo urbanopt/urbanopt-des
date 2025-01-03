@@ -238,7 +238,7 @@ class ModelicaResults(ResultsBase):
         # chillers
         chiller_data: dict[str, list[float]] = {}
         # 1. get the variables of all the chillers
-        chiller_vars = self.modelica_data.varNames("cooPla_.*mulChiSys.P.*")
+        chiller_vars = self.modelica_data.varNames(r"cooPla_.*mulChiSys.P.*")
         # 2. get the data for all the chillers or default to 1 pump set to 0
         if len(chiller_vars) > 0:
             for var_id, chiller_var in enumerate(chiller_vars):
@@ -253,8 +253,7 @@ class ModelicaResults(ResultsBase):
         cooling_plant_pumps: dict[str, list[float]] = {}
 
         # 1. get the variables of all the condenser water pumps, which is in e.g., cooPla_67e4a0e1.pumCW.P[1]
-        cooling_plant_pumps_vars = self.modelica_data.varNames("cooPla_.*pumCW.P.\d.")
-        print(cooling_plant_pumps_vars)
+        cooling_plant_pumps_vars = self.modelica_data.varNames(r"cooPla_.*pumCW.P.\d.")
         # 2. get the data for all the pumps or default to 1 pump set to 0
         if len(cooling_plant_pumps_vars) > 0:
             for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
@@ -266,8 +265,7 @@ class ModelicaResults(ResultsBase):
             cooling_plant_pumps["CW Pump"] = [0] * len(time1)
             cooling_plant_components.append("CW Pump")
         # 3. get the variables of all the chilled water pumps, which is in e.g., cooPla_67e4a0e1.pumCHW.P[1]
-        cooling_plant_pumps_vars = self.modelica_data.varNames("cooPla_.*pumCHW.P.\d.")
-        print(cooling_plant_pumps_vars)
+        cooling_plant_pumps_vars = self.modelica_data.varNames(r"cooPla_.*pumCHW.P.\d.")
         # 4. get the data for all the pumps or default to 1 pump set to 0
         if len(cooling_plant_pumps_vars) > 0:
             for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
@@ -279,7 +277,7 @@ class ModelicaResults(ResultsBase):
             cooling_plant_pumps["CHW Pump"] = [0] * len(time1)
             cooling_plant_components.append("CHW Pump")
         # 5. get the variables of the cooling tower fans
-        cooling_plant_pumps_vars = self.modelica_data.varNames("cooPla_.*cooTowWitByp.PFan.\d.")
+        cooling_plant_pumps_vars = self.modelica_data.varNames(r"cooPla_.*cooTowWitByp.PFan.\d.")
         # 6. get the data for all the fans or default to 1 pump set to 0
         if len(cooling_plant_pumps_vars) > 0:
             for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
