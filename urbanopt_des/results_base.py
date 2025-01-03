@@ -79,7 +79,7 @@ class ResultsBase:
                 "display_name": "Distribution Pump",
             },
             {
-                "name": "Total DES Electricity",
+                "name": "Total Cooling Plant",
                 "units": "Wh",
                 "display_name": "District Cooling",
             },

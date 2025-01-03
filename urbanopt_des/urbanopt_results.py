@@ -5,9 +5,9 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from modelica_builder.modelica_mos_file import ModelicaMOS
-from results_base import ResultsBase
 
 from .emissions import HourlyEmissionsData
+from .results_base import ResultsBase
 
 # Allow use of chained pandas operations (df[df['A'] > 1]['B'] instead of df.loc[df['A'] > 1, 'B'] = 10 )
 # This prevents multiple warnings from being displayed
@@ -236,8 +236,9 @@ class URBANoptResults(ResultsBase):
         # the columns as the rows and the results as the columns
         for column in self.end_use_summary_dict:
             # check if the column exists in the data frame and if not, then set the value to zero!
-            if column["name"] in self.annual.columns:
-                self.end_use_summary[self.display_name][column["display_name"]] = float(self.annual[column["name"]].iloc[0])
+            # TODO: rename data_annual to annual to be consistent with the other *results* processing.
+            if column["name"] in self.data_annual.columns:
+                self.end_use_summary[self.display_name][column["display_name"]] = float(self.data_annual[column["name"]].iloc[0])
             else:
                 self.end_use_summary[self.display_name][column["display_name"]] = 0.0
 
