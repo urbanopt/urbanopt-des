@@ -235,7 +235,6 @@ class ModelicaResults(ResultsBase):
         ### COOLING PLANT ###
         # Keep track of all the components, so that we can create the aggregation at the end
         cooling_plant_components = []
-        # chillers
         chiller_data: dict[str, list[float]] = {}
         # 1. get the variables of all the chillers
         chiller_vars = self.modelica_data.varNames(r"cooPla_.*mulChiSys.P.*")
@@ -289,6 +288,39 @@ class ModelicaResults(ResultsBase):
             cooling_plant_pumps["Cooling Tower Fan"] = [0] * len(time1)
             cooling_plant_components.append("Cooling Tower Fan")
 
+        ### HEATING PLANT ###
+        # Keep track of all the components, so that we can create the aggregation at the end
+        heating_plant_components = []
+        boiler_data: dict[str, list[float]] = {}
+        # 1. get the variables of all the boilers
+        boiler_vars = self.modelica_data.varNames(r"heaPla.*boiHotWat.boi.\d..QFue_flow")
+        print(boiler_vars)
+        # 2. get the data for all the chillers or default to 1 pump set to 0
+        if len(boiler_vars) > 0:
+            for var_id, boiler_var in enumerate(boiler_vars):
+                energy = self.retrieve_variable_data(boiler_var, len(time1))
+                boiler_data[f"Boiler {var_id+1}"] = energy
+                heating_plant_components.append(f"Boiler {var_id+1}")
+        else:
+            boiler_data["Boiler"] = [0] * len(time1)
+            heating_plant_components.append("Boiler")
+
+        # Other heating plant data
+        heating_plant_pumps: dict[str, list[float]] = {}
+
+        # 1. get the variables of all the condenser water pumps, which is in e.g., cooPla_67e4a0e1.pumCW.P[1]
+        heating_plant_pumps_vars = self.modelica_data.varNames(r"heaPla.*pumHW.P.\d.")
+        # 2. get the data for all the pumps or default to 1 pump set to 0
+        if len(heating_plant_pumps_vars) > 0:
+            for var_id, heating_plant_pumps_var in enumerate(heating_plant_pumps_vars):
+                energy = self.retrieve_variable_data(heating_plant_pumps_var, len(time1))
+                heating_plant_components.append(f"HW Pump {var_id+1}")
+                heating_plant_pumps[f"HW Pump {var_id+1}"] = energy
+        else:
+            print("DEBUG: no HW pumps found")
+            heating_plant_pumps["HW Pump"] = [0] * len(time1)
+            heating_plant_components.append("HW Pump")
+
         # building related data
         building_data: dict[str, list[float]] = {}
 
@@ -326,6 +358,14 @@ class ModelicaResults(ResultsBase):
         # Add in all of the cooling plant variables
         agg_columns["Cooling Plant Total"] = cooling_plant_components.copy()
 
+        # Add in boiler aggregations
+        agg_columns["Boilers Total"] = []
+        for n_c in range(1, len(boiler_data.keys()) + 1):
+            agg_columns["Boilers Total"].append(f"Boiler {n_c}")
+
+        # Add in all of the heating plant variables
+        agg_columns["Heating Plant Total"] = heating_plant_components.copy()
+
         # convert time to timestamps for pandas
         time = [datetime(year_of_data, 1, 1, 0, 0, 0) + timedelta(seconds=int(t)) for t in time1]
 
@@ -347,6 +387,8 @@ class ModelicaResults(ResultsBase):
             | building_data
             | chiller_data
             | cooling_plant_pumps
+            | boiler_data
+            | heating_plant_pumps
         )
 
         # add in the 'other variables' if they exist
@@ -358,9 +400,13 @@ class ModelicaResults(ResultsBase):
 
         df_power = pd.pandas.DataFrame(data)
 
-        # create aggregation columns for chillers
+        # create aggregations for the cooling plant
         df_power["Total Chillers"] = df_power[agg_columns["Chillers Total"]].sum(axis=1)
         df_power["Total Cooling Plant"] = df_power[agg_columns["Cooling Plant Total"]].sum(axis=1)
+
+        # create aggregations for the heating plant
+        df_power["Total Boilers"] = df_power[agg_columns["Boilers Total"]].sum(axis=1)
+        df_power["Total Heating Plant"] = df_power[agg_columns["Heating Plant Total"]].sum(axis=1)
 
         # create aggregation columns for total pumps, total heat pumps, and total
         df_power["ETS Pump Electricity Total"] = df_power[agg_columns["ETS Pump Electricity Total"]].sum(axis=1)
@@ -384,7 +430,7 @@ class ModelicaResults(ResultsBase):
             "GHX Pump Electricity",
             "Distribution Pump Electricity",
             "Total Cooling Plant",
-            # TODO: add in heating
+            "Total Heating Plant",
         ]
         df_power["Total DES Electricity"] = df_power[column_names].sum(axis=1)
 
