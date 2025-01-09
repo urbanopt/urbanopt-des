@@ -88,7 +88,7 @@ class ModelicaResults(ResultsBase):
 
     def number_of_buildings(self, building_count_var: str = "nBui") -> int:
         """Return the number of buildings from the Modelica data, if running aggregated results then
-        this value can be a mismatch with the number of buildings in the GeoJSON file.
+        this value is allowed to be a mismatch with the number of buildings in the GeoJSON file.
 
         Args:
             building_count_var (str, optional): Variable that defines the count of buildings. Defaults to 'nBui'.
