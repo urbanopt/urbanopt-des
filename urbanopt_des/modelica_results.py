@@ -10,7 +10,7 @@ from buildingspy.io.outputfile import Reader
 from .emissions import HourlyEmissionsData
 from .results_base import ResultsBase
 
-VariablesDict = dict[str, Union[bool, str, int, str]]
+VariablesDict = dict[str, bool | str | int]]
 
 
 class ModelicaResults(ResultsBase):
