@@ -4,13 +4,12 @@ import datetime
 import json
 import math
 from pathlib import Path
-from typing import Tuple, Union
 
 import pandas as pd
 
 from .emissions import HourlyEmissionsData
 from .modelica_results import ModelicaResults
-from .urbanopt_geojson import URBANoptGeoJSON
+from .urbanopt_geojson import DESGeoJSON
 from .urbanopt_results import URBANoptResults
 
 
@@ -35,7 +34,7 @@ class URBANoptAnalysis:
         """
         self.geojson_file = geojson_file
         if geojson_file.exists():
-            self.geojson = URBANoptGeoJSON(geojson_file)
+            self.geojson = DESGeoJSON(geojson_file)
         else:
             raise Exception(f"GeoJSON file does not exist: {geojson_file}")
 
@@ -344,8 +343,8 @@ class URBANoptAnalysis:
 
     def resample_and_convert_modelica_results(
         self,
-        building_ids: Union[list[str], None] = None,
-        other_vars: Union[list[str], None] = None,
+        building_ids: list[str] | None = None,
+        other_vars: list[str] | None = None,
     ) -> None:
         """Run the resample and convert method for each of the analyses in the modelica object
 
@@ -758,7 +757,7 @@ class URBANoptAnalysis:
         }
 
         new_dict = None
-        # load the GeoJSON file as a dictionary, NOT an URBANoptGeoJSON object.
+        # load the GeoJSON file as a dictionary, NOT an DESGeoJSON object.
         with open(self.geojson_file) as f:
             geojson = json.load(f)
             # insert project dict and move to after the type object
@@ -1170,7 +1169,7 @@ class URBANoptAnalysis:
         return True
 
     @classmethod
-    def get_list_of_valid_result_folders(cls, root_analysis_path: Path) -> Tuple[dict, dict]:
+    def get_list_of_valid_result_folders(cls, root_analysis_path: Path) -> (dict, dict):
         """Parse through the root_analysis_path and return a dict of valid
         result folders that can be loaded and processed. Also return dict of
         folders that have simulation errors or empty results
@@ -1179,7 +1178,7 @@ class URBANoptAnalysis:
             root_analysis_path (Path): Analysis folder to analyze.
 
         Returns:
-            Tuple[list, list]: Tuple of lists, first is a dict of valid results, second list is bad or empty results
+            (dict, dict): Tuple of dicts, first is a dict of valid results, second is bad or empty results
         """
         results = {}
         bad_or_empty_results = {}

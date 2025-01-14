@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from urbanopt_des.urbanopt_geojson import URBANoptGeoJSON
+from urbanopt_des.urbanopt_geojson import DESGeoJSON
 
 
 class GeoJsonTest(unittest.TestCase):
@@ -12,7 +12,7 @@ class GeoJsonTest(unittest.TestCase):
     def test_load_geojson(self):
         """Simple test to make sure we can load the geojson file"""
         filename = self.data_dir / "nrel_campus.json"
-        geojson = URBANoptGeoJSON(filename)
+        geojson = DESGeoJSON(filename)
 
         assert "Outdoor Test Facility" in geojson.get_building_names()
         assert "Research Support Facility" in geojson.get_building_names()
