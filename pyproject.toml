@@ -10,11 +10,11 @@ packages = [{ include = "urbanopt_des", from = "." }]
 python = ">=3.10,<3.13"
 geopandas = "^1.0.1"
 # release mode
-modelica-builder = "^0.6.0"
+# geojson-modelica-translator = "^0.9.1"
 # pre-release mode, use github
-# modelica-builder = { git = "https://github.com/urbanopt/modelica-builder.git", branch = "develop" }
+geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "more-geojson-parsing" }
 # dev mode
-# modelica-builder = { path = "../modelica-builder", develop = true }
+# geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.0"
@@ -25,7 +25,7 @@ pytest = "~7.4"
 pytest-cov = "~4.1"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.1"]
 build-backend = "poetry.core.masonry.api"
 
 # TODO: add in other Ruff configs from CBL or GMT
