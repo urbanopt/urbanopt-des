@@ -1,7 +1,6 @@
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Union
 
 import numpy as np
 import pandas as pd
@@ -9,7 +8,7 @@ from buildingspy.io.outputfile import Reader
 
 from .emissions import HourlyEmissionsData
 
-VariablesDict = Dict[str, Union[bool, str, int, str]]
+VariablesDict = dict[str, bool | str | int | str]
 
 
 class ModelicaResults:
@@ -99,8 +98,8 @@ class ModelicaResults:
 
     def resample_and_convert_to_df(
         self,
-        building_ids: Union[list[str], None] = None,
-        other_vars: Union[list[str], None] = None,
+        building_ids: list[str] | None = None,
+        other_vars: list[str] | None = None,
         year_of_data: int = 2017,
     ) -> None:
         """The Modelica data (self.modelica_data) are stored in a Reader object and the timesteps are non ideal for comparison across models. The method handles
@@ -237,7 +236,7 @@ class ModelicaResults:
 
     def combine_with_openstudio_results(
         self,
-        building_ids: Union[list[str], None],
+        building_ids: list[str] | None,
         openstudio_df: pd.DataFrame,
         openstudio_df_15: pd.DataFrame,
     ) -> None:
