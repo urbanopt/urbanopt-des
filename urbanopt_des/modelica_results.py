@@ -22,18 +22,30 @@ class ModelicaResults(ResultsBase):
         OpenStudio-based results.
 
         Args:
-            mat_filename (Path): Fully qualified path to the .mat file to load and process
+            mat_filename (Path): Fully qualified path to the .mat (or zipped .mat) file to load and process
         """
         super().__init__()
 
-        self.mat_filename = mat_filename
-        # Resulting files will always be stored alongside the .mat file.
-        self.path = self.mat_filename.parent
-        # read in the mat file
-        if self.mat_filename.exists():
-            self.modelica_data = Reader(self.mat_filename, "dymola")
+        # zip files are used for tests, and this
+        if mat_filename.suffix == ".zip":
+            from tempfile import TemporaryDirectory
+            from zipfile import ZipFile
+
+            # Extract the DistrictEnergySystem.mat file from the zip file to a temporary directory,
+            # which will be deleted when the context manager exits
+            with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
+                extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
+                # Create a ModelicaResults object
+                self.modelica_data = Reader(extracted_path, "dymola")
         else:
-            raise Exception(f"Could not find {self.mat_filename}. Will not continue.")
+            self.mat_filename = mat_filename
+            # Resulting files will always be stored alongside the .mat file.
+            self.path = self.mat_filename.parent
+            # read in the mat file
+            if self.mat_filename.exists():
+                self.modelica_data = Reader(self.mat_filename, "dymola")
+            else:
+                raise Exception(f"Could not find {self.mat_filename}. Will not continue.")
 
         # initialize the analysis name to the scenario name, but this can be changed
         self.display_name = self.path.name
@@ -242,8 +254,8 @@ class ModelicaResults(ResultsBase):
         if len(chiller_vars) > 0:
             for var_id, chiller_var in enumerate(chiller_vars):
                 energy = self.retrieve_variable_data(chiller_var, len(time1))
-                chiller_data[f"Chiller {var_id+1}"] = energy
-                cooling_plant_components.append(f"Chiller {var_id+1}")
+                chiller_data[f"Chiller {var_id + 1}"] = energy
+                cooling_plant_components.append(f"Chiller {var_id + 1}")
         else:
             chiller_data["Chiller"] = [0] * len(time1)
             cooling_plant_components.append("Chiller")
@@ -257,8 +269,8 @@ class ModelicaResults(ResultsBase):
         if len(cooling_plant_pumps_vars) > 0:
             for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
                 energy = self.retrieve_variable_data(cooling_plant_pumps_var, len(time1))
-                cooling_plant_components.append(f"CW Pump {var_id+1}")
-                cooling_plant_pumps[f"CW Pump {var_id+1}"] = energy
+                cooling_plant_components.append(f"CW Pump {var_id + 1}")
+                cooling_plant_pumps[f"CW Pump {var_id + 1}"] = energy
         else:
             print("DEBUG: no CW pumps found")
             cooling_plant_pumps["CW Pump"] = [0] * len(time1)
@@ -269,8 +281,8 @@ class ModelicaResults(ResultsBase):
         if len(cooling_plant_pumps_vars) > 0:
             for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
                 energy = self.retrieve_variable_data(cooling_plant_pumps_var, len(time1))
-                cooling_plant_components.append(f"CHW Pump {var_id+1}")
-                cooling_plant_pumps[f"CHW Pump {var_id+1}"] = energy
+                cooling_plant_components.append(f"CHW Pump {var_id + 1}")
+                cooling_plant_pumps[f"CHW Pump {var_id + 1}"] = energy
         else:
             print("DEBUG: no CHW pumps found")
             cooling_plant_pumps["CHW Pump"] = [0] * len(time1)
@@ -281,8 +293,8 @@ class ModelicaResults(ResultsBase):
         if len(cooling_plant_pumps_vars) > 0:
             for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
                 energy = self.retrieve_variable_data(cooling_plant_pumps_var, len(time1))
-                cooling_plant_components.append(f"Cooling Tower Fan {var_id+1}")
-                cooling_plant_pumps[f"Cooling Tower Fan {var_id+1}"] = energy
+                cooling_plant_components.append(f"Cooling Tower Fan {var_id + 1}")
+                cooling_plant_pumps[f"Cooling Tower Fan {var_id + 1}"] = energy
         else:
             print("DEBUG: no cooling tower fans found")
             cooling_plant_pumps["Cooling Tower Fan"] = [0] * len(time1)
@@ -299,8 +311,8 @@ class ModelicaResults(ResultsBase):
         if len(boiler_vars) > 0:
             for var_id, boiler_var in enumerate(boiler_vars):
                 energy = self.retrieve_variable_data(boiler_var, len(time1))
-                boiler_data[f"Boiler {var_id+1}"] = energy
-                heating_plant_components.append(f"Boiler {var_id+1}")
+                boiler_data[f"Boiler {var_id + 1}"] = energy
+                heating_plant_components.append(f"Boiler {var_id + 1}")
         else:
             boiler_data["Boiler"] = [0] * len(time1)
             heating_plant_components.append("Boiler")
@@ -314,8 +326,8 @@ class ModelicaResults(ResultsBase):
         if len(heating_plant_pumps_vars) > 0:
             for var_id, heating_plant_pumps_var in enumerate(heating_plant_pumps_vars):
                 energy = self.retrieve_variable_data(heating_plant_pumps_var, len(time1))
-                heating_plant_components.append(f"HW Pump {var_id+1}")
-                heating_plant_pumps[f"HW Pump {var_id+1}"] = energy
+                heating_plant_components.append(f"HW Pump {var_id + 1}")
+                heating_plant_pumps[f"HW Pump {var_id + 1}"] = energy
         else:
             print("DEBUG: no HW pumps found")
             heating_plant_pumps["HW Pump"] = [0] * len(time1)
