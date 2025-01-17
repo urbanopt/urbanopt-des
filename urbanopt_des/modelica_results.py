@@ -398,7 +398,7 @@ class ModelicaResults(ResultsBase):
                     other_var_data = self.retrieve_variable_data(other_var, len(time1))
                     data[other_var] = other_var_data
 
-        df_power = pd.pandas.DataFrame(data)
+        df_power = pd.DataFrame(data)
 
         # create aggregations for the cooling plant
         df_power["Total Chillers"] = df_power[agg_columns["Chillers Total"]].sum(axis=1)
