@@ -48,6 +48,9 @@ class ModelicaResultsTest(unittest.TestCase):
         # save the dataframes
         data.save_dataframes()
 
-        # for now, just ensure that the power_5, 15, and 60 minutes were persisted
+        # ensure that the power_5, 15, and 60 minutes were persisted
         for interval in [5, 15, 60]:
             self.assertTrue((self.output_dir / f"power_{interval}min.csv").exists())
+
+        # check the sum of the Total Boilers, should be 1376600000 +/- 1E6
+        self.assertAlmostEqual(data.min_60["Total Boilers"].sum(), 1400000000, delta=1e8)
