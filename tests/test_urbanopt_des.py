@@ -8,10 +8,9 @@ class ModelicaResultsTest(unittest.TestCase):
     # This is a simple test to ensure we can extend at a later time
     def setUp(self):
         self.data_dir = Path(__file__).parent / "data"
-        self.output_dir = Path(__file__).parent / "test_output" 
+        self.output_dir = Path(__file__).parent / "test_output"
         if not self.output_dir.exists():
             self.output_dir.mkdir()
-
 
     def test_load_mat_zip(self):
         """Simple test to make sure we can load the geojson file"""
@@ -22,7 +21,7 @@ class ModelicaResultsTest(unittest.TestCase):
 
         data = ModelicaResults(mat_filename)
         data.save_variables(self.output_dir)
-        
+
         # verify that the modelica_variables was created
         self.assertTrue(modelica_variables.exists())
 
@@ -52,5 +51,3 @@ class ModelicaResultsTest(unittest.TestCase):
         # for now, just ensure that the power_5, 15, and 60 minutes were persisted
         for interval in [5, 15, 60]:
             self.assertTrue((self.output_dir / f"power_{interval}min.csv").exists())
-
-        
