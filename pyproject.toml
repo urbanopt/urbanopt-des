@@ -15,6 +15,7 @@ modelica-builder = "^0.6.0"
 # modelica-builder = { git = "https://github.com/urbanopt/modelica-builder.git", branch = "develop" }
 # dev mode
 # modelica-builder = { path = "../modelica-builder", develop = true }
+buildingspy = "^5.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.0"

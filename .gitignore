@@ -12,3 +12,4 @@ data/templates/uo_base/.bundle
 
 # ingore the scratch input/output directory
 scratch
+tests/test_output

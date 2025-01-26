@@ -16,13 +16,14 @@ VariablesDict = dict[str, bool | str | int]
 class ModelicaResults(ResultsBase):
     """Catch for modelica methods. This needs to be refactored"""
 
-    def __init__(self, mat_filename: Path) -> None:
+    def __init__(self, mat_filename: Path, output_path: Path | None = None) -> None:
         """Class for holding the results of a Modelica simulation. This class will handle the post processing
         necessary to create data frames that can be easily compared with other simulation results including
         OpenStudio-based results.
 
         Args:
             mat_filename (Path): Fully qualified path to the .mat (or zipped .mat) file to load and process
+            output_path (Path, optional): Path to save the post-processed data. Defaults to None.
         """
         super().__init__()
 
@@ -36,16 +37,22 @@ class ModelicaResults(ResultsBase):
             with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
                 extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
                 # Create a ModelicaResults object
+                self.mat_filename = Path(extracted_path)
                 self.modelica_data = Reader(extracted_path, "dymola")
         else:
             self.mat_filename = mat_filename
-            # Resulting files will always be stored alongside the .mat file.
-            self.path = self.mat_filename.parent
             # read in the mat file
             if self.mat_filename.exists():
                 self.modelica_data = Reader(self.mat_filename, "dymola")
             else:
                 raise Exception(f"Could not find {self.mat_filename}. Will not continue.")
+
+        # Determine where the outputs of the Modelica results post-processing will be stored.
+        # Typically this is alongside the .mat file, but can be user defined.
+        if output_path:
+            self.path = output_path
+        else:
+            self.path = self.mat_filename.parent
 
         # initialize the analysis name to the scenario name, but this can be changed
         self.display_name = self.path.name
@@ -62,13 +69,19 @@ class ModelicaResults(ResultsBase):
         self.grid_metrics_daily = None
         self.grid_metrics_annual = None
 
-    def save_variables(self) -> dict:
+    def save_variables(self, path_to_save: Path | None = None) -> dict:
         """Save the names of the Modelica variables, including the descriptions and units (if available).
         Returns a dataframe of the variables to enable look up of units and descriptions.
+
+        Args:
+            path_to_save (Path, optional): Path to save the variables. Defaults to the default path of the .mat file.
 
         Returns:
             dict: Dictionary of the variables
         """
+        if path_to_save is None:
+            path_to_save = self.path
+
         modelica_variables: VariablesDict = {}
         for var in self.modelica_data.varNames():
             description = self.modelica_data._data_.description(var)
@@ -93,7 +106,7 @@ class ModelicaResults(ResultsBase):
             if var == "CPUtime":
                 modelica_variables[var]["skip_renaming"] = True
 
-        with open(self.path / "modelica_variables.json", "w") as f:
+        with open(path_to_save / "modelica_variables.json", "w") as f:
             json.dump(modelica_variables, f, indent=2)
 
         return modelica_variables
@@ -449,7 +462,7 @@ class ModelicaResults(ResultsBase):
         # TODO: Add in total DES Natural Gas
 
         # sum up all ETS data (pump and heat pump)
-        df_power.to_csv(self.path / "power_original.csv")
+        # df_power.to_csv(self.path / "power_original.csv")
         df_power = df_power.drop_duplicates(subset="datetime")
         df_power = df_power.set_index("datetime")
 
