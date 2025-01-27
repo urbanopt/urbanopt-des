@@ -46,6 +46,7 @@ class URBANoptAnalysis:
         # High level info about the analysis that is common across all the
         # results
         self.year_of_data = year_of_data
+        # This is the number of buildings in the GeoJSON file
         self.number_of_buildings = len(self.geojson.get_building_ids())
 
         # Container for URBANopt results
@@ -234,9 +235,6 @@ class URBANoptAnalysis:
             analysis_name (str): Name of the analysis, ideally lower snake case for ease of access.
             path_to_mat_file (Path): Path of the .mat file that was generated from the Modelica analysis.
         """
-        # if self.urbanopt is None:
-        #     raise Exception("Must add URBANopt results first before adding Modelica results")
-
         self.modelica[analysis_name] = ModelicaResults(path_to_mat_file)
 
         print(f"Modelica analysis name {self.modelica[analysis_name].display_name}")
@@ -1223,15 +1221,20 @@ class URBANoptAnalysis:
             if error:
                 continue
 
-            # verify that there is a district.mat file
-            mat_file = sim_folder.parent / "district.mat"
-            if not mat_file.exists():
+            # Find the first .mat file in the sim_folder.parent
+            mat_file = list(sim_folder.parent.glob("*.mat"))
+            if not mat_file:
                 bad_or_empty_results[sim_folder.parent] = {}
                 bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
                 # from folder
                 bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
-                bad_or_empty_results[sim_folder.parent]["error"] = "Does not contain a district.mat file"
+                bad_or_empty_results[sim_folder.parent]["error"] = "No result .mat file in root directory"
                 continue
+            elif len(mat_file) > 1:
+                print(f"Warning: multiple .mat files found in {sim_folder.parent}. Using the first one.")
+            else:
+                # grab the first mat_file
+                mat_file = mat_file[0]
 
             # If we are here then there is likely a successful simulation. Now store it in a
             # dictionary for later loading/processing
@@ -1242,7 +1245,7 @@ class URBANoptAnalysis:
                 with open(analysis_name_file) as f:
                     analysis_name = f.read().strip()
             else:
-                print(f"Error: could not load analysis_name.txt file for {mat_file.parent}. Setting to directory name.")
+                print(f"Warning: could not load analysis_name.txt file for {mat_file.parent}. Setting to directory name.")
                 analysis_name = mat_file.parent.name
 
             results[analysis_name] = {
