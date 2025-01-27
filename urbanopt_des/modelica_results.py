@@ -1,38 +1,58 @@
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Union
+from typing import Union
 
 import numpy as np
 import pandas as pd
 from buildingspy.io.outputfile import Reader
 
 from .emissions import HourlyEmissionsData
+from .results_base import ResultsBase
 
-VariablesDict = Dict[str, Union[bool, str, int, str]]
+VariablesDict = dict[str, bool | str | int]
 
 
-class ModelicaResults:
+class ModelicaResults(ResultsBase):
     """Catch for modelica methods. This needs to be refactored"""
 
-    def __init__(self, mat_filename: Path) -> None:
+    def __init__(self, mat_filename: Path, output_path: Path | None = None) -> None:
         """Class for holding the results of a Modelica simulation. This class will handle the post processing
         necessary to create data frames that can be easily compared with other simulation results including
         OpenStudio-based results.
 
         Args:
-            mat_filename (Path): Fully qualified path to the .mat file to load and process
+            mat_filename (Path): Fully qualified path to the .mat (or zipped .mat) file to load and process
+            output_path (Path, optional): Path to save the post-processed data. Defaults to None.
         """
         super().__init__()
 
-        self.mat_filename = mat_filename
-        # Resulting files will always be stored alongside the .mat file.
-        self.path = self.mat_filename.parent
-        # read in the mat file
-        if self.mat_filename.exists():
-            self.modelica_data = Reader(self.mat_filename, "dymola")
+        # zip files are used for tests, and this
+        if mat_filename.suffix == ".zip":
+            from tempfile import TemporaryDirectory
+            from zipfile import ZipFile
+
+            # Extract the DistrictEnergySystem.mat file from the zip file to a temporary directory,
+            # which will be deleted when the context manager exits
+            with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
+                extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
+                # Create a ModelicaResults object
+                self.mat_filename = Path(extracted_path)
+                self.modelica_data = Reader(extracted_path, "dymola")
         else:
-            raise Exception(f"Could not find {self.mat_filename}. Will not continue.")
+            self.mat_filename = mat_filename
+            # read in the mat file
+            if self.mat_filename.exists():
+                self.modelica_data = Reader(self.mat_filename, "dymola")
+            else:
+                raise Exception(f"Could not find {self.mat_filename}. Will not continue.")
+
+        # Determine where the outputs of the Modelica results post-processing will be stored.
+        # Typically this is alongside the .mat file, but can be user defined.
+        if output_path:
+            self.path = output_path
+        else:
+            self.path = self.mat_filename.parent
 
         # initialize the analysis name to the scenario name, but this can be changed
         self.display_name = self.path.name
@@ -49,13 +69,19 @@ class ModelicaResults:
         self.grid_metrics_daily = None
         self.grid_metrics_annual = None
 
-    def save_variables(self) -> dict:
+    def save_variables(self, path_to_save: Path | None = None) -> dict:
         """Save the names of the Modelica variables, including the descriptions and units (if available).
         Returns a dataframe of the variables to enable look up of units and descriptions.
+
+        Args:
+            path_to_save (Path, optional): Path to save the variables. Defaults to the default path of the .mat file.
 
         Returns:
             dict: Dictionary of the variables
         """
+        if path_to_save is None:
+            path_to_save = self.path
+
         modelica_variables: VariablesDict = {}
         for var in self.modelica_data.varNames():
             description = self.modelica_data._data_.description(var)
@@ -80,13 +106,14 @@ class ModelicaResults:
             if var == "CPUtime":
                 modelica_variables[var]["skip_renaming"] = True
 
-        with open(self.path / "modelica_variables.json", "w") as f:
+        with open(path_to_save / "modelica_variables.json", "w") as f:
             json.dump(modelica_variables, f, indent=2)
 
         return modelica_variables
 
     def number_of_buildings(self, building_count_var: str = "nBui") -> int:
-        """Return the number of buildings from the Modelica data
+        """Return the number of buildings from the Modelica data, if running aggregated results then
+        this value is allowed to be a mismatch with the number of buildings in the GeoJSON file.
 
         Args:
             building_count_var (str, optional): Variable that defines the count of buildings. Defaults to 'nBui'.
@@ -94,8 +121,99 @@ class ModelicaResults:
         Returns:
             int: Number of buildings
         """
-        _, n_buildings = self.modelica_data.values(building_count_var)
-        return int(n_buildings[0])
+        # first check if the key appears in the variables
+        if building_count_var in self.modelica_data.varNames():
+            _, n_buildings = self.modelica_data.values(building_count_var)
+            n_buildings = int(n_buildings[0])
+        else:
+            # find all of the nBui_disNet_* in the varNames. There is one for heating and cooling,
+            # so the number of buildings should be equal (for now).
+            n_buildings = 0
+            for var in self.modelica_data.varNames():
+                if "nBui_disNet" in var:
+                    _, n_b = self.modelica_data.values(var)
+                    n_b = int(n_b[0])
+                    if n_buildings == 0:
+                        n_buildings = n_b
+                    elif n_b != n_buildings:
+                        raise Exception(f"Number of buildings on the multiple distribution networks do not match: {n_b} != {n_buildings}")
+
+        # TODO: implement a debugging method and then report this value
+        # print(f"DEBUG: the .mat files has {n_buildings}")
+        return n_buildings
+
+    def retrieve_time_variable_list(self) -> list:
+        """Retrieve the time variable from the .mat file which is tied to a variable. There are cases
+        where the time on a variable is of different length than the other variables, so this method
+        looks at the time variable and returns the time data."""
+        lengths_of_time = []
+        variables_of_time = []
+
+        # Extend these with RegEx's as needed to look for other time dimensions in
+        # .mat files.
+        variables_for_time_array = [
+            "TimeSerLoa_.*.PPum",
+            "^heaPla.*.boiHotWat.boi.*.QWat_flow$",
+            "^cooPla_.*mulChiSys.P.*",
+            "ETot.y",
+        ]
+
+        for var in variables_for_time_array:
+            time_var = None
+            if var in self.modelica_data.varNames():
+                print("DEBUG: found variable {var}")
+                time_var = var
+            else:
+                # check if the variable is found in the varNames
+                time_vars = self.modelica_data.varNames(var)
+                if len(time_vars) == 0:
+                    # there is no time variables found, so just continue
+                    continue
+                elif len(time_vars) > 1:
+                    # pick the first if there is more than one
+                    time_var = time_vars[0]
+
+            if time_var:
+                (time1, _) = self.modelica_data.values(time_var)
+                lengths_of_time.append(len(time1))
+                variables_of_time.append(time_var)
+                print(f"DEBUG: found time var {time_var} of length {len(time1)}")
+
+        # if empty throw error
+        if len(variables_of_time) == 0:
+            raise Exception("No time variables found in the Modelica data.")
+
+        # do a quick check on the collected time variables. If they are not the same lengths, then
+        # throw an error
+        if len(set(lengths_of_time)) != 1:
+            raise Exception(f"Time variables are not the same length: {lengths_of_time} for {variables_of_time}")
+
+        return time1
+
+    def retrieve_variable_data(self, variable_name: str, len_of_time: int, default_value: float = 0) -> list:
+        """Retrieve the variable data from the .mat file. If the data doesn't exist,
+        then fill a dataframe with default 0 values.
+
+        Args:
+            variable_name (str): Name of the variable to retrieve
+            len_of_time (int): Length of the time variable to fill the dataframe with if not found
+            default_value (int, optional): Default value to fill the dataframe with. Defaults to 0.
+
+        Returns:
+            list: List of the variable data
+        """
+        if variable_name in self.modelica_data.varNames():
+            (time1, data1) = self.modelica_data.values(variable_name)
+            # check that the length of time is the same in the data
+            if len(time1) != len_of_time:
+                raise Exception(
+                    f"Length of time variable {len(time1)} does not match the length of the data {len_of_time} for {variable_name}"
+                )
+        else:
+            print(f"DEBUG: variable {variable_name} not found, filling with default value")
+            data1 = [default_value] * len_of_time
+
+        return data1
 
     def resample_and_convert_to_df(
         self,
@@ -128,12 +246,105 @@ class ModelicaResults:
         else:
             building_ids = [f"{i}" for i in range(1, n_buildings + 1)]
 
-        (time1, total_energy) = self.modelica_data.values("ETot.y")
+        time1 = self.retrieve_time_variable_list()
+        print(f"Found time variable of length {len(time1)}")
+
+        # variables for 5G
+        total_energy = self.retrieve_variable_data("ETot.y", len(time1))
 
         # Plant/pumps
-        (_, sewer_pump) = self.modelica_data.values("pla.PPum")
-        (_, ghx_pump) = self.modelica_data.values("pumSto.P")
-        (_, distribution_pump) = self.modelica_data.values("pumDis.P")
+        sewer_pump = self.retrieve_variable_data("pla.PPum", len(time1))
+        ghx_pump = self.retrieve_variable_data("pumSto.P", len(time1))
+        distribution_pump = self.retrieve_variable_data("pumDis.P", len(time1))
+
+        ### COOLING PLANT ###
+        # Keep track of all the components, so that we can create the aggregation at the end
+        cooling_plant_components = []
+        chiller_data: dict[str, list[float]] = {}
+        # 1. get the variables of all the chillers
+        chiller_vars = self.modelica_data.varNames(r"cooPla_.*mulChiSys.P.*")
+        # 2. get the data for all the chillers or default to 1 pump set to 0
+        if len(chiller_vars) > 0:
+            for var_id, chiller_var in enumerate(chiller_vars):
+                energy = self.retrieve_variable_data(chiller_var, len(time1))
+                chiller_data[f"Chiller {var_id + 1}"] = energy
+                cooling_plant_components.append(f"Chiller {var_id + 1}")
+        else:
+            chiller_data["Chiller"] = [0] * len(time1)
+            cooling_plant_components.append("Chiller")
+
+        # Other cooling plant data
+        cooling_plant_pumps: dict[str, list[float]] = {}
+
+        # 1. get the variables of all the condenser water pumps, which is in e.g., cooPla_67e4a0e1.pumCW.P[1]
+        cooling_plant_pumps_vars = self.modelica_data.varNames(r"cooPla_.*pumCW.P.\d.")
+        # 2. get the data for all the pumps or default to 1 pump set to 0
+        if len(cooling_plant_pumps_vars) > 0:
+            for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
+                energy = self.retrieve_variable_data(cooling_plant_pumps_var, len(time1))
+                cooling_plant_components.append(f"CW Pump {var_id + 1}")
+                cooling_plant_pumps[f"CW Pump {var_id + 1}"] = energy
+        else:
+            print("DEBUG: no CW pumps found")
+            cooling_plant_pumps["CW Pump"] = [0] * len(time1)
+            cooling_plant_components.append("CW Pump")
+        # 3. get the variables of all the chilled water pumps, which is in e.g., cooPla_67e4a0e1.pumCHW.P[1]
+        cooling_plant_pumps_vars = self.modelica_data.varNames(r"cooPla_.*pumCHW.P.\d.")
+        # 4. get the data for all the pumps or default to 1 pump set to 0
+        if len(cooling_plant_pumps_vars) > 0:
+            for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
+                energy = self.retrieve_variable_data(cooling_plant_pumps_var, len(time1))
+                cooling_plant_components.append(f"CHW Pump {var_id + 1}")
+                cooling_plant_pumps[f"CHW Pump {var_id + 1}"] = energy
+        else:
+            print("DEBUG: no CHW pumps found")
+            cooling_plant_pumps["CHW Pump"] = [0] * len(time1)
+            cooling_plant_components.append("CHW Pump")
+        # 5. get the variables of the cooling tower fans
+        cooling_plant_pumps_vars = self.modelica_data.varNames(r"cooPla_.*cooTowWitByp.PFan.\d.")
+        # 6. get the data for all the fans or default to 1 pump set to 0
+        if len(cooling_plant_pumps_vars) > 0:
+            for var_id, cooling_plant_pumps_var in enumerate(cooling_plant_pumps_vars):
+                energy = self.retrieve_variable_data(cooling_plant_pumps_var, len(time1))
+                cooling_plant_components.append(f"Cooling Tower Fan {var_id + 1}")
+                cooling_plant_pumps[f"Cooling Tower Fan {var_id + 1}"] = energy
+        else:
+            print("DEBUG: no cooling tower fans found")
+            cooling_plant_pumps["Cooling Tower Fan"] = [0] * len(time1)
+            cooling_plant_components.append("Cooling Tower Fan")
+
+        ### HEATING PLANT ###
+        # Keep track of all the components, so that we can create the aggregation at the end
+        heating_plant_components = []
+        boiler_data: dict[str, list[float]] = {}
+        # 1. get the variables of all the boilers
+        boiler_vars = self.modelica_data.varNames(r"heaPla.*boiHotWat.boi.\d..QFue_flow")
+        print(boiler_vars)
+        # 2. get the data for all the chillers or default to 1 pump set to 0
+        if len(boiler_vars) > 0:
+            for var_id, boiler_var in enumerate(boiler_vars):
+                energy = self.retrieve_variable_data(boiler_var, len(time1))
+                boiler_data[f"Boiler {var_id + 1}"] = energy
+                heating_plant_components.append(f"Boiler {var_id + 1}")
+        else:
+            boiler_data["Boiler"] = [0] * len(time1)
+            heating_plant_components.append("Boiler")
+
+        # Other heating plant data
+        heating_plant_pumps: dict[str, list[float]] = {}
+
+        # 1. get the variables of all the condenser water pumps, which is in e.g., cooPla_67e4a0e1.pumCW.P[1]
+        heating_plant_pumps_vars = self.modelica_data.varNames(r"heaPla.*pumHW.P.\d.")
+        # 2. get the data for all the pumps or default to 1 pump set to 0
+        if len(heating_plant_pumps_vars) > 0:
+            for var_id, heating_plant_pumps_var in enumerate(heating_plant_pumps_vars):
+                energy = self.retrieve_variable_data(heating_plant_pumps_var, len(time1))
+                heating_plant_components.append(f"HW Pump {var_id + 1}")
+                heating_plant_pumps[f"HW Pump {var_id + 1}"] = energy
+        else:
+            print("DEBUG: no HW pumps found")
+            heating_plant_pumps["HW Pump"] = [0] * len(time1)
+            heating_plant_components.append("HW Pump")
 
         # building related data
         building_data: dict[str, list[float]] = {}
@@ -148,12 +359,12 @@ class ModelicaResults:
             # get the building name
             building_id = building_ids[n_b - 1]
             # Note that these P.*.u variables do not have units defined in the vars, but they are Watts
-            (_, ets_pump_data) = self.modelica_data.values(f"PPumETS.u[{n_b}]")
-            (_, ets_hp_data) = self.modelica_data.values(f"PHeaPump.u[{n_b}]")
+            ets_pump_data = self.retrieve_variable_data(f"PPumETS.u[{n_b}]", len(time1))
+            ets_hp_data = self.retrieve_variable_data(f"PHeaPump.u[{n_b}]", len(time1))
 
             # Thermal Energy to buildings
-            (_, ets_q_cooling) = self.modelica_data.values(f"bui[{n_b}].QCoo_flow")
-            (_, ets_q_heating) = self.modelica_data.values(f"bui[{n_b}].QHea_flow")
+            ets_q_cooling = self.retrieve_variable_data(f"bui[{n_b}].QCoo_flow", len(time1))
+            ets_q_heating = self.retrieve_variable_data(f"bui[{n_b}].QHea_flow", len(time1))
 
             agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump Electricity Building {building_id}")
             agg_columns["ETS Heat Pump Electricity Total"].append(f"ETS Heat Pump Electricity Building {building_id}")
@@ -163,6 +374,22 @@ class ModelicaResults:
             building_data[f"ETS Heat Pump Electricity Building {building_id}"] = ets_hp_data
             building_data[f"ETS Thermal Cooling Building {building_id}"] = ets_q_cooling
             building_data[f"ETS Thermal Heating Building {building_id}"] = ets_q_heating
+
+        # Add in chiller aggregations
+        agg_columns["Chillers Total"] = []
+        for n_c in range(1, len(chiller_data.keys()) + 1):
+            agg_columns["Chillers Total"].append(f"Chiller {n_c}")
+
+        # Add in all of the cooling plant variables
+        agg_columns["Cooling Plant Total"] = cooling_plant_components.copy()
+
+        # Add in boiler aggregations
+        agg_columns["Boilers Total"] = []
+        for n_c in range(1, len(boiler_data.keys()) + 1):
+            agg_columns["Boilers Total"].append(f"Boiler {n_c}")
+
+        # Add in all of the heating plant variables
+        agg_columns["Heating Plant Total"] = heating_plant_components.copy()
 
         # convert time to timestamps for pandas
         time = [datetime(year_of_data, 1, 1, 0, 0, 0) + timedelta(seconds=int(t)) for t in time1]
@@ -175,25 +402,36 @@ class ModelicaResults:
         df_energy.index.name = "datetime"
 
         # all data combined
-        data = {
-            "datetime": time,
-            "Sewer Pump Electricity": sewer_pump,
-            "GHX Pump Electricity": ghx_pump,
-            "Distribution Pump Electricity": distribution_pump,
-        } | building_data
+        data = (
+            {
+                "datetime": time,
+                "Sewer Pump Electricity": sewer_pump,
+                "GHX Pump Electricity": ghx_pump,
+                "Distribution Pump Electricity": distribution_pump,
+            }
+            | building_data
+            | chiller_data
+            | cooling_plant_pumps
+            | boiler_data
+            | heating_plant_pumps
+        )
 
         # add in the 'other variables' if they exist
         if other_vars is not None:
             for other_var in other_vars:
                 if other_var in self.modelica_data.varNames():
-                    (_, other_var_data) = self.modelica_data.values(other_var)
-                    # check the length of the data
-                    if len(other_var_data) == len(time):
-                        data[other_var] = other_var_data
-                    else:
-                        print(f'Other var "{other_var}" length does not match {len(other_var_data)} != {len(time)}')
+                    other_var_data = self.retrieve_variable_data(other_var, len(time1))
+                    data[other_var] = other_var_data
 
-        df_power = pd.pandas.DataFrame(data)
+        df_power = pd.DataFrame(data)
+
+        # create aggregations for the cooling plant
+        df_power["Total Chillers"] = df_power[agg_columns["Chillers Total"]].sum(axis=1)
+        df_power["Total Cooling Plant"] = df_power[agg_columns["Cooling Plant Total"]].sum(axis=1)
+
+        # create aggregations for the heating plant
+        df_power["Total Boilers"] = df_power[agg_columns["Boilers Total"]].sum(axis=1)
+        df_power["Total Heating Plant"] = df_power[agg_columns["Heating Plant Total"]].sum(axis=1)
 
         # create aggregation columns for total pumps, total heat pumps, and total
         df_power["ETS Pump Electricity Total"] = df_power[agg_columns["ETS Pump Electricity Total"]].sum(axis=1)
@@ -201,7 +439,8 @@ class ModelicaResults:
         df_power["Total Thermal Cooling Energy"] = df_power[agg_columns["ETS Thermal Cooling Total"]].sum(axis=1)
         df_power["Total Thermal Heating Energy"] = df_power[agg_columns["ETS Thermal Heating Total"]].sum(axis=1)
 
-        # Calculate the District Loop Power - if the columns exists
+        # Calculate the District Loop Power - Default to zero to start with
+        df_power["District Loop Energy"] = 0
         # check if multiple columns are in a dataframe
         if all(column in df_power.columns for column in ["TDisWatRet.port_a.m_flow", "TDisWatRet.T", "TDisWatSup.T"]):
             # \dot{m} * c_p * \Delta T with Water at (4186 J/kg/K)
@@ -215,11 +454,15 @@ class ModelicaResults:
             "Sewer Pump Electricity",
             "GHX Pump Electricity",
             "Distribution Pump Electricity",
+            "Total Cooling Plant",
+            "Total Heating Plant",
         ]
         df_power["Total DES Electricity"] = df_power[column_names].sum(axis=1)
 
+        # TODO: Add in total DES Natural Gas
+
         # sum up all ETS data (pump and heat pump)
-        df_power.to_csv(self.path / "power_original.csv")
+        # df_power.to_csv(self.path / "power_original.csv")
         df_power = df_power.drop_duplicates(subset="datetime")
         df_power = df_power.set_index("datetime")
 
@@ -282,133 +525,14 @@ class ModelicaResults:
         # should we resort the columns?
 
     def create_summary(self):
-        """Create an annual summary by selecting key variables and values and transposing them for easy comparison"""
-        # now create the summary table
-        summary_columns = [
-            {
-                "name": "Total Building Interior Lighting",
-                "units": "Wh",
-                "display_name": "Interior Lighting",
-            },
-            {
-                "name": "Total Building Exterior Lighting",
-                "units": "Wh",
-                "display_name": "Exterior Lighting",
-            },
-            {
-                "name": "Total Building Interior Equipment",
-                "units": "Wh",
-                "display_name": "Plug Loads",
-            },
-            {
-                "name": "Total Building HVAC Cooling Energy",
-                "units": "Wh",
-                "display_name": "Building Cooling",
-            },
-            {
-                "name": "Total Building HVAC Heating Energy",
-                "units": "Wh",
-                "display_name": "Building Heating",
-            },
-            {
-                "name": "Total Building Fans Electricity",
-                "units": "Wh",
-                "display_name": "Building Fans",
-            },
-            {
-                "name": "Total Building Pumps Electricity",
-                "units": "Wh",
-                "display_name": "Building Pumps",
-            },
-            {
-                "name": "Total Building Heat Rejection Electricity",
-                "units": "Wh",
-                "display_name": "Building Heat Rejection",
-            },
-            {
-                "name": "Total Building Water Systems",
-                "units": "Wh",
-                "display_name": "Building Water Systems",
-            },
-            {
-                "name": "ETS Pump Electricity Total",
-                "units": "Wh",
-                "display_name": "ETS Pump Total",
-            },
-            {
-                "name": "ETS Heat Pump Electricity Total",
-                "units": "Wh",
-                "display_name": "ETS Heat Pump",
-            },
-            {
-                "name": "Sewer Pump Electricity",
-                "units": "Wh",
-                "display_name": "Sewer Pump",
-            },
-            {
-                "name": "GHX Pump Electricity",
-                "units": "Wh",
-                "display_name": "GHX Pump",
-            },
-            {
-                "name": "Distribution Pump Electricity",
-                "units": "Wh",
-                "display_name": "Distribution Pump",
-            },
-            {
-                "name": "Total Electricity",
-                "units": "Wh",
-                "display_name": "Total Electricity",
-            },
-            {
-                "name": "Total Natural Gas",
-                "units": "Wh",
-                "display_name": "Total Natural Gas",
-            },
-            {
-                "name": "Total Thermal Cooling Energy",
-                "units": "Wh",
-                "display_name": "Thermal Cooling",
-            },
-            {
-                "name": "Total Thermal Heating Energy",
-                "units": "Wh",
-                "display_name": "Thermal Heating",
-            },
-            {
-                "name": "District Loop Energy",
-                "units": "Wh",
-                "display_name": "District Loop Energy",
-            },
-            {
-                "name": "Total Natural Gas Carbon Emissions",
-                "units": "mtCO2e",
-                "display_name": "Total Natural Gas Carbon Emissions",
-            },
-            {
-                "name": "Total Electricity Carbon Emissions 2024",
-                "units": "mtCO2e",
-                "display_name": "Total Electricity Carbon Emissions 2024",
-            },
-            {
-                "name": "Total Electricity Carbon Emissions 2045",
-                "units": "mtCO2e",
-                "display_name": "Total Electricity Carbon Emissions 2045",
-            },
-            {
-                "name": "Total Carbon Emissions 2024",
-                "units": "mtCO2e",
-                "display_name": "Total Carbon Emissions 2024",
-            },
-            {
-                "name": "Total Carbon Emissions 2045",
-                "units": "mtCO2e",
-                "display_name": "Total Carbon Emissions 2045",
-            },
-        ]
-
+        """Create an annual end use summary by selecting key variables and values and transposing them for easy comparison.
+        In the dict the following conventions are used:
+            * `name` is the name of the variable in the data frame
+            * `units` is the units of the variable
+            * `display_name` will be the new name of the variable in the end use summary table.
+        """
         # get the list of all the columns to allocate the data frame correctly
-        columns = [c["display_name"] for c in summary_columns]
+        columns = [c["display_name"] for c in self.end_use_summary_dict]
 
         # Create a single column of data
         self.end_use_summary = pd.DataFrame(
@@ -418,11 +542,11 @@ class ModelicaResults:
         )
 
         # add the units column if it isn't already there
-        self.end_use_summary["Units"] = [c["units"] for c in summary_columns]
+        self.end_use_summary["Units"] = [c["units"] for c in self.end_use_summary_dict]
 
         # create a CSV file for the summary table with
         # the columns as the rows and the results as the columns
-        for column in summary_columns:
+        for column in self.end_use_summary_dict:
             # check if the column exists in the data frame and if not, then set the value to zero!
             if column["name"] in self.annual.columns:
                 self.end_use_summary[self.display_name][column["display_name"]] = float(self.annual[column["name"]].iloc[0])
