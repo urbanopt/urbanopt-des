@@ -275,8 +275,6 @@ class URBANoptAnalysis:
         for building_id in self.geojson.get_building_ids():
             meters = self.geojson.get_meters_for_building(building_id)
             for meter in meters:
-                # print(f"Processing meter {meter} for building {building_id}")
-
                 meter_readings = self.geojson.get_meter_readings_for_building(building_id, meter)
                 # add the meter_type to all the json objects
                 [meter_reading.update({"meter_type": meter, "building_id": building_id}) for meter_reading in meter_readings]

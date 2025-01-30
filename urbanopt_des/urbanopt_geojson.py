@@ -8,8 +8,8 @@ from shapely.geometry import box
 
 
 class DESGeoJSON(UrbanOptGeoJson):
-    def __init__(self, filename: Path):
-        super().__init__(filename)
+    def __init__(self, filename: Path, building_ids=None, skip_validation=False):
+        super().__init__(filename, building_ids, skip_validation)
 
     def create_aggregated_representation(self, building_names: list[str]) -> None:
         """Go through the GeoJSON file and if it is of type Building, then aggregate the characteristics.
