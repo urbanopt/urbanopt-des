@@ -12,17 +12,16 @@ geopandas = "^1.0.1"
 # release mode
 # geojson-modelica-translator = "^0.9.1"
 # pre-release mode, use github
-geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "more-geojson-parsing" }
+geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
 # dev mode
-# modelica-builder = { path = "../modelica-builder", develop = true }
-# buildingspy = "^5.1.0"
+# geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "^3.7.0"
-coveralls = "~3.3"
-mypy = "~1.6"
-pytest = "~7.4"
-pytest-cov = "~4.1"
+pre-commit = "~=4.0"
+coveralls = "~=4.0"
+mypy = "~1.14"
+pytest = "~=8.3"
+pytest-cov = "~6.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.1"]
