@@ -318,7 +318,6 @@ class ModelicaResults(ResultsBase):
         boiler_data: dict[str, list[float]] = {}
         # 1. get the variables of all the boilers
         boiler_vars = self.modelica_data.varNames(r"heaPla.*boiHotWat.boi.\d..QFue_flow")
-        print(boiler_vars)
         # 2. get the data for all the chillers or default to 1 pump set to 0
         if len(boiler_vars) > 0:
             for var_id, boiler_var in enumerate(boiler_vars):
@@ -331,7 +330,6 @@ class ModelicaResults(ResultsBase):
 
         # Other heating plant data
         heating_plant_pumps: dict[str, list[float]] = {}
-
         # 1. get the variables of all the condenser water pumps, which is in e.g., cooPla_67e4a0e1.pumCW.P[1]
         heating_plant_pumps_vars = self.modelica_data.varNames(r"heaPla.*pumHW.P.\d.")
         # 2. get the data for all the pumps or default to 1 pump set to 0
@@ -350,29 +348,45 @@ class ModelicaResults(ResultsBase):
 
         agg_columns: dict[str, list[str]] = {
             "ETS Heat Pump Electricity Total": [],
+            "ETS Pump CHW Electricity Total": [],
+            "ETS Pump HHW Electricity Total": [],
             "ETS Pump Electricity Total": [],
             "ETS Thermal Cooling Total": [],
             "ETS Thermal Heating Total": [],
         }
         for n_b in range(1, n_buildings + 1):
-            # get the building name
+            # get the building name as this is what is in the Modelica results
             building_id = building_ids[n_b - 1]
-            # Note that these P.*.u variables do not have units defined in the vars, but they are Watts
-            ets_pump_data = self.retrieve_variable_data(f"PPumETS.u[{n_b}]", len(time1))
+
+            # ETS heat pump power
             ets_hp_data = self.retrieve_variable_data(f"PHeaPump.u[{n_b}]", len(time1))
 
-            # Thermal Energy to buildings
+            # ETS pump data - disFloCoo is on the building_id, not the building number.
+            ets_pump_data = self.retrieve_variable_data(f"PPumETS.u[{n_b}]", len(time1))  # This is ambient / 5g pump
+            ets_pump_chw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloCoo.PPum", len(time1))
+            ets_pump_hhw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloHea.PPum", len(time1))
+
+            # Thermal energy to buildings
             ets_q_cooling = self.retrieve_variable_data(f"bui[{n_b}].QCoo_flow", len(time1))
             ets_q_heating = self.retrieve_variable_data(f"bui[{n_b}].QHea_flow", len(time1))
 
-            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump Electricity Building {building_id}")
-            agg_columns["ETS Heat Pump Electricity Total"].append(f"ETS Heat Pump Electricity Building {building_id}")
-            agg_columns["ETS Thermal Cooling Total"].append(f"ETS Thermal Cooling Building {building_id}")
-            agg_columns["ETS Thermal Heating Total"].append(f"ETS Thermal Heating Building {building_id}")
             building_data[f"ETS Pump Electricity Building {building_id}"] = ets_pump_data
+            building_data[f"ETS Pump CHW Electricity Building {building_id}"] = ets_pump_chw_data
+            building_data[f"ETS Pump HHW Electricity Building {building_id}"] = ets_pump_hhw_data
             building_data[f"ETS Heat Pump Electricity Building {building_id}"] = ets_hp_data
             building_data[f"ETS Thermal Cooling Building {building_id}"] = ets_q_cooling
             building_data[f"ETS Thermal Heating Building {building_id}"] = ets_q_heating
+
+            # Add variables to aggregations - these keys have to be defined above too.
+            # ETS Pump has CHW, HHW, and then total. -- total includes ambient + hhw + chw
+            agg_columns["ETS Heat Pump Electricity Total"].append(f"ETS Heat Pump Electricity Building {building_id}")
+            agg_columns["ETS Pump CHW Electricity Total"].append(f"ETS Pump CHW Electricity Building {building_id}")
+            agg_columns["ETS Pump HHW Electricity Total"].append(f"ETS Pump CHW Electricity Building {building_id}")
+            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump Electricity Building {building_id}")
+            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump CHW Electricity Building {building_id}")
+            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump HHW Electricity Building {building_id}")
+            agg_columns["ETS Thermal Cooling Total"].append(f"ETS Thermal Cooling Building {building_id}")
+            agg_columns["ETS Thermal Heating Total"].append(f"ETS Thermal Heating Building {building_id}")
 
         # Add in chiller aggregations
         agg_columns["Chillers Total"] = []
