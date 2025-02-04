@@ -40,10 +40,9 @@ class ModelicaResultsTest(unittest.TestCase):
                 (self.output_dir / f"power_{interval}min.csv").unlink()
 
         data = ModelicaResults(mat_filename, self.output_dir)
-        data.resample_and_convert_to_df()
-        # This test file for some reason is missing several hours. Eventually
-        # use a new data file
-        self.assertEqual(data.min_60.shape[0], 8751)
+        data.resample_and_convert_to_df(["all_buildings"])
+        # Should have hourly data for a full year
+        self.assertEqual(data.min_60.shape[0], 8761)
 
         # save the dataframes
         data.save_dataframes()
@@ -54,3 +53,9 @@ class ModelicaResultsTest(unittest.TestCase):
 
         # check the sum of the Total Boilers, should be 1376600000 +/- 1E6
         self.assertAlmostEqual(data.min_60["Total Boilers"].sum(), 1400000000, delta=1e8)
+
+        # verify that the ETS Pump Electricity is reported in this model since
+        # the 4G systems should have ETS pumps now (which are in the building)
+        self.assertTrue("ETS Pump Electricity Total" in data.min_60.columns)
+        print(data.min_60["ETS Pump Electricity Total"].sum())
+        self.assertGreater(data.min_60["ETS Pump Electricity Total"].sum(), 0)

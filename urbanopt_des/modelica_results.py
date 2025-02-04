@@ -1,7 +1,6 @@
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -217,8 +216,8 @@ class ModelicaResults(ResultsBase):
 
     def resample_and_convert_to_df(
         self,
-        building_ids: Union[list[str], None] = None,
-        other_vars: Union[list[str], None] = None,
+        building_ids: list[str] | None = None,
+        other_vars: list[str] | None = None,
         year_of_data: int = 2017,
     ) -> None:
         """The Modelica data (self.modelica_data) are stored in a Reader object and the timesteps are non ideal for comparison across models. The method handles
@@ -226,9 +225,9 @@ class ModelicaResults(ResultsBase):
         then the data will be resampled to 5min, 15min, and 60min.
 
         Args:
-            building_ids (Union[list[str], None], optional): Name of the buildings to process out of the Modelica data. Defaults to None.
-            other_vars (Union[list[str], None], optional): Other variables to extract and store in the dataframe. Defaults to None.
-            year_of_data (int, optional): Year of the data, should match the URBANopt/OpenStudio/EnergyPlus value and correct starting day of week. Defaults to 2017.
+            building_ids (list[str] | None): Name of the buildings to process out of the Modelica data. Defaults to None.
+            other_vars (list[str] | None): Other variables to extract and store in the dataframe. Defaults to None.
+            year_of_data (int): Year of the data, should match the URBANopt/OpenStudio/EnergyPlus value and correct starting day of week. Defaults to 2017.
 
         Raises:
             Exception: errors
@@ -319,7 +318,6 @@ class ModelicaResults(ResultsBase):
         boiler_data: dict[str, list[float]] = {}
         # 1. get the variables of all the boilers
         boiler_vars = self.modelica_data.varNames(r"heaPla.*boiHotWat.boi.\d..QFue_flow")
-        print(boiler_vars)
         # 2. get the data for all the chillers or default to 1 pump set to 0
         if len(boiler_vars) > 0:
             for var_id, boiler_var in enumerate(boiler_vars):
@@ -332,7 +330,6 @@ class ModelicaResults(ResultsBase):
 
         # Other heating plant data
         heating_plant_pumps: dict[str, list[float]] = {}
-
         # 1. get the variables of all the condenser water pumps, which is in e.g., cooPla_67e4a0e1.pumCW.P[1]
         heating_plant_pumps_vars = self.modelica_data.varNames(r"heaPla.*pumHW.P.\d.")
         # 2. get the data for all the pumps or default to 1 pump set to 0
@@ -351,29 +348,45 @@ class ModelicaResults(ResultsBase):
 
         agg_columns: dict[str, list[str]] = {
             "ETS Heat Pump Electricity Total": [],
+            "ETS Pump CHW Electricity Total": [],
+            "ETS Pump HHW Electricity Total": [],
             "ETS Pump Electricity Total": [],
             "ETS Thermal Cooling Total": [],
             "ETS Thermal Heating Total": [],
         }
         for n_b in range(1, n_buildings + 1):
-            # get the building name
+            # get the building name as this is what is in the Modelica results
             building_id = building_ids[n_b - 1]
-            # Note that these P.*.u variables do not have units defined in the vars, but they are Watts
-            ets_pump_data = self.retrieve_variable_data(f"PPumETS.u[{n_b}]", len(time1))
+
+            # ETS heat pump power
             ets_hp_data = self.retrieve_variable_data(f"PHeaPump.u[{n_b}]", len(time1))
 
-            # Thermal Energy to buildings
+            # ETS pump data - disFloCoo is on the building_id, not the building number.
+            ets_pump_data = self.retrieve_variable_data(f"PPumETS.u[{n_b}]", len(time1))  # This is ambient / 5g pump
+            ets_pump_chw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloCoo.PPum", len(time1))
+            ets_pump_hhw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloHea.PPum", len(time1))
+
+            # Thermal energy to buildings
             ets_q_cooling = self.retrieve_variable_data(f"bui[{n_b}].QCoo_flow", len(time1))
             ets_q_heating = self.retrieve_variable_data(f"bui[{n_b}].QHea_flow", len(time1))
 
-            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump Electricity Building {building_id}")
-            agg_columns["ETS Heat Pump Electricity Total"].append(f"ETS Heat Pump Electricity Building {building_id}")
-            agg_columns["ETS Thermal Cooling Total"].append(f"ETS Thermal Cooling Building {building_id}")
-            agg_columns["ETS Thermal Heating Total"].append(f"ETS Thermal Heating Building {building_id}")
             building_data[f"ETS Pump Electricity Building {building_id}"] = ets_pump_data
+            building_data[f"ETS Pump CHW Electricity Building {building_id}"] = ets_pump_chw_data
+            building_data[f"ETS Pump HHW Electricity Building {building_id}"] = ets_pump_hhw_data
             building_data[f"ETS Heat Pump Electricity Building {building_id}"] = ets_hp_data
             building_data[f"ETS Thermal Cooling Building {building_id}"] = ets_q_cooling
             building_data[f"ETS Thermal Heating Building {building_id}"] = ets_q_heating
+
+            # Add variables to aggregations - these keys have to be defined above too.
+            # ETS Pump has CHW, HHW, and then total. -- total includes ambient + hhw + chw
+            agg_columns["ETS Heat Pump Electricity Total"].append(f"ETS Heat Pump Electricity Building {building_id}")
+            agg_columns["ETS Pump CHW Electricity Total"].append(f"ETS Pump CHW Electricity Building {building_id}")
+            agg_columns["ETS Pump HHW Electricity Total"].append(f"ETS Pump CHW Electricity Building {building_id}")
+            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump Electricity Building {building_id}")
+            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump CHW Electricity Building {building_id}")
+            agg_columns["ETS Pump Electricity Total"].append(f"ETS Pump HHW Electricity Building {building_id}")
+            agg_columns["ETS Thermal Cooling Total"].append(f"ETS Thermal Cooling Building {building_id}")
+            agg_columns["ETS Thermal Heating Total"].append(f"ETS Thermal Heating Building {building_id}")
 
         # Add in chiller aggregations
         agg_columns["Chillers Total"] = []
@@ -480,7 +493,7 @@ class ModelicaResults(ResultsBase):
 
     def combine_with_openstudio_results(
         self,
-        building_ids: Union[list[str], None],
+        building_ids: list[str] | None,
         openstudio_df: pd.DataFrame,
         openstudio_df_15: pd.DataFrame,
     ) -> None:
@@ -489,7 +502,7 @@ class ModelicaResults(ResultsBase):
         HVAC related.
 
         Args:
-            building_ids (Union[list[str], None]): Name of the buildings
+            building_ids (list[str] | None): Name of the buildings
             openstudio_df (pd.DataFrame): dataframe of URBANopt/OpenStudio hourly results
             openstudio_df_15 (pd.DataFrame): dataframe of URBANopt/OpenStudio 15min results
         Returns:
