@@ -269,8 +269,8 @@ class ModelicaResults(ResultsBase):
                 chiller_data[f"Chiller {var_id + 1}"] = energy
                 cooling_plant_components.append(f"Chiller {var_id + 1}")
         else:
-            chiller_data["Chiller"] = [0] * len(time1)
-            cooling_plant_components.append("Chiller")
+            chiller_data["Chiller 1"] = [0] * len(time1)
+            cooling_plant_components.append("Chiller 1")
 
         # Other cooling plant data
         cooling_plant_pumps: dict[str, list[float]] = {}
@@ -325,8 +325,8 @@ class ModelicaResults(ResultsBase):
                 boiler_data[f"Boiler {var_id + 1}"] = energy
                 heating_plant_components.append(f"Boiler {var_id + 1}")
         else:
-            boiler_data["Boiler"] = [0] * len(time1)
-            heating_plant_components.append("Boiler")
+            boiler_data["Boiler 1"] = [0] * len(time1)
+            heating_plant_components.append("Boiler 1")
 
         # Other heating plant data
         heating_plant_pumps: dict[str, list[float]] = {}
