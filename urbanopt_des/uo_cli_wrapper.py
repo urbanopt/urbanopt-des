@@ -34,7 +34,7 @@ class UOCliWrapper:
 
         # if windows, then the path is different
         if os.name == "nt":
-            self.uo_directory = f"C:/URBANoptCLI_{self.uo_version}"
+            self.uo_directory = f"C:/URBANopt-cli-{self.uo_version}" #***replaced path name based on how it autoinstalls for windows
         else:
             self.uo_directory = f"/Applications/URBANoptCLI_{self.uo_version}"
 
@@ -53,7 +53,7 @@ class UOCliWrapper:
                 new_env["RUBYLIB"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 new_env["RUBY_DLL_PATH"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 # For REopt
-                new_env["GEM_DEVELOPER_KEY"] = os.environ["GEM_DEVELOPER_KEY"]
+                #new_env["GEM_DEVELOPER_KEY"] = os.environ["GEM_DEVELOPER_KEY"] #***commented out!!
                 result = subprocess.run(  # noqa: S602
                     command,
                     capture_output=True,
