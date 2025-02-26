@@ -516,6 +516,8 @@ class ModelicaResults(ResultsBase):
             "InteriorEquipment:Electricity Building",
             "ExteriorEquipment:Electricity Building",
             "InteriorEquipment:NaturalGas Building",
+            "WaterSystems:Electricity Building",
+            "WaterSystems:NaturalGas Building",
         ]
         meter_names = [f"{meter_name} {building_id}" for building_id in building_ids for meter_name in building_meter_names]
         # add in the end use totals that are non-HVAC
@@ -526,6 +528,9 @@ class ModelicaResults(ResultsBase):
             "Total Building Exterior Equipment Electricity",
             "Total Building Interior Equipment Natural Gas",
             "Total Building Interior Equipment",
+            "Total Building Water Systems Electricity",
+            "Total Building Water Systems Natural Gas",
+            "Total Building Water Systems"       
         ]
 
         self.min_60_with_buildings = pd.concat([self.min_60, openstudio_df[meter_names]], axis=1, join="inner")
