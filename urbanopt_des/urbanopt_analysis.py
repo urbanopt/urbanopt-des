@@ -530,9 +530,11 @@ class URBANoptAnalysis:
                 "Total Building Exterior Lighting",
                 "Total Building Interior Equipment Electricity",
                 "Total Building Exterior Equipment Electricity",
+                "Total Building Water Systems Electricity",
             ]
             building_aggs["Total Building Natural Gas"]["agg_columns"] = [
                 "Total Building Interior Equipment Natural Gas",
+                "Total Building Water Systems Natural Gas",
             ]
             building_aggs["Total Building and ETS Energy"]["agg_columns"] = [
                 "Total Building Electricity",
