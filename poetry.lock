@@ -525,31 +525,27 @@ files = [
 
 [[package]]
 name = "geojson-modelica-translator"
-version = "0.9.2"
+version = "0.9.3"
 description = "Package for converting GeoJSON to Modelica models for urban scale analyses."
 optional = false
-python-versions = ">=3.10, <3.14"
+python-versions = "<3.14,>=3.10"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "geojson_modelica_translator-0.9.3-py3-none-any.whl", hash = "sha256:023b9b8caeb7e30812e37311c32921e470d53bd2720bfb1cae29e7359d8e0886"},
+    {file = "geojson_modelica_translator-0.9.3.tar.gz", hash = "sha256:45bdf6abb0e894836334b87d4e2cfe85a01f2e9f2a5e4cc87105020f65593e56"},
+]
 
 [package.dependencies]
-BuildingsPy = "~=5.1"
-click = "~=8.1"
-geojson = "~=3.1"
-jinja2 = "~=3.1"
-jsonpath-ng = "~=1.6"
-jsonschema = "~=4.20"
-modelica-builder = "~=0.6.0"
-pandas = "~2"
-requests = "~=2.28"
+BuildingsPy = ">=5.1,<6.0"
+click = ">=8.1,<9.0"
+geojson = ">=3.1,<4.0"
+jinja2 = ">=3.1,<4.0"
+jsonpath-ng = ">=1.6,<2.0"
+jsonschema = ">=4.20,<5.0"
+modelica-builder = ">=0.6.0,<0.7.0"
+pandas = ">=2,<3"
+requests = ">=2.28,<3.0"
 teaser = "1.1.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/urbanopt/geojson-modelica-translator.git"
-reference = "develop"
-resolved_reference = "115a95eff6c0c4f407c8164819494f76750560c4"
 
 [[package]]
 name = "geopandas"
@@ -2212,4 +2208,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "8d1b2df9d25663d6ff508396ade986f380c6b3807abd60662af1f1bb5852b4f5"
+content-hash = "2192a6f7c9e7dfa89b5f3c6acbcd4b79a68ce5f3f4fdd2771b5359d2b9c5c899"
