@@ -12,13 +12,13 @@ geopandas = "^1.0.1"
 
 # release mode
 geojson-modelica-translator = "^0.9.3"
-
+# pre-release mode, use github
+# geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
 # dev mode
 # geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "~=4.0"
-coveralls = "~=4.0"
 mypy = "~1.14"
 pytest = "~=8.3"
 pytest-cov = "~6.0"
@@ -26,7 +26,3 @@ pytest-cov = "~6.0"
 [build-system]
 requires = ["poetry-core>=2.0.1"]
 build-backend = "poetry.core.masonry.api"
-
-# TODO: add in other Ruff configs from CBL or GMT
-[tool.ruff]
-extend-include = ["*.ipynb"]
