@@ -28,4 +28,4 @@ jobs:
       - name: Run pre-commit
         run: poetry run pre-commit run --all-files
       - name: Run pytest
-        run: poetry run pytest -v
+        run: poetry run pytest -v --cov-report term-missing --cov
