@@ -9,10 +9,10 @@ packages = [{ include = "urbanopt_des", from = "." }]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 geopandas = "^1.0.1"
+
 # release mode
-# geojson-modelica-translator = "^0.9.1"
-# pre-release mode, use github
-geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
+geojson-modelica-translator = "^0.9.3"
+
 # dev mode
 # geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
 
