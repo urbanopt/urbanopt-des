@@ -26,7 +26,3 @@ pytest-cov = "~6.0"
 [build-system]
 requires = ["poetry-core>=2.0.1"]
 build-backend = "poetry.core.masonry.api"
-
-# TODO: add in other Ruff configs from CBL or GMT
-[tool.ruff]
-extend-include = ["*.ipynb"]
