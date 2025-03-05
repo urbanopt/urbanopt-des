@@ -20,8 +20,8 @@ Example projects leveraging this library will be shared shortly.
 
 ## License
 
-This package is released under the **BSD-3-Clause License**. See the [LICENSE](LICENSE) file for details.
+This package is released under the **BSD-3-Clause License**. See the [LICENSE](LICENSE.md) file for details.
 
 ## Contact
 
-For questions or issues, please open a GitHub Issue or reach out to the **URBANopt team** at [URBANopt Support](https://github.com/urbanopt/urbanopt/issues).
+For questions or issues on the URBANopt DES project, please open a GitHub Issue or reach out to the **URBANopt team** at [URBANopt Support](https://github.com/urbanopt/urbanopt-des/issues). General URBANopt documentation can be found at https://docs.urbanopt.net.
