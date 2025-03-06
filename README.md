@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **URBANopt District Energy Systems (DES) Package** is an extension of the [URBANopt SDK](https://github.com/urbanopt) designed to analyze the results of URBANopt simulated **district energy systems**. This package combines the results from **OpenStudio/EnergyPlus** with the results from **Modelica/Buildings Library** to provide detailed thermal and energy performance analysis at a district scale.
+The **URBANopt District Energy Systems (DES) Package** is an extension of the [URBANopt SDK](https://github.com/urbanopt) designed to analyze the results of URBANopt simulated **district energy systems**. This package combines results from **[OpenStudio](https://openstudio.net/)/[EnergyPlus](https://energyplus.net/)** with results from **[Modelica](https://modelica.org/)/[Buildings Library](https://simulationresearch.lbl.gov/modelica/)** to provide detailed thermal and energy performance analysis at a district scale.
 
 This project pulls in the [GeoJSON to Modelica Translator](https://github.com/urbanopt/geojson-modelica-translator) (and required dependencies).
 
