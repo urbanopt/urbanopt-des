@@ -2,7 +2,6 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from buildingspy.io.outputfile import Reader
 
@@ -536,37 +535,6 @@ class ModelicaResults(ResultsBase):
         self.min_15_with_buildings.index.name = "datetime"
 
         # should we resort the columns?
-
-    def create_summary(self):
-        """Create an annual end use summary by selecting key variables and values and transposing them for easy comparison.
-        In the dict the following conventions are used:
-            * `name` is the name of the variable in the data frame
-            * `units` is the units of the variable
-            * `display_name` will be the new name of the variable in the end use summary table.
-        """
-        # get the list of all the columns to allocate the data frame correctly
-        columns = [c["display_name"] for c in self.end_use_summary_dict]
-
-        # Create a single column of data
-        self.end_use_summary = pd.DataFrame(
-            index=columns,
-            columns=["Units", self.display_name],
-            data=np.zeros((len(columns), 2)),
-        )
-
-        # add the units column if it isn't already there
-        self.end_use_summary["Units"] = [c["units"] for c in self.end_use_summary_dict]
-
-        # create a CSV file for the summary table with
-        # the columns as the rows and the results as the columns
-        for column in self.end_use_summary_dict:
-            # check if the column exists in the data frame and if not, then set the value to zero!
-            if column["name"] in self.annual.columns:
-                self.end_use_summary[self.display_name][column["display_name"]] = float(self.annual[column["name"]].iloc[0])
-            else:
-                self.end_use_summary[self.display_name][column["display_name"]] = 0.0
-
-        return self.end_use_summary
 
     def calculate_carbon_emissions(
         self,
