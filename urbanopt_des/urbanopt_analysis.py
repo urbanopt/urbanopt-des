@@ -34,7 +34,7 @@ class URBANoptAnalysis:
         """
         self.geojson_file = geojson_file
         if geojson_file.exists():
-            self.geojson = DESGeoJSON(geojson_file)
+            self.geojson = DESGeoJSON(geojson_file, **kwargs)
         else:
             raise Exception(f"GeoJSON file does not exist: {geojson_file}")
 
