@@ -37,13 +37,15 @@ class ModelicaResults(ResultsBase):
                 # Create a ModelicaResults object
                 self.mat_filename = Path(extracted_path)
                 self.modelica_data = Reader(extracted_path, "dymola")
-        else:
+        elif mat_filename.suffix == ".mat":
             self.mat_filename = mat_filename
             # read in the mat file
             if self.mat_filename.exists():
                 self.modelica_data = Reader(self.mat_filename, "dymola")
             else:
                 raise Exception(f"Could not find {self.mat_filename}. Will not continue.")
+        else:
+            raise Exception(f"File type {mat_filename.suffix} not supported. Will not continue.")
 
         # Determine where the outputs of the Modelica results post-processing will be stored.
         # Typically this is alongside the .mat file, but can be user defined.
