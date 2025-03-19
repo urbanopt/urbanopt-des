@@ -756,7 +756,9 @@ class ModelicaResults(ResultsBase):
         """Save all of the dataframes, assuming they are defined
 
         Args:
-            dfs_to_save (list, optional): Which ones to save. Defaults to ['min_5', 'min_15', 'min_60', 'min_15_with_buildings', 'min_60_with_buildings', 'monthly', 'annual', 'summary'].
+            dfs_to_save (list, optional): Which ones to save. Defaults to: ['min_5', 'min_15', 'min_60',
+            'min_15_with_buildings', 'min_60_with_buildings', 'monthly', 'annual', 'end_use_summary',
+            'grid_metrics_daily', 'grid_metrics_annual'].
         """
         if self.min_5 is not None and "min_5" in dfs_to_save:
             self.min_5.to_csv(self.path / "power_5min.csv")
