@@ -22,30 +22,34 @@ class ModelicaResults(ResultsBase):
         Args:
             mat_filename (Path): Fully qualified path to the .mat (or zipped .mat) file to load and process
             output_path (Path, optional): Path to save the post-processed data. Defaults to None.
+
+        Raises:
+            FileNotFoundError: If the path to a results file does not exist
+            TypeError: If a results file type is neither .mat or a zip of a .mat file
         """
         super().__init__()
 
-        # zip files are used for tests, and this
-        if mat_filename.suffix == ".zip":
-            from tempfile import TemporaryDirectory
-            from zipfile import ZipFile
+        if mat_filename.exists():
+            # zip files are used for tests, and this
+            if mat_filename.suffix == ".zip":
+                from tempfile import TemporaryDirectory
+                from zipfile import ZipFile
 
-            # Extract the DistrictEnergySystem.mat file from the zip file to a temporary directory,
-            # which will be deleted when the context manager exits
-            with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
-                extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
-                # Create a ModelicaResults object
-                self.mat_filename = Path(extracted_path)
-                self.modelica_data = Reader(extracted_path, "dymola")
-        elif mat_filename.suffix == ".mat":
-            self.mat_filename = mat_filename
-            # read in the mat file
-            if self.mat_filename.exists():
+                # Extract the DistrictEnergySystem.mat file from the zip file to a temporary directory,
+                # which will be deleted when the context manager exits
+                with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
+                    extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
+                    # Create a ModelicaResults object
+                    self.mat_filename = Path(extracted_path)
+                    self.modelica_data = Reader(extracted_path, "dymola")
+            elif mat_filename.suffix == ".mat":
+                self.mat_filename = mat_filename
+                # read in the mat file
                 self.modelica_data = Reader(self.mat_filename, "dymola")
             else:
-                raise Exception(f"Could not find {self.mat_filename}. Will not continue.")
+                raise TypeError(f"File type {mat_filename.suffix} not supported. Will not continue.")
         else:
-            raise Exception(f"File type {mat_filename.suffix} not supported. Will not continue.")
+            raise FileNotFoundError(f"Could not find {mat_filename}. Will not continue.")
 
         # Determine where the outputs of the Modelica results post-processing will be stored.
         # Typically this is alongside the .mat file, but can be user defined.
