@@ -28,5 +28,22 @@ def prepare_reopt_input(mat_filename: Path, output_path: Path | None = None) -> 
     mr.agg_for_reopt()
 
 
+@app.command
+def all_results(mat_filename: Path, output_path: Path | None = None) -> None:
+    """Get Modelica data and resample to 5min, 15min, & 60min intervals
+
+    Parameters
+    ----------
+    mat_filename: Path
+        Path to the file containing Modelica simulation results (.mat or zipped .mat)
+    output_path: Path
+        Custom path for saving files. Default is the same directory as the input file.
+    """
+
+    mr = ModelicaResults(mat_filename, output_path)
+    mr.resample_and_convert_to_df()
+    mr.save_dataframes()
+
+
 if __name__ == "__main__":
     app()
