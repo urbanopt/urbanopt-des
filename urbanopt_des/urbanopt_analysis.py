@@ -303,7 +303,7 @@ class URBANoptAnalysis:
             ]
             drop_cols = ["end_time", "id"]
             # drop the columns first, then run the groupby
-            self.actual_data_monthly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="M"), *groupby_cols]).sum()
+            self.actual_data_monthly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="ME"), *groupby_cols]).sum()
             self.actual_data_monthly.reset_index()
             self.actual_data_monthly.set_index(["start_time"])
             self.actual_data_yearly = self.actual_data.drop(columns=drop_cols).groupby([pd.Grouper(freq="Y"), *groupby_cols]).sum()
@@ -579,16 +579,16 @@ class URBANoptAnalysis:
             raise Exception("Data do not exist in URBANopt for min_60_with_buildings.")
 
         # roll up the urbanopt results (single analysis)
-        self.urbanopt.data_monthly = self.urbanopt.data.resample("M").sum()
-        self.urbanopt.data_annual = self.urbanopt.data.resample("Y").sum()
+        self.urbanopt.data_monthly = self.urbanopt.data.resample("ME").sum()
+        self.urbanopt.data_annual = self.urbanopt.data.resample("YE").sum()
         # loads
-        self.urbanopt.data_loads_monthly = self.urbanopt.data_loads.resample("M").sum()
-        self.urbanopt.data_loads_annual = self.urbanopt.data_loads.resample("Y").sum()
+        self.urbanopt.data_loads_monthly = self.urbanopt.data_loads.resample("ME").sum()
+        self.urbanopt.data_loads_annual = self.urbanopt.data_loads.resample("YE").sum()
 
         # roll up the Modelica results (each analysis)
         for analysis_name in self.modelica:
-            self.modelica[analysis_name].monthly = self.modelica[analysis_name].min_60_with_buildings.resample("M").sum()
-            self.modelica[analysis_name].annual = self.modelica[analysis_name].min_60_with_buildings.resample("Y").sum()
+            self.modelica[analysis_name].monthly = self.modelica[analysis_name].min_60_with_buildings.resample("ME").sum()
+            self.modelica[analysis_name].annual = self.modelica[analysis_name].min_60_with_buildings.resample("YE").sum()
 
     def create_building_level_results(self) -> None:
         """Save off building level totals for mapping for each scenario. The results are

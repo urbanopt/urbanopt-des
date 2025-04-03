@@ -1,9 +1,16 @@
 import shutil
 import unittest
+import warnings
 from pathlib import Path
 
 from urbanopt_des.urbanopt_analysis import URBANoptAnalysis
 from urbanopt_des.urbanopt_geojson import DESGeoJSON as URBANoptGeoJSON
+
+# suppress some warnings -- mostly from pandas
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 class UrbanoptDesResultsTest(unittest.TestCase):
@@ -40,7 +47,8 @@ class UrbanoptDesResultsTest(unittest.TestCase):
         self.assertEqual(bad_or_empty_results[no_results_folder]["error"], "No result .mat file in root directory")
 
     def test_post_process_data(self):
-        """Test the post processing of the data"""
+        """Test the post processing of the data. Note that Building 14 and 26 are the same... this
+        was to have a smaller building than 26 (which was over 200MB results file)"""
         modelica_results, _ = URBANoptAnalysis.get_list_of_valid_result_folders(self.data_dir / "three_building_test_des_agg")
 
         uo_geojson_filename = self.data_dir / "three_building_test" / "FLXenabler.json"
@@ -103,8 +111,8 @@ class UrbanoptDesResultsTest(unittest.TestCase):
 
         # run carbon calculations on the aggregations -
         #       **** length of data are not matching up... skipping for now. ***
-        # uo_analysis.calculate_carbon_emissions("RFCE", 2024, analysis_year=2017, emissions_type="marginal", with_td_losses=True)
-        # uo_analysis.calculate_carbon_emissions("RFCE", 2045, analysis_year=2017, emissions_type="marginal", with_td_losses=True)
+        uo_analysis.calculate_carbon_emissions("RFCE", 2024, analysis_year=2017, emissions_type="marginal", with_td_losses=True)
+        uo_analysis.calculate_carbon_emissions("RFCE", 2045, analysis_year=2017, emissions_type="marginal", with_td_losses=True)
 
         # now roll up to combine rows to monthly, annual, etc.
         uo_analysis.create_rollups()
@@ -126,3 +134,5 @@ class UrbanoptDesResultsTest(unittest.TestCase):
 
         buildings_df = uo_analysis.create_building_level_results()
         buildings_df.to_csv(uo_analysis.urbanopt.scenario_output_path / "building_metrics_annual.csv", index=True)
+
+        # for now we are just checking to see that each of these methods above run without error
