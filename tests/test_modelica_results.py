@@ -5,7 +5,8 @@ from urbanopt_des.modelica_results import ModelicaResults
 
 
 class ModelicaResultsTest(unittest.TestCase):
-    # This is a simple test to ensure we can extend at a later time
+    # This is a simple test process the modelica
+    # results without UO building data.
     def setUp(self):
         self.data_dir = Path(__file__).parent / "data"
         self.output_dir = Path(__file__).parent / "test_output"

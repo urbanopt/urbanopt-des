@@ -1165,6 +1165,114 @@ class URBANoptAnalysis:
         return True
 
     @classmethod
+    def _check_dymola_results(cls, sim_folder: Path) -> dict:
+        """Check if the simulation has valid dymola results.
+
+        Args:
+            sim_folder (Path): Path to the simulation folder.
+
+        Returns:
+            dict: Dictionary of bad or empty results.
+        """
+        bad_or_empty_results = {}
+        error = False
+        mat_file = None
+
+        dslog_file = sim_folder.parent / "dslog.txt"
+        with open(dslog_file) as f:
+            lines = f.readlines()
+            for line in lines:
+                if "Error" in line:
+                    error = True
+                    bad_or_empty_results[sim_folder.parent] = {}
+                    bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
+                    bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
+                    bad_or_empty_results[sim_folder.parent]["error"] = "Error in dslog.txt"
+                    break
+                if 'Integration terminated before reaching "StopTime"' in line:
+                    error = True
+                    bad_or_empty_results[sim_folder.parent] = {}
+                    bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
+                    bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
+                    bad_or_empty_results[sim_folder.parent]["error"] = "Error did not reach the stop time"
+                    break
+
+        if not error:
+            # Find the first .mat file in the sim_folder.parent
+            mat_file = list(sim_folder.parent.glob("*.mat"))
+            if not mat_file:
+                error = True
+                bad_or_empty_results[sim_folder.parent] = {}
+                bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
+                bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
+                bad_or_empty_results[sim_folder.parent]["error"] = "No result .mat file in root directory"
+                mat_file = None
+            elif len(mat_file) > 1:
+                print(f"Warning: multiple .mat files found in {sim_folder.parent}. Using the first one.")
+                mat_file = mat_file[0]
+            else:
+                # grab the first mat_file
+                mat_file = mat_file[0]
+
+        return error, bad_or_empty_results, mat_file
+
+    @classmethod
+    def _check_openmodelica_results(cls, sim_folder: Path) -> dict:
+        """Check if the OpenModelica simulation results are valid.
+
+        Args:
+            sim_folder (Path): Path to the simulation folder.
+
+        Returns:
+            dict: Dictionary of the bad or empty results.
+        """
+        bad_or_empty_results = {}
+        error = False
+        mat_file = None
+
+        # find if there is a directory with *_results
+        om_results_folder = list(sim_folder.parent.glob("*_results"))
+        if not om_results_folder:
+            # no results folder
+            error = True
+            bad_or_empty_results[sim_folder.parent] = {}
+            bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
+            bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
+            bad_or_empty_results[sim_folder.parent]["error"] = "No _results folder"
+        elif len(om_results_folder) > 1:
+            print(f"Warning: multiple _results folders found in {sim_folder.parent}. Please delete others.")
+        else:
+            # see if there is a .mat file in the results folder
+            mat_file = list(om_results_folder[0].glob("*.mat"))
+            if not mat_file:
+                # no .mat file, then this is an empty folder
+                error = True
+                bad_or_empty_results[sim_folder.parent] = {}
+                bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
+                bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
+                bad_or_empty_results[sim_folder.parent]["error"] = "No result .mat file in _results directory"
+            elif len(mat_file) > 1:
+                print(f"Warning: multiple .mat files found in {om_results_folder[0]}. Using the first one.")
+                # grab the first mat_file
+                mat_file = mat_file[0]
+            else:
+                # grab the first mat_file
+                mat_file = mat_file[0]
+                # check if the .mat file is empty
+                if mat_file.stat().st_size == 0:
+                    error = True
+                    bad_or_empty_results[sim_folder.parent] = {}
+                    bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
+                    bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
+                    bad_or_empty_results[sim_folder.parent]["error"] = "Empty .mat file in _results directory"
+                else:
+                    # check if the .mat file is a valid result file
+                    # this is a placeholder for now, but we can add more checks later
+                    pass
+
+        return error, bad_or_empty_results, mat_file
+
+    @classmethod
     def get_list_of_valid_result_folders(cls, root_analysis_path: Path) -> (dict, dict):
         """Parse through the root_analysis_path and return a dict of valid
         result folders that can be loaded and processed. Also return dict of
@@ -1182,57 +1290,33 @@ class URBANoptAnalysis:
         # Find the completed simulations by looking for directories that have a district.mat file result
         sim_folders = list(root_analysis_path.glob("*/package.mo"))
         for sim_folder in sim_folders:
+            mat_file = None
             # now go and check the dslog.txt file (assuming dymola was used) to
             # find if there were errors
             dslog_file = sim_folder.parent / "dslog.txt"
+
+            # search for any folder in the sim_folder with a prepended _results to the name
+            om_results_folder = list(sim_folder.parent.glob("*_results"))
+
             error = False
             if dslog_file.exists():
-                with open(dslog_file) as f:
-                    lines = f.readlines()
-                    for line in lines:
-                        if "Error" in line:
-                            error = True
-                            bad_or_empty_results[sim_folder.parent] = {}
-                            bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
-                            # from folder
-                            bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
-                            bad_or_empty_results[sim_folder.parent]["error"] = "Error in dslog.txt"
-                            break
-                        if 'Integration terminated before reaching "StopTime"' in line:
-                            error = True
-                            bad_or_empty_results[sim_folder.parent] = {}
-                            bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
-                            # from folder
-                            bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
-                            bad_or_empty_results[sim_folder.parent]["error"] = "Error did not reach the stop time"
-                            break
-
+                error, result, mat_file = cls._check_dymola_results(sim_folder)
+                # merge the bad_or_empty_results from the dymola check
+                bad_or_empty_results.update(result)
+            elif len(om_results_folder) > 0:
+                error, result, mat_file = cls._check_openmodelica_results(sim_folder)
+                # merge the bad_or_empty_results from the openmodelica check
+                bad_or_empty_results.update(result)
             else:
-                # hmm, no dslog.txt file, then this is an empty folder
+                # if here, then we don't know how to process the folder
                 error = True
                 bad_or_empty_results[sim_folder.parent] = {}
                 bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
-                # from folder
                 bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
-                bad_or_empty_results[sim_folder.parent]["error"] = "No dslog.txt"
+                bad_or_empty_results[sim_folder.parent]["error"] = "No valid results found"
 
             if error:
                 continue
-
-            # Find the first .mat file in the sim_folder.parent
-            mat_file = list(sim_folder.parent.glob("*.mat"))
-            if not mat_file:
-                bad_or_empty_results[sim_folder.parent] = {}
-                bad_or_empty_results[sim_folder.parent]["path_to_analysis"] = sim_folder.parent
-                # from folder
-                bad_or_empty_results[sim_folder.parent]["name"] = sim_folder.parent.name
-                bad_or_empty_results[sim_folder.parent]["error"] = "No result .mat file in root directory"
-                continue
-            elif len(mat_file) > 1:
-                print(f"Warning: multiple .mat files found in {sim_folder.parent}. Using the first one.")
-            else:
-                # grab the first mat_file
-                mat_file = mat_file[0]
 
             # If we are here then there is likely a successful simulation. Now store it in a
             # dictionary for later loading/processing
