@@ -30,7 +30,9 @@ class UOCliWrapper:
 
         # self.uo_version = "0.9.3"
         # self.uo_version = "0.11.1"
-        self.uo_version = "0.13.0"
+        # self.uo_version = "0.13.0"
+        # self.uo_version = "0.14.0"
+        self.uo_version = "1.0.1"
 
         # if windows, then the path is different
         if os.name == "nt":
@@ -46,10 +48,15 @@ class UOCliWrapper:
                 log.write(f"Running command: {command}\n")
                 new_env = os.environ.copy()
                 # These env vars come directly from the ~/.env_uo.sh file. Update if a new version is installed. The .env_uo.sh
-                # file is created by calling /Applications/URBANoptCLI_0.13..3/setup-env.sh
-                new_env["GEM_HOME"] = f"{self.uo_directory}/gems/ruby/2.7.0"
-                new_env["GEM_PATH"] = f"{self.uo_directory}/gems/ruby/2.7.0"
-                new_env["PATH"] = f"{self.uo_directory}/ruby/bin:{self.uo_directory}/gems/ruby/2.7.0/bin:{os.environ['PATH']}"
+                # file is created by calling /Applications/URBANoptCLI_X.Y.Z/setup-env.sh
+                ruby_base_version = "3.2.0"
+                miniconda_base_version = "24.9.2-0"
+
+                new_env["GEM_HOME"] = f"{self.uo_directory}/gems/ruby/{ruby_base_version}"
+                new_env["GEM_PATH"] = f"{self.uo_directory}/gems/ruby/{ruby_base_version}"
+                new_env["PATH"] = (
+                    f"{self.uo_directory}/ruby/bin:{self.uo_directory}/gems/ruby/{ruby_base_version}/bin:${self.uo_directory}/gems/ruby/{ruby_base_version}/gems/{self.uo_directory}/example_files/python_deps/Miniconda-{miniconda_base_version}/bin:{os.environ['PATH']}"
+                )
                 new_env["RUBYLIB"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 new_env["RUBY_DLL_PATH"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 # For REopt
@@ -103,6 +110,34 @@ class UOCliWrapper:
     def run(self, feature_file, scenario_name):
         self._run_command(f"uo run -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
 
+    def run_des(self, des_folder_path, start_time=None, stop_time=None, step_size=None):
+        """Run uo_des CLI command, which comes from the GMT. This requires Docker to run.
+
+        args:
+            des_folder_path (str): Path to the folder containing Districts/DistrictEnergySystem.mo
+            start_time (int): Start time of the simulation in seconds. Default is None, which defaults to simulation default.
+            stop_time (int): Stop time of the simulation in seconds. Default is None, which defaults to simulation default.
+            step_size (int): Step size of the simulation in seconds. Default is None, which defaults to simulation default.
+
+        Note: The modelica file to run has to be called DistrictEnergySystem.mo and in the Districts subfolder.
+        """
+        # construct the string to run the command, if there is no start_time, stop_time, or step_size then leave out
+        # the argument
+        if start_time is None:
+            start_time = ""
+        else:
+            start_time = f"--start_time {start_time}"
+        if stop_time is None:
+            stop_time = ""
+        else:
+            stop_time = f"--stop_time {stop_time}"
+        if step_size is None:
+            step_size = ""
+        else:
+            step_size = f"--step_size {step_size}"
+
+        self._run_command(f"uo_des run-model {des_folder_path} {start_time} {stop_time} {step_size}")
+
     def info(self):
         print(f"Template path: {self.template_dir}")
         print(f"Working dir: {self.working_dir}")
@@ -116,7 +151,7 @@ class UOCliWrapper:
 
     def process_reopt_scenario(self, feature_file, scenario_name, individual_features=False):
         # In UO, the -r flag is used for the aggregated load analysis, whereas
-        # the -e flag if for (e)aach individual feature.
+        # the -e flag if for (e)ach individual feature.
         if not individual_features:
             self._run_command(f"uo process -r -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
         else:
