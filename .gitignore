@@ -13,3 +13,8 @@ data/templates/uo_base/.bundle
 # ingore the scratch input/output directory
 scratch
 tests/test_output
+
+# urbanopt openstudio results
+tests/data/three_building_5G/three_building_test/output
+tests/data/three_building_5G/three_building_test/run/baseline/output
+tests/data/three_building_5G/three_building_test/urbanopt_single_feature_file_variables.json
