@@ -110,15 +110,33 @@ class UOCliWrapper:
     def run(self, feature_file, scenario_name):
         self._run_command(f"uo run -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
 
-    def run_des(self, des_folder_path):
+    def run_des(self, des_folder_path, start_time=None, stop_time=None, step_size=None):
         """Run uo_des CLI command, which comes from the GMT. This requires Docker to run.
 
         args:
             des_folder_path (str): Path to the folder containing Districts/DistrictEnergySystem.mo
+            start_time (int): Start time of the simulation in seconds. Default is None, which defaults to simulation default.
+            stop_time (int): Stop time of the simulation in seconds. Default is None, which defaults to simulation default.
+            step_size (int): Step size of the simulation in seconds. Default is None, which defaults to simulation default.
 
         Note: The modelica file to run has to be called DistrictEnergySystem.mo and in the Districts subfolder.
         """
-        self._run_command(f"uo_des run-model {des_folder_path}")
+        # construct the string to run the command, if there is no start_time, stop_time, or step_size then leave out
+        # the argument
+        if start_time is None:
+            start_time = ""
+        else:
+            start_time = f"--start_time {start_time}"
+        if stop_time is None:
+            stop_time = ""
+        else:
+            stop_time = f"--stop_time {stop_time}"
+        if step_size is None:
+            step_size = ""
+        else:
+            step_size = f"--step_size {step_size}"
+
+        self._run_command(f"uo_des run-model {des_folder_path} {start_time} {stop_time} {step_size}")
 
     def info(self):
         print(f"Template path: {self.template_dir}")
