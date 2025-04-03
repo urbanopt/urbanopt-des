@@ -1,0 +1,111 @@
+{
+  "type": "FeatureCollection",
+  "name": "temp",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Building",
+        "footprint_area": 147019.76912450054,
+        "height": 9.424688657124838,
+        "floor_area": 396479.3694457545,
+        "gross_floor_area_m2": 36833.83216701547,
+        "gross_floor_area_ft2": 396479.3694457545,
+        "number_of_stories": 2.6666666666666665,
+        "number_of_stories_above_ground": 2.6666666666666665,
+        "attic_type": "flat roof",
+        "foundation_type": "slab",
+        "number_of_bedrooms": 50.0,
+        "number_of_residential_units": 18.0,
+        "enabled": true,
+        "id": "all_buildings",
+        "building_type": "Religious worship"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -76.996604,
+              38.920932
+            ],
+            [
+              -76.996604,
+              38.924292
+            ],
+            [
+              -76.999167,
+              38.924292
+            ],
+            [
+              -76.999167,
+              38.920932
+            ],
+            [
+              -76.996604,
+              38.920932
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Site Origin",
+        "footprint_area": 0.0,
+        "height": null,
+        "floor_area": 0.0,
+        "gross_floor_area_m2": 0.0,
+        "gross_floor_area_ft2": 0.0,
+        "number_of_stories": null,
+        "number_of_stories_above_ground": null,
+        "attic_type": null,
+        "foundation_type": null,
+        "number_of_bedrooms": null,
+        "number_of_residential_units": null,
+        "enabled": true,
+        "id": null,
+        "building_type": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -76.996604,
+              38.920932
+            ],
+            [
+              -76.996604,
+              38.924292
+            ],
+            [
+              -76.999167,
+              38.924292
+            ],
+            [
+              -76.999167,
+              38.920932
+            ],
+            [
+              -76.996604,
+              38.920932
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "project": {
+    "name": "FLXenabler Block",
+    "surface_elevation": 125,
+    "import_surrounding_buildings_as_shading": null,
+    "weather_filename": "USA_VA_Arlington-Ronald.Reagan.Washington.Natl.AP.724050_TMY3.epw",
+    "climate_zone": "4A",
+    "begin_date": "2017-01-01T07:00:00.000Z",
+    "end_date": "2017-12-31T07:00:00.000Z",
+    "timesteps_per_hour": 1,
+    "default_template": "90.1-2013"
+  }
+}
