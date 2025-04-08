@@ -3,6 +3,8 @@ import unittest
 import warnings
 from pathlib import Path
 
+import pandas as pd
+
 from urbanopt_des.urbanopt_analysis import URBANoptAnalysis
 from urbanopt_des.urbanopt_geojson import DESGeoJSON as URBANoptGeoJSON
 
@@ -48,7 +50,9 @@ class UrbanoptDesResultsTest(unittest.TestCase):
 
     def test_post_process_data(self):
         """Test the post processing of the data. Note that Building 14 and 26 are the same... this
-        was to have a smaller building than 26 (which was over 200MB results file)"""
+        was to have a smaller building than 26 (which was over 200MB OpenSTudio results file). Also,
+        the test .mat datafile only includes the required variable results for the tests, which resulted
+        in a much smaller file too."""
         modelica_results, _ = URBANoptAnalysis.get_list_of_valid_result_folders(self.data_dir / "three_building_test_des_agg")
 
         uo_geojson_filename = self.data_dir / "three_building_test" / "FLXenabler.json"
@@ -135,4 +139,34 @@ class UrbanoptDesResultsTest(unittest.TestCase):
         buildings_df = uo_analysis.create_building_level_results()
         buildings_df.to_csv(uo_analysis.urbanopt.scenario_output_path / "building_metrics_annual.csv", index=True)
 
-        # for now we are just checking to see that each of these methods above run without error
+        # The power_60min_with_buildings should exist in the same directory as
+        # the .mat file
+        mat_path = modelica_results[modelica_key]["mat_path"]
+        power_60min_with_buildings = mat_path.parent / "power_60min_with_buildings.csv"
+        self.assertTrue(power_60min_with_buildings.exists())
+
+        # open the power_60min_with_buildings.csv file and check some of the columns
+        df_check = pd.read_csv(power_60min_with_buildings)
+        self.assertTrue("GHX Pump Electricity" in df_check.columns)
+        self.assertTrue(df_check["GHX Pump Electricity"].sum() > 0)
+        self.assertTrue("InteriorLights:Electricity Building 11" in df_check.columns)
+        self.assertTrue(df_check["InteriorLights:Electricity Building 11"].sum() > 0)
+        # check that the data have the custom requested field (borFie.Q_flow)
+        self.assertTrue("borFie.Q_flow" in df_check.columns)
+        self.assertTrue(df_check["borFie.Q_flow"].sum() > 0)
+
+        # Check the annual_end_use_summary and make sure that the 5G is better
+        # than the Non-Connected buildings for total electricity.
+        annual_summary = pd.read_csv(uo_des_analysis_dir / "_results_summary" / "annual_end_use_summary.csv")
+        # set the first column to be 'variable'
+        annual_summary.columns.to_numpy()[0] = "variable"
+        self.assertTrue("Non-Connected" in annual_summary.columns)
+        self.assertTrue("Five G Controlled Flow.Districts.Districtenergysystem Results" in annual_summary.columns)
+        # check that the total electricity is less than the Non-Connected buildings
+        # get list of column data for variable
+        self.assertTrue(
+            annual_summary.loc[
+                annual_summary["variable"] == "Total Electricity", "Five G Controlled Flow.Districts.Districtenergysystem Results"
+            ].to_numpy()[0]
+            < annual_summary.loc[annual_summary["variable"] == "Total Electricity", "Non-Connected"].to_numpy()[0]
+        )
