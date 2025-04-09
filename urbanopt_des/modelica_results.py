@@ -786,7 +786,7 @@ class ModelicaResults(ResultsBase):
             aggs[f"{meter} Load Factor"] = ["max", "min", "sum", "mean"]
             aggs[f"{meter} System Ramping"] = ["max", "min", "sum", "mean"]
 
-        df_tmp = df_tmp.groupby([pd.Grouper(freq="1y")]).agg(aggs)
+        df_tmp = df_tmp.groupby([pd.Grouper(freq="YE")]).agg(aggs)
         # rename the columns
         df_tmp.columns = [f"{c[0]} {c[1]}" for c in df_tmp.columns]
         # this is a strange section, the idxmax/idxmin are the indexes where the max/min values
@@ -807,13 +807,13 @@ class ModelicaResults(ResultsBase):
             )
 
         # Add the MWh related metrics, can't sum up the 15 minute data, so we have to sum up the hourly
-        df_tmp["Total Electricity"] = self.min_60_with_buildings["Total Electricity"].resample("1y").sum() / 1e6  # MWh
-        df_tmp["Total Natural Gas"] = self.min_60_with_buildings["Total Natural Gas"].resample("1y").sum() / 1e6  # MWh
+        df_tmp["Total Electricity"] = self.min_60_with_buildings["Total Electricity"].resample("YE").sum() / 1e6  # MWh
+        df_tmp["Total Natural Gas"] = self.min_60_with_buildings["Total Natural Gas"].resample("YE").sum() / 1e6  # MWh
         df_tmp["Total Thermal Cooling Energy"] = (
-            self.min_60_with_buildings["Total Thermal Cooling Energy"].resample("1y").sum() / 1e6
+            self.min_60_with_buildings["Total Thermal Cooling Energy"].resample("YE").sum() / 1e6
         )  # MWh
         df_tmp["Total Thermal Heating Energy"] = (
-            self.min_60_with_buildings["Total Thermal Heating Energy"].resample("1y").sum() / 1e6
+            self.min_60_with_buildings["Total Thermal Heating Energy"].resample("YE").sum() / 1e6
         )  # MWh
 
         # graph the top 5 peak values for each of the meters
