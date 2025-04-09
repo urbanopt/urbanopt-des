@@ -794,6 +794,7 @@ class ModelicaResults(ResultsBase):
         for meter in meters:
             # there is only one year of data, so grab the idmax/idmin of the first element. If
             # we expand to multiple years, then this will need to be updated
+            # FIXME: this id_lookup produces Pandas FutureWarning
             id_lookup = df_tmp[f"{meter} Max idxmax"][0]
             df_tmp[f"{meter} Max idxmax"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Max Datetime"]
             id_lookup = df_tmp[f"{meter} Min idxmin"][0]
