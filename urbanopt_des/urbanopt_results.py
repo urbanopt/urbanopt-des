@@ -411,7 +411,7 @@ class URBANoptResults(ResultsBase):
             # as square footages, window areas, etc.
             feature_json = self.get_urbanopt_default_feature_report_json(self.path / "run" / f"{self.scenario_name}" / f"{building_id}")
             # Read the JSON as dictionary to the building characteristics
-            #  Use a context manager for opening files
+            # Use a context manager for opening files
             self.building_characteristics[building_id] = json.loads(feature_json.read_text())
 
             print(f"Processing building time series results {building_id}")

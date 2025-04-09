@@ -10,6 +10,14 @@ node_modules
 # config files
 data/templates/uo_base/.bundle
 
-# ingore the scratch input/output directory
+# ignore the scratch input/output directory
 scratch
 tests/test_output
+
+# urbanopt openstudio results - that aren't needed for testing
+tests/data/three_building_5G/three_building_test/output
+tests/data/three_building_5G/three_building_test/run/baseline/output
+tests/data/three_building_5G/three_building_test/urbanopt_single_feature_file_variables.json
+# urbanopt modelica results - that aren't needed for testing
+tests/data/three_building_5G/three_building_test_des_agg/_results_summary
+tests/data/three_building_5G/three_building_test_des_agg/five_g_controlled_flow/*/*.csv

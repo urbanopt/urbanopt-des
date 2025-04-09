@@ -1,0 +1,295 @@
+[08:56:44.012714 WARN] [openstudio.workflow.OSWorkflow] No valid weather file defined in either the osm or osw.
+[08:56:51.514671 ERROR] [ruby] Error activating gem :/ruby/3.2.0/specifications/ast-2.4.2.gemspec
+[08:56:51.516017 ERROR] [ruby] Error activating gem :/ruby/3.2.0/specifications/rchardet-1.8.0.gemspec
+[08:56:51.516099 ERROR] [ruby] Error activating gem :/ruby/3.2.0/specifications/multipart-post-2.4.1.gemspec
+[08:56:51.516792 ERROR] [ruby] Error activating gem :/ruby/3.2.0/specifications/openstudio-extension-0.8.2.gemspec
+[08:56:51.516835 ERROR] [ruby] Error activating gem :/ruby/3.2.0/specifications/osut-0.5.0.gemspec
+[08:56:51.516884 ERROR] [ruby] Error activating gem :/ruby/3.2.0/specifications/tbd-3.4.3.gemspec
+[08:56:51.516918 ERROR] [ruby] Error activating gem :/ruby/3.2.0/specifications/openstudio-standards-0.7.0.gemspec
+[08:56:51.694521 WARN] [OpenStudio.Measure] ModelUserScript is deprecated, use OpenStudio::Measure::ModelMeasure instead.
+[08:56:51.694920 WARN] [OpenStudio.Measure] ModelUserScript is deprecated, use OpenStudio::Measure::ModelMeasure instead.
+[08:56:51.695942 WARN] [OpenStudio.Measure] OSArgumentVector is deprecated, use OpenStudio::Measure::OSArgumentVector instead.
+[08:56:51.697426 WARN] [OpenStudio.Measure] OSArgumentVector is deprecated, use OpenStudio::Measure::OSArgumentVector instead.
+[08:56:53.381636 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:56:53.381790 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:56:53.705327 WARN] [openstudio.standards.Geometry.Create] User-defined single floor area was used for calculation of total building floor area
+[08:56:53.705369 WARN] [openstudio.standards.Geometry.Create] Cannot use custom height bar with single floor area method, will not create custom height bar.
+[08:56:53.819422 WARN] [openstudio.measure.OSRunner] [openstudio.standards.Geometry.Create] User-defined single floor area was used for calculation of total building floor area
+[08:56:53.819476 WARN] [openstudio.measure.OSRunner] [openstudio.standards.Geometry.Create] Cannot use custom height bar with single floor area method, will not create custom height bar.
+[08:56:54.136814 WARN] [openstudio.standards.Model] Cannot find the VT for the simple glazing material named U 0.42 SHGC 0.4 Simple Glazing, a default value of 0.81 is used.
+[08:56:54.139390 WARN] [openstudio.standards.Model] Find object search criteria returned 2 results, the first one will be returned. Called from /Users/nlong/working/urban-analysis/flxenabler/analysis/urbanopt/three_building_test/.bundle/install/ruby/3.2.0/gems/openstudio-standards-0.7.1/lib/openstudio-standards/standards/Standards.Model.rb:3049:in `model_add_construction'.
+ Search criteria:
+ {"name"=>"U 0.5 SHGC 0.4 Simple Glazing"}, capacity =
+  All results:
+ {"name"=>"U 0.5 SHGC 0.4 Simple Glazing", "intended_surface_type"=>"Skylight", "standards_construction_type"=>nil, "insulation_layer"=>nil, "skylight_framing"=>nil, "materials"=>["U 0.5 SHGC 0.4 Simple Glazing"]}
+{"name"=>"U 0.5 SHGC 0.4 Simple Glazing", "intended_surface_type"=>"Skylight", "standards_construction_type"=>nil, "insulation_layer"=>nil, "skylight_framing"=>nil, "materials"=>["U 0.5 SHGC 0.4 Simple Glazing"]}
+[08:56:54.139570 WARN] [openstudio.standards.Model] Cannot find the VT for the simple glazing material named U 0.5 SHGC 0.4 Simple Glazing, a default value of 0.81 is used.
+[08:56:54.149829 WARN] [openstudio.standards.Model] Cannot find the VT for the simple glazing material named U 0.77 SHGC 0.4 Simple Glazing, a default value of 0.81 is used.
+[08:56:54.318266 WARN] [openstudio.measure.OSRunner] [openstudio.standards.Model] Cannot find the VT for the simple glazing material named U 0.42 SHGC 0.4 Simple Glazing, a default value of 0.81 is used.
+[08:56:54.318345 WARN] [openstudio.measure.OSRunner] [openstudio.standards.Model] Find object search criteria returned 2 results, the first one will be returned. Called from /Users/nlong/working/urban-analysis/flxenabler/analysis/urbanopt/three_building_test/.bundle/install/ruby/3.2.0/gems/openstudio-standards-0.7.1/lib/openstudio-standards/standards/Standards.Model.rb:3049:in `model_add_construction'.
+ Search criteria:
+ {"name"=>"U 0.5 SHGC 0.4 Simple Glazing"}, capacity =
+  All results:
+ {"name"=>"U 0.5 SHGC 0.4 Simple Glazing", "intended_surface_type"=>"Skylight", "standards_construction_type"=>nil, "insulation_layer"=>nil, "skylight_framing"=>nil, "materials"=>
+[08:56:54.318382 WARN] [openstudio.measure.OSRunner] [openstudio.standards.Model] Cannot find the VT for the simple glazing material named U 0.5 SHGC 0.4 Simple Glazing, a default value of 0.81 is used.
+[08:56:54.318475 WARN] [openstudio.measure.OSRunner] [openstudio.standards.Model] Cannot find the VT for the simple glazing material named U 0.77 SHGC 0.4 Simple Glazing, a default value of 0.81 is used.
+[08:56:54.334564 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.335287 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.335464 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.335585 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.335706 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.335853 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.337406 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.337523 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.337641 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.337758 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.340418 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.340994 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.341115 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.341229 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.341343 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.341453 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.341545 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.341638 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.341749 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.341858 WARN] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342193 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342228 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342261 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342300 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342333 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342369 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342407 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342439 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342470 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342502 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342558 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342590 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342622 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342653 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342689 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342720 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342752 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342784 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342818 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.342849 WARN] [openstudio.measure.OSRunner] [openstudio.standards.CreateTypical] WARNING: This method blends space types together. We recommend against blending space types. Blending space types averages internal loads that determine peak loads and therefore HVAC sizing. DO NOT use this method across thermal zones coupled with autosized HVAC.
+[08:56:54.882032 WARN] [openstudio.measure.OSRunner] Self intersecting surface result, will not divide
+[08:56:54.922550 WARN] [openstudio.measure.OSRunner] Self intersecting surface result, will not divide
+[08:57:06.579285 WARN] [openstudio.energyplus.SqlFile] Using EnergyPlusVersion version 24.2.0 which should have 'Year' field, but it's always zero
+[08:57:06.581843 WARN] [openstudio.model.Model] The run completed but had the following severe errors: DetermineShadowingCombinations: There are 2 surfaces which are casting surfaces and are non-convex.  ...Shadowing values may be inaccurate. Check .shd report file for more surface shading details  ...Add Output:Diagnostics,DisplayExtraWarnings; to see individual severes for each surface.
+[08:57:09.857696 WARN] [openstudio.measure.OSRunner] [openstudio.energyplus.SqlFile] Using EnergyPlusVersion version 24.2.0 which should have 'Year' field, but it's always zero
+[08:57:09.857734 WARN] [openstudio.measure.OSRunner] [openstudio.model.Model] The run completed but had the following severe errors: DetermineShadowingCombinations: There are 2 surfaces which are casting surfaces and are non-convex.  ...Shadowing values may be inaccurate. Check .shd report file for more surface shading details  ...Add Output:Diagnostics,DisplayExtraWarnings; to see individual severes for each surface.
+[08:57:11.594003 WARN] [openstudio.workflow.OSWorkflow] Reporting Measure at '/Users/nlong/working/urban-analysis/flxenabler/analysis/urbanopt/three_building_test/.bundle/install/ruby/3.2.0/gems/urbanopt-reporting-1.0.0/lib/measures/default_feature_reports/measure.rb' is using the old format where the 'arguments' method does not take model.  Please consider updating this to `def arguments(model)`.
+[08:57:54.886733 WARN] [openstudio.measure.OSRunner] No hot water loop found. If one is expected, make sure the hot water loop name argument provides a string present in its name.
+[08:57:54.886802 WARN] [openstudio.measure.OSRunner] No chilled water loop found. If one is expected, make sure the chilled water loop name argument provides a string present in its name.
+[08:57:54.886818 WARN] [openstudio.measure.OSRunner] No HVAC plant loops found. If one or more plant loops are expected, make sure they follow the naming conventions mentioned in the previous warnings.
+[08:57:56.499410 WARN] [OpenStudio] getSharedResourcesPath is deprecated.
+[08:57:56.702116 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.707728 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.707758 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.712618 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.712646 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.717941 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.717986 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.722903 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.722930 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.727811 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.727835 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.732698 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.732733 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.737520 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.737543 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.742217 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.742240 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.746949 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.746973 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.751718 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.751753 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.756668 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.756693 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.761427 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.761450 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.766258 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.766286 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.771161 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.771185 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.775799 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.775821 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.780527 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.780552 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.785011 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.785032 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.789789 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.789810 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.794634 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.794658 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.799649 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.799680 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.804218 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.804241 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.808853 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.808880 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.813704 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.813736 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.818520 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.818547 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.823178 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.823203 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.827630 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.827651 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.832290 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.832317 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.836756 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.836778 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.841334 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.841357 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.845760 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.845783 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.850220 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.850241 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.854864 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.854885 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.859479 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.859500 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.863969 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.863991 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.868463 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.868483 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.873054 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.873075 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.877981 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.878011 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.882766 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.882794 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.887500 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.887521 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:56.892142 WARN] [openstudio.model.CurveQuadratic] Supplied x is below the minimumValueofx, resetting it.
+[08:57:57.297369 WARN] [openstudio.standards.Schedules.Information] Year description is not specified. Full load hours calculation will assume 2009, the default year OS uses.
+[08:57:57.297504 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.297527 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.297594 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.297612 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.297677 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.297693 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.298026 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.298043 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.298108 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.298123 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.298185 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.298200 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.566462 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.566571 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.566589 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.566653 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.566668 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.566742 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.566756 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.567080 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.567095 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.567156 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.567171 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.567234 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.567247 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.783851 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.783956 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.783974 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.784038 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.784053 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.784622 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.784637 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.784699 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.784712 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.997652 WARN] [openstudio.standards.Schedules.Information] Year description is not specified. Full load hours calculation will assume 2009, the default year OS uses.
+[08:57:57.997781 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.997802 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.997866 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.997880 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.997945 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.997959 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.998300 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.998315 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.998386 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.998402 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.998464 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:57.998479 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.211410 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.211516 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.211533 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.211596 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.211609 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.211670 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.211683 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.212013 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.212028 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.212088 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.212101 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.212160 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:58.212173 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.042703 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.042810 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.042828 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.042890 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.042904 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.043206 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.043221 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.043280 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:57:59.043292 ERROR] [openstudio.model.YearDescription] 'UseWeatherFile' is selected in YearDescription, but there are no weather file set for the model.
+[08:58:00.372383 WARN] [openstudio.measure.OSRunner] Internal Loads - Electric Power Density of 2.26 (W/ft^2) for Story ground Blended Space Type is more than 25.0 % above the value of 0.75 (W/ft^2) for ASHRAE 90.1-2013 Office ASHRAE 169-2013-4A Prototype model.
+[08:58:00.372452 WARN] [openstudio.measure.OSRunner] Schedules - 107 annual equivalent full load hours for Elevator Schedule 1 in Story ground Blended Space Type is more than 25.0 (%) below the value of 4103 hours from the 90.1-2013 MediumOffice ASHRAE 169-2013-4A DOE Prototype building.
+[08:58:00.372470 WARN] [openstudio.measure.OSRunner] Schedules - 2446 annual equivalent full load hours for Elevator Schedule 3 in Story ground Blended Space Type is more than 25.0 (%) below the value of 4103 hours from the 90.1-2013 MediumOffice ASHRAE 169-2013-4A DOE Prototype building.
+[08:58:00.372485 WARN] [openstudio.measure.OSRunner] Schedules - 2446 annual equivalent full load hours for Elevator Schedule 2 in Story ground Blended Space Type is more than 25.0 (%) below the value of 4103 hours from the 90.1-2013 MediumOffice ASHRAE 169-2013-4A DOE Prototype building.
+[08:58:00.372544 WARN] [openstudio.measure.OSRunner] Envelope R-Value - U 0.42 SHGC 0.4 Simple Glazing is not associated with a standards construction type, checking based on Metal framing (all other) for ExteriorWindow.
+[08:58:00.372560 WARN] [openstudio.measure.OSRunner] Envelope R-Value - Data not returned for Story top Blended Space Type on Metal framing (all other) for ExteriorWindow.
+[08:58:00.372574 WARN] [openstudio.measure.OSRunner] Envelope R-Value - Data not returned for Story ground Blended Space Type on Metal framing (all other) for ExteriorWindow.
+[08:58:00.372590 WARN] [openstudio.measure.OSRunner] Envelope R-Value - Solar Reflectance of 30 % for Typical IEAD Roof R-31.25 in Nonresidential space type is more than 25.0 % below the value of 55 %.
+[08:58:00.509118 WARN] [openstudio.measure.OSRunner] Query failed for Life-Cycle Cost Report and TableName='Present Value for Recurring, Nonrecurring and Energy Costs (Before Tax)' AND RowName='LCC_MAT - BUILDING - LIFE CYCLE COSTS' AND ColumnName='Cost'
+[08:58:00.509198 WARN] [openstudio.measure.OSRunner] Query failed for Packaged Ice Thermal Storage Capacity
+[08:58:00.509278 WARN] [openstudio.measure.OSRunner] Query failed for Ice Thermal Storage Capacity
+[08:58:00.518134 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Total End Uses' AND ColumnName='Steam'
+[08:58:00.524886 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Total End Uses' AND ColumnName='District Heating'
+[08:58:00.537893 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heating' AND ColumnName='Fuel Oil #2'
+[08:58:00.543374 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Cooling' AND ColumnName='Fuel Oil #2'
+[08:58:00.548896 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Interior Lighting' AND ColumnName='Fuel Oil #2'
+[08:58:00.554408 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Exterior Lighting' AND ColumnName='Fuel Oil #2'
+[08:58:00.560013 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Interior Equipment' AND ColumnName='Fuel Oil #2'
+[08:58:00.565525 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Exterior Equipment' AND ColumnName='Fuel Oil #2'
+[08:58:00.571882 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Fans' AND ColumnName='Fuel Oil #2'
+[08:58:00.578162 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Pumps' AND ColumnName='Fuel Oil #2'
+[08:58:00.584093 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heat Rejection' AND ColumnName='Fuel Oil #2'
+[08:58:00.589986 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Humidification' AND ColumnName='Fuel Oil #2'
+[08:58:00.595552 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heat Recovery' AND ColumnName='Fuel Oil #2'
+[08:58:00.601042 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Water Systems' AND ColumnName='Fuel Oil #2'
+[08:58:00.606503 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Refrigeration' AND ColumnName='Fuel Oil #2'
+[08:58:00.612030 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Generators' AND ColumnName='Fuel Oil #2'
+[08:58:00.625352 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heating' AND ColumnName='District Heating'
+[08:58:00.630874 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Cooling' AND ColumnName='District Heating'
+[08:58:00.636510 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Interior Lighting' AND ColumnName='District Heating'
+[08:58:00.642069 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Exterior Lighting' AND ColumnName='District Heating'
+[08:58:00.647587 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Interior Equipment' AND ColumnName='District Heating'
+[08:58:00.653226 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Exterior Equipment' AND ColumnName='District Heating'
+[08:58:00.658766 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Fans' AND ColumnName='District Heating'
+[08:58:00.664356 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Pumps' AND ColumnName='District Heating'
+[08:58:00.670145 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heat Rejection' AND ColumnName='District Heating'
+[08:58:00.676071 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Humidification' AND ColumnName='District Heating'
+[08:58:00.681675 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heat Recovery' AND ColumnName='District Heating'
+[08:58:00.687277 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Water Systems' AND ColumnName='District Heating'
+[08:58:00.692865 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Refrigeration' AND ColumnName='District Heating'
+[08:58:00.698376 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Generators' AND ColumnName='District Heating'
+[08:58:00.709328 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heating' AND ColumnName='Steam'
+[08:58:00.716005 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Cooling' AND ColumnName='Steam'
+[08:58:00.722850 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Interior Lighting' AND ColumnName='Steam'
+[08:58:00.729530 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Exterior Lighting' AND ColumnName='Steam'
+[08:58:00.736319 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Interior Equipment' AND ColumnName='Steam'
+[08:58:00.742875 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Exterior Equipment' AND ColumnName='Steam'
+[08:58:00.749486 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Fans' AND ColumnName='Steam'
+[08:58:00.755978 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Pumps' AND ColumnName='Steam'
+[08:58:00.762587 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heat Rejection' AND ColumnName='Steam'
+[08:58:00.769400 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Humidification' AND ColumnName='Steam'
+[08:58:00.776068 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Heat Recovery' AND ColumnName='Steam'
+[08:58:00.782714 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Water Systems' AND ColumnName='Steam'
+[08:58:00.789308 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Refrigeration' AND ColumnName='Steam'
+[08:58:00.795809 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses' AND RowName='Generators' AND ColumnName='Steam'
+[08:58:00.800935 WARN] [openstudio.measure.OSRunner] Query failed for AnnualBuildingUtilityPerformanceSummary and TableName='End Uses By Subcategory' AND RowName='Exterior Equipment:Electric Vehicles' AND ColumnName='Electricity'
+[08:58:00.806505 WARN] [openstudio.measure.OSRunner] Query failed for Economics Results Summary Report and TableName='Annual Cost' AND RowName='Cost' AND ColumnName='Total'
+[08:58:00.811903 WARN] [openstudio.measure.OSRunner] Query failed for Economics Results Summary Report and TableName='Annual Cost' AND RowName='Cost' AND ColumnName='Electric'
+[08:58:00.817141 WARN] [openstudio.measure.OSRunner] Query failed for Economics Results Summary Report and TableName='Annual Cost' AND RowName='Cost' AND ColumnName='Natural Gas'

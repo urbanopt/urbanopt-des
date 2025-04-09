@@ -1,0 +1,2 @@
+Feature Id,Feature Name,Mapper Class
+all_buildings,All Buildings,URBANopt::Scenario::BaselineMapper

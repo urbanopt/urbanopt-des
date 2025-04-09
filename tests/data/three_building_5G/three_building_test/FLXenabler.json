@@ -1,0 +1,759 @@
+{
+  "type": "FeatureCollection",
+  "name": "FLXenabler_pre_uo",
+  "project": {
+    "name": "FLXenabler Block",
+    "surface_elevation": 125,
+    "import_surrounding_buildings_as_shading": null,
+    "weather_filename": "USA_VA_Arlington-Ronald.Reagan.Washington.Natl.AP.724050_TMY3.epw",
+    "climate_zone": "4A",
+    "begin_date": "2017-01-01T07:00:00.000Z",
+    "end_date": "2017-12-31T07:00:00.000Z",
+    "timesteps_per_hour": 1,
+    "default_template": "90.1-2013"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Site Origin",
+        "type": "Site Origin",
+        "cec_climate_zone": null,
+        "max_number_of_lv_nodes_per_building": null,
+        "only_lv_customers": null,
+        "underground_cables_ratio": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.99787623118388,
+          38.92258475625515
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "11",
+        "name": "Building 10",
+        "type": "Building",
+        "addr:city": "Washington",
+        "addr:country": null,
+        "addr:housenumber": "610",
+        "addr:postcode": "20002",
+        "addr:state": "DC",
+        "addr:street": "Rhode Island Avenue Northeast",
+        "amenity": "place_of_worship",
+        "area": 297558.57141161,
+        "atm": null,
+        "attic_type": "flat roof",
+        "brand": null,
+        "brand:website": null,
+        "brand:wikidata": null,
+        "building": "Religious worship",
+        "building_type": "Religious worship",
+        "building:levels": 0,
+        "confidence": 0.9544000029563904,
+        "construction:building": null,
+        "cuisine": null,
+        "dcgis:captureyear": "20050404",
+        "dcgis:dataset": "buildings",
+        "dcgis:featurecode": "2000",
+        "description": null,
+        "drive_in": null,
+        "drive_through": null,
+        "ele": "31",
+        "floor_area": 64100.01091100594,
+        "footprint_area": 32050.00545550297,
+        "footprint_area_ft2": 32050.00545550297,
+        "footprint_area_m2": 2977.5181582592877,
+        "foundation_type": "slab",
+        "fuel:diesel": null,
+        "gnis:feature_id": "2506950",
+        "Gross Floor Area (m2)": 5955.036316518575,
+        "gross_floor_area_ft2": 64100.01091100594,
+        "gross_floor_area_m2": 5955.036316518575,
+        "height": 7.164031028747559,
+        "height_1": [
+          0
+        ],
+        "height_2": 7.164031028747559,
+        "height_levels": 0.0,
+        "historic": null,
+        "index_right": 0,
+        "indoor_seating": null,
+        "internet_access": null,
+        "lat": 38.9211875,
+        "lon": -76.9978125,
+        "mappingdc:gid": "21124",
+        "note": null,
+        "number_of_bedrooms": 50,
+        "number_of_residential_units": 18,
+        "number_of_stories": 2,
+        "number_of_stories_above_ground": 2,
+        "open_air": null,
+        "opening_hours": null,
+        "operator": null,
+        "osm_url": "https://www.openstreetmap.org/way/55321561",
+        "outdoor_seating": null,
+        "phone": null,
+        "Property Name": "Building 10",
+        "Property Type": "Religious worship",
+        "religion": "christian",
+        "roof:shape": null,
+        "screen": null,
+        "source": "dcgis",
+        "system_type": "PSZ-AC with gas coil",
+        "takeaway": null,
+        "tourism": null,
+        "type_previous": null,
+        "ubid_1": "87C5W2C2+FV-3-2-2-3",
+        "ubid_2": [
+          "87C5W2C2+FR-3-3-2-4"
+        ],
+        "website": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -76.9978699,
+              38.920939
+            ],
+            [
+              -76.9978897,
+              38.9209385
+            ],
+            [
+              -76.9979091,
+              38.9209351
+            ],
+            [
+              -76.9979183,
+              38.9209323
+            ],
+            [
+              -76.99798912830731,
+              38.92105564997537
+            ],
+            [
+              -76.99800686791583,
+              38.9210935216636
+            ],
+            [
+              -76.99801029792077,
+              38.92109254914654
+            ],
+            [
+              -76.9981594,
+              38.9213536
+            ],
+            [
+              -76.9981713,
+              38.9213744
+            ],
+            [
+              -76.9979420074351,
+              38.92147501221155
+            ],
+            [
+              -76.99785024605487,
+              38.92150102938342
+            ],
+            [
+              -76.9978157,
+              38.9214658
+            ],
+            [
+              -76.9978489,
+              38.9214467
+            ],
+            [
+              -76.9978131,
+              38.9214066
+            ],
+            [
+              -76.9977927,
+              38.9214171
+            ],
+            [
+              -76.9977675,
+              38.9213867
+            ],
+            [
+              -76.997787,
+              38.9213774
+            ],
+            [
+              -76.99770563389362,
+              38.92128644542592
+            ],
+            [
+              -76.99759559774911,
+              38.92105153390218
+            ],
+            [
+              -76.99758139126472,
+              38.92105556190017
+            ],
+            [
+              -76.99756698948121,
+              38.92102481603519
+            ],
+            [
+              -76.99756730732992,
+              38.92102407968567
+            ],
+            [
+              -76.99786813828487,
+              38.92093878427978
+            ],
+            [
+              -76.9978699,
+              38.920939
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "14",
+        "name": "Building 13",
+        "type": "Building",
+        "addr:city": "Washington",
+        "addr:country": null,
+        "addr:housenumber": "524",
+        "addr:postcode": "20002",
+        "addr:state": "DC",
+        "addr:street": "Rhode Island Avenue Northeast",
+        "amenity": null,
+        "area": 297558.57141161,
+        "atm": null,
+        "attic_type": "flat roof",
+        "brand": null,
+        "brand:website": null,
+        "brand:wikidata": null,
+        "building": "Retail",
+        "building_type": "Strip shopping mall",
+        "building:levels": 0,
+        "confidence": 0.9990000128746033,
+        "construction:building": null,
+        "cuisine": null,
+        "dcgis:captureyear": "19990331",
+        "dcgis:dataset": "buildings",
+        "dcgis:featurecode": "2000",
+        "description": null,
+        "drive_in": null,
+        "drive_through": null,
+        "ele": null,
+        "floor_area": 60617.36495255984,
+        "footprint_area": 60617.36495255984,
+        "footprint_area_ft2": 60617.36495255984,
+        "footprint_area_m2": 5631.490612463754,
+        "foundation_type": "slab",
+        "fuel:diesel": null,
+        "gnis:feature_id": null,
+        "Gross Floor Area (m2)": 5631.490612463754,
+        "gross_floor_area_ft2": 60617.36495255984,
+        "gross_floor_area_m2": 5631.490612463754,
+        "height": 4.390329360961914,
+        "height_1": [
+          0
+        ],
+        "height_2": 4.390329360961914,
+        "height_levels": 0.0,
+        "historic": null,
+        "index_right": 0,
+        "indoor_seating": null,
+        "internet_access": null,
+        "lat": 38.9220625,
+        "lon": -76.9986875,
+        "mappingdc:gid": "19577",
+        "note": "exhibit space with rotating single theme art",
+        "number_of_bedrooms": 50,
+        "number_of_residential_units": 18,
+        "number_of_stories": 1,
+        "number_of_stories_above_ground": 1,
+        "open_air": null,
+        "opening_hours": null,
+        "operator": null,
+        "osm_url": "https://www.openstreetmap.org/way/55321532",
+        "outdoor_seating": null,
+        "phone": null,
+        "Property Name": "Building 13",
+        "Property Type": "Retail",
+        "religion": null,
+        "roof:shape": null,
+        "screen": null,
+        "source": "dcgis",
+        "system_type": "PSZ-AC with gas coil",
+        "takeaway": null,
+        "tourism": "attraction",
+        "type_previous": null,
+        "ubid_1": "87C5W2C2+RG-1-3-2-4",
+        "ubid_2": [
+          "87C5W2C2+Q6-3-9-3-8"
+        ],
+        "website": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -76.9991629,
+              38.9222132
+            ],
+            [
+              -76.99827815098178,
+              38.92221310121159
+            ],
+            [
+              -76.99827750906121,
+              38.921816676426964
+            ],
+            [
+              -76.99843717770773,
+              38.921816519931234
+            ],
+            [
+              -76.99843717414096,
+              38.921814433165395
+            ],
+            [
+              -76.99916666869655,
+              38.921813718167186
+            ],
+            [
+              -76.9991629,
+              38.9222132
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "26",
+        "name": "Building 25",
+        "type": "Building",
+        "addr:city": "Washington",
+        "addr:country": "US",
+        "addr:housenumber": "601",
+        "addr:postcode": "20017",
+        "addr:state": "DC",
+        "addr:street": "Edgewood Street Northeast",
+        "amenity": null,
+        "area": 297558.57141161,
+        "atm": null,
+        "attic_type": "flat roof",
+        "brand": null,
+        "brand:website": null,
+        "brand:wikidata": null,
+        "building": "Apartments",
+        "building_type": "Lodging",
+        "building:levels": 7,
+        "confidence": 0.9401999711990356,
+        "construction:building": null,
+        "cuisine": null,
+        "dcgis:captureyear": "19990331",
+        "dcgis:dataset": "buildings",
+        "dcgis:featurecode": "2000",
+        "description": null,
+        "drive_in": null,
+        "drive_through": null,
+        "ele": null,
+        "floor_area": 271761.99358218873,
+        "footprint_area": 54352.39871643774,
+        "footprint_area_ft2": 54352.39871643774,
+        "footprint_area_m2": 5049.461047606628,
+        "foundation_type": "slab",
+        "fuel:diesel": null,
+        "gnis:feature_id": null,
+        "Gross Floor Area (m2)": 25247.305238033143,
+        "gross_floor_area_ft2": 271761.99358218873,
+        "gross_floor_area_m2": 25247.305238033143,
+        "height": 16.71970558166504,
+        "height_1": [
+          0
+        ],
+        "height_2": 16.71970558166504,
+        "height_levels": 22.4,
+        "historic": null,
+        "index_right": 0,
+        "indoor_seating": null,
+        "internet_access": null,
+        "lat": 38.9238125,
+        "lon": -76.9973125,
+        "mappingdc:gid": "112296",
+        "note": null,
+        "number_of_bedrooms": 50,
+        "number_of_residential_units": 18,
+        "number_of_stories": 5,
+        "number_of_stories_above_ground": 5,
+        "open_air": null,
+        "opening_hours": null,
+        "operator": null,
+        "osm_url": "https://www.openstreetmap.org/way/55321563",
+        "outdoor_seating": null,
+        "phone": null,
+        "Property Name": "Building 25",
+        "Property Type": "Apartments",
+        "religion": null,
+        "roof:shape": null,
+        "screen": null,
+        "source": "dcgis",
+        "system_type": "VAV chiller with gas boiler reheat",
+        "takeaway": null,
+        "tourism": null,
+        "type_previous": null,
+        "ubid_1": "87C5W2F3+G3-4-6-4-4",
+        "ubid_2": "['87C5W2F2+FW-0-1-0-0' '87C5W2F3+H3-3-6-5-4']",
+        "website": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -76.997268,
+              38.9239396
+            ],
+            [
+              -76.9973129,
+              38.9239971
+            ],
+            [
+              -76.9972501,
+              38.924027
+            ],
+            [
+              -76.9972149,
+              38.9240438
+            ],
+            [
+              -76.9972186,
+              38.9240485
+            ],
+            [
+              -76.9972166,
+              38.9240495
+            ],
+            [
+              -76.9970061,
+              38.9241498
+            ],
+            [
+              -76.9970027,
+              38.9241454
+            ],
+            [
+              -76.9969442,
+              38.9241732
+            ],
+            [
+              -76.9968078,
+              38.9242383
+            ],
+            [
+              -76.9968113,
+              38.9242427
+            ],
+            [
+              -76.99675945393531,
+              38.92426741618727
+            ],
+            [
+              -76.99670255732724,
+              38.92429218165714
+            ],
+            [
+              -76.9966846,
+              38.9242692
+            ],
+            [
+              -76.99667906047542,
+              38.92427184136272
+            ],
+            [
+              -76.99667459380868,
+              38.924265629642065
+            ],
+            [
+              -76.99666879942063,
+              38.924226852451
+            ],
+            [
+              -76.9966733,
+              38.9242247
+            ],
+            [
+              -76.9966633,
+              38.9242118
+            ],
+            [
+              -76.9966589,
+              38.9242063
+            ],
+            [
+              -76.9966264,
+              38.9242218
+            ],
+            [
+              -76.99662080525748,
+              38.9242146646762
+            ],
+            [
+              -76.99661137452345,
+              38.92420155113631
+            ],
+            [
+              -76.99660845185166,
+              38.92418199201921
+            ],
+            [
+              -76.9966143,
+              38.9241792
+            ],
+            [
+              -76.99660656534188,
+              38.924169367110146
+            ],
+            [
+              -76.99660386606088,
+              38.92415130296997
+            ],
+            [
+              -76.9967012,
+              38.9241048
+            ],
+            [
+              -76.9967047,
+              38.9241092
+            ],
+            [
+              -76.9968711121581,
+              38.92402992391859
+            ],
+            [
+              -76.99736711616791,
+              38.92381405399233
+            ],
+            [
+              -76.9973713,
+              38.9238194
+            ],
+            [
+              -76.9973876,
+              38.9238116
+            ],
+            [
+              -76.99722088874144,
+              38.923598254061844
+            ],
+            [
+              -76.99712380877271,
+              38.92346326219327
+            ],
+            [
+              -76.9971308,
+              38.9234599
+            ],
+            [
+              -76.9971292,
+              38.9234578
+            ],
+            [
+              -76.99713603263532,
+              38.92345453503819
+            ],
+            [
+              -76.99720720668671,
+              38.923423554692256
+            ],
+            [
+              -76.9972157,
+              38.9234344
+            ],
+            [
+              -76.99721770230312,
+              38.92343344729126
+            ],
+            [
+              -76.9972506719003,
+              38.92347929237335
+            ],
+            [
+              -76.99723901980967,
+              38.92340136031319
+            ],
+            [
+              -76.99726923959291,
+              38.9233882063626
+            ],
+            [
+              -76.99726572438576,
+              38.92336469576781
+            ],
+            [
+              -76.99732911778212,
+              38.92333710211758
+            ],
+            [
+              -76.9973459,
+              38.9233586
+            ],
+            [
+              -76.99734816981423,
+              38.92335751768614
+            ],
+            [
+              -76.99735301839864,
+              38.92336425977841
+            ],
+            [
+              -76.99743499547166,
+              38.92332857708987
+            ],
+            [
+              -76.9974612,
+              38.9233621
+            ],
+            [
+              -76.9973679,
+              38.9234066
+            ],
+            [
+              -76.99738335435237,
+              38.92342638009214
+            ],
+            [
+              -76.99739084953609,
+              38.92347653990884
+            ],
+            [
+              -76.99757985247885,
+              38.92373935274422
+            ],
+            [
+              -76.9975566,
+              38.9237505
+            ],
+            [
+              -76.9975657,
+              38.9237563
+            ],
+            [
+              -76.9975815,
+              38.9237698
+            ],
+            [
+              -76.9975976,
+              38.9237877
+            ],
+            [
+              -76.9976044,
+              38.9237977
+            ],
+            [
+              -76.9976101,
+              38.923808
+            ],
+            [
+              -76.9976181,
+              38.9238296
+            ],
+            [
+              -76.9976204,
+              38.9238408
+            ],
+            [
+              -76.9976214,
+              38.9238632
+            ],
+            [
+              -76.99762665914818,
+              38.923869935976064
+            ],
+            [
+              -76.99763442433792,
+              38.923921902447084
+            ],
+            [
+              -76.99778238787594,
+              38.924127673643426
+            ],
+            [
+              -76.9977588,
+              38.9241388
+            ],
+            [
+              -76.9977683,
+              38.9241509
+            ],
+            [
+              -76.9977223,
+              38.9241728
+            ],
+            [
+              -76.9977004,
+              38.9241448
+            ],
+            [
+              -76.99769993078134,
+              38.92414502163095
+            ],
+            [
+              -76.99769318484967,
+              38.924135641330885
+            ],
+            [
+              -76.9976949388585,
+              38.924147379517905
+            ],
+            [
+              -76.9976769,
+              38.9241559
+            ],
+            [
+              -76.9976988,
+              38.924184
+            ],
+            [
+              -76.9976536,
+              38.9242056
+            ],
+            [
+              -76.9976444,
+              38.924194
+            ],
+            [
+              -76.9975981106876,
+              38.92421602925108
+            ],
+            [
+              -76.99737374427085,
+              38.92390404459615
+            ],
+            [
+              -76.99735543000979,
+              38.92391201629744
+            ],
+            [
+              -76.9973474,
+              38.9239018
+            ],
+            [
+              -76.997268,
+              38.9239396
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
