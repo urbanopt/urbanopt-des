@@ -172,8 +172,8 @@ class ResultsBase:
             # check if the column exists in the data frame and if not, then set the value to zero!
             # TODO: rename data_annual to annual to be consistent with the other *results* processing.
             if column["name"] in self.data_annual.columns:
-                self.end_use_summary[self.display_name][column["display_name"]] = float(self.data_annual[column["name"]].iloc[0])
+                self.end_use_summary.loc[column["display_name"], self.display_name] = float(self.data_annual[column["name"]].iloc[0])
             else:
-                self.end_use_summary[self.display_name][column["display_name"]] = 0.0
+                self.end_use_summary.loc[column["display_name"], self.display_name] = 0.0
 
         return self.end_use_summary
