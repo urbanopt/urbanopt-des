@@ -72,7 +72,7 @@ class ModelicaResults(ResultsBase):
         self.min_60 = None
         self.min_60_with_buildings = None
         self.monthly = None
-        self.annual = None
+        self.data_annual = None
         self.end_use_summary = None
         self.grid_metrics_daily = None
         self.grid_metrics_annual = None
@@ -892,8 +892,8 @@ class ModelicaResults(ResultsBase):
         # save the monthly and annual
         if self.monthly is not None and "monthly" in dfs_to_save:
             self.monthly.to_csv(self.path / "power_monthly.csv")
-        if self.annual is not None and "annual" in dfs_to_save:
-            self.annual.to_csv(self.path / "power_annual.csv")
+        if self.data_annual is not None and "annual" in dfs_to_save:
+            self.data_annual.to_csv(self.path / "power_annual.csv")
 
         # save the summary
         if self.end_use_summary is not None and "end_use_summary" in dfs_to_save:
