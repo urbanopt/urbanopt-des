@@ -1,0 +1,4 @@
+Feature Id,Feature Name,Mapper Class
+11,Building 10,URBANopt::Scenario::BaselineMapper
+14,Building 13,URBANopt::Scenario::BaselineMapper
+26,Building 25,URBANopt::Scenario::BaselineMapper

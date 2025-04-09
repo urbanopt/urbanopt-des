@@ -1,0 +1,147 @@
+ExpandObjects Started.
+No expanded file generated.
+ExpandObjects Finished. Time:     0.119
+EnergyPlus Starting
+EnergyPlus, Version 24.2.0-94a887817b, YMD=2025.03.28 08:57
+Initializing Response Factors
+Calculating CTFs for "INTERIORFURNISHINGS"
+Calculating CTFs for "INTERIORFURNISHINGS 1"
+Calculating CTFs for "TYPICAL IEAD ROOF R-31.25"
+Calculating CTFs for "TYPICAL INSULATED EXTERIOR MASS WALL R-9.62"
+Calculating CTFs for "TYPICAL INTERIOR CEILING"
+Calculating CTFs for "TYPICAL INTERIOR WALL"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 0.0M AREA 1187.5M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 1.31M AREA 3.71M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 1.72M AREA 1.9M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 1.72M AREA 6.31M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 1.98M AREA 5.62M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 12.32M AREA 46.38M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 15.08M AREA 48.69M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 2.12M AREA 5.88M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 2.53M AREA 3.38M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 22.81M AREA 73.3M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 27.77M AREA 99.27M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 27.94M AREA 88.17M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 3.58M AREA 9.95M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 3.63M AREA 2.28M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 31.76M AREA 127.26M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 4.02M AREA 3.27M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 4.48M AREA 17.69M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 4.93M AREA 6.93M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 5.43M AREA 23.55M2"
+Calculating CTFs for "FOUNDATION F 0.9W/M*K PERIM 8.47M AREA 25.29M2"
+Initializing Window Optical Properties
+Initializing Solar Calculations
+Allocate Solar Module Arrays
+Initializing Zone and Enclosure Report Variables
+Initializing Surface (Shading) Report Variables
+Computing Interior Solar Absorption Factors
+Determining Shadowing Combinations
+Computing Window Shade Absorption Factors
+Proceeding with Initializing Solar Calculations
+Initializing Surfaces
+Initializing Outdoor environment for Surfaces
+Setting up Surface Reporting Variables
+Initializing Temperature and Flux Histories
+Initializing Window Shading
+Computing Interior Absorption Factors
+Computing Interior Diffuse Solar Absorption Factors
+Initializing Solar Heat Gains
+Initializing Internal Heat Gains
+Initializing Interior Solar Distribution
+Initializing Interior Convection Coefficients
+Gathering Information for Predefined Reporting
+Completed Initializing Surface Heat Balance
+Calculate Outside Surface Heat Balance
+Calculate Inside Surface Heat Balance
+Calculate Air Heat Balance
+Initializing HVAC
+Warming up
+Warming up
+Warming up
+Warming up
+Warming up
+Performing Zone Sizing Simulation
+...for Sizing Period: #1 WASHINGTON DC REAGAN AP ANN CLG .4% CONDNS DB=>MWB 1
+Warming up
+Warming up
+Warming up
+Warming up
+Warming up
+Performing Zone Sizing Simulation
+...for Sizing Period: #2 WASHINGTON DC REAGAN AP ANN CLG .4% CONDNS WB=>MDB 1
+Warming up
+Warming up
+Warming up
+Warming up
+Warming up
+Performing Zone Sizing Simulation
+...for Sizing Period: #3 WASHINGTON DC REAGAN AP ANN HTG 99.6% CONDNS DB 1
+Calculating System sizing
+...for Sizing Period: #1 WASHINGTON DC REAGAN AP ANN CLG .4% CONDNS DB=>MWB 1
+Calculating System sizing
+...for Sizing Period: #2 WASHINGTON DC REAGAN AP ANN CLG .4% CONDNS WB=>MDB 1
+Calculating System sizing
+...for Sizing Period: #3 WASHINGTON DC REAGAN AP ANN HTG 99.6% CONDNS DB 1
+Adjusting Air System Sizing
+Adjusting Standard 62.1 Ventilation Sizing
+Initializing Simulation
+Reporting Surfaces
+Beginning Primary Simulation
+Initializing New Environment Parameters
+Warming up {1}
+Warming up {2}
+Warming up {3}
+Warming up {4}
+Warming up {5}
+Warming up {6}
+Warming up {7}
+Warming up {8}
+Warming up {9}
+Warming up {10}
+Warming up {11}
+Warming up {12}
+Warming up {13}
+Warming up {14}
+Starting Simulation at 01/01/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=01/21/2017
+Continuing Simulation at 01/21/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=02/10/2017
+Continuing Simulation at 02/10/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=03/02/2017
+Continuing Simulation at 03/02/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=03/22/2017
+Continuing Simulation at 03/22/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=04/11/2017
+Continuing Simulation at 04/11/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=05/01/2017
+Continuing Simulation at 05/01/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=05/21/2017
+Continuing Simulation at 05/21/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=06/10/2017
+Continuing Simulation at 06/10/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=06/30/2017
+Continuing Simulation at 06/30/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=07/20/2017
+Continuing Simulation at 07/20/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=08/09/2017
+Continuing Simulation at 08/09/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=08/29/2017
+Continuing Simulation at 08/29/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=09/18/2017
+Continuing Simulation at 09/18/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=10/08/2017
+Continuing Simulation at 10/08/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=10/28/2017
+Continuing Simulation at 10/28/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=11/17/2017
+Continuing Simulation at 11/17/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=12/07/2017
+Continuing Simulation at 12/07/2017 for RUN PERIOD 1
+Updating Shadowing Calculations, Start Date=12/27/2017
+Continuing Simulation at 12/27/2017 for RUN PERIOD 1
+Writing tabular output file results using HTML format.
+Computing Life Cycle Costs and Reporting
+Writing final SQL reports
+EnergyPlus Run Time=00hr 00min 39.01sec
+EnergyPlus Completed Successfully.
