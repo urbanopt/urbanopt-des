@@ -4,6 +4,10 @@
 .vscode
 ~$*
 *.pyc
+.ruff_cache
+.ruby-lsp
+.pytest_cache
+__pychache__/
 
 node_modules
 
