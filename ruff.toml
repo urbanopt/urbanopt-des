@@ -70,6 +70,9 @@ ignore = [
 ]
 
 [lint.per-file-ignores]
+"tests/results_experimenting.py" = [
+    "N803", # argument name should be lowercase
+]
 "**/tests/test_*" = [
     "S101", # assert
     "S105", # hardcoded-password-string

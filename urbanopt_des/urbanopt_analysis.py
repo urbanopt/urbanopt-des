@@ -588,7 +588,7 @@ class URBANoptAnalysis:
         # roll up the Modelica results (each analysis)
         for analysis_name in self.modelica:
             self.modelica[analysis_name].monthly = self.modelica[analysis_name].min_60_with_buildings.resample("ME").sum()
-            self.modelica[analysis_name].annual = self.modelica[analysis_name].min_60_with_buildings.resample("YE").sum()
+            self.modelica[analysis_name].data_annual = self.modelica[analysis_name].min_60_with_buildings.resample("YE").sum()
 
     def create_building_level_results(self) -> None:
         """Save off building level totals for mapping for each scenario. The results are

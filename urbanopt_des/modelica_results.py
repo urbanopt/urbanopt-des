@@ -1,13 +1,16 @@
 import json
-from datetime import datetime, timedelta
+import logging
+import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from buildingspy.io.outputfile import Reader
 
 from .emissions import HourlyEmissionsData
 from .results_base import ResultsBase
+
+_log = logging.getLogger(__name__)
 
 VariablesDict = dict[str, bool | str | int]
 
@@ -23,28 +26,34 @@ class ModelicaResults(ResultsBase):
         Args:
             mat_filename (Path): Fully qualified path to the .mat (or zipped .mat) file to load and process
             output_path (Path, optional): Path to save the post-processed data. Defaults to None.
+
+        Raises:
+            FileNotFoundError: If the path to a results file does not exist
+            TypeError: If a results file type is neither .mat or a zip of a .mat file
         """
         super().__init__()
 
-        # zip files are used for tests, and this
-        if mat_filename.suffix == ".zip":
-            from tempfile import TemporaryDirectory
-            from zipfile import ZipFile
+        if mat_filename.exists():
+            # zip files are used for tests, and this
+            if mat_filename.suffix == ".zip":
+                from tempfile import TemporaryDirectory
+                from zipfile import ZipFile
 
-            # Extract the DistrictEnergySystem.mat file from the zip file to a temporary directory,
-            # which will be deleted when the context manager exits
-            with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
-                extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
-                # Create a ModelicaResults object
-                self.mat_filename = Path(extracted_path)
-                self.modelica_data = Reader(extracted_path, "dymola")
-        else:
-            self.mat_filename = mat_filename
-            # read in the mat file
-            if self.mat_filename.exists():
+                # Extract the DistrictEnergySystem.mat file from the zip file to a temporary directory,
+                # which will be deleted when the context manager exits
+                with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
+                    extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
+                    # Create a ModelicaResults object
+                    self.mat_filename = Path(extracted_path)
+                    self.modelica_data = Reader(extracted_path, "dymola")
+            elif mat_filename.suffix == ".mat":
+                self.mat_filename = mat_filename
+                # read in the mat file
                 self.modelica_data = Reader(self.mat_filename, "dymola")
             else:
-                raise Exception(f"Could not find {self.mat_filename}. Will not continue.")
+                raise TypeError(f"File type {mat_filename.suffix} not supported. Will not continue.")
+        else:
+            raise FileNotFoundError(f"Could not find {mat_filename}. Will not continue.")
 
         # Determine where the outputs of the Modelica results post-processing will be stored.
         # Typically this is alongside the .mat file, but can be user defined.
@@ -63,7 +72,7 @@ class ModelicaResults(ResultsBase):
         self.min_60 = None
         self.min_60_with_buildings = None
         self.monthly = None
-        self.annual = None
+        self.data_annual = None
         self.end_use_summary = None
         self.grid_metrics_daily = None
         self.grid_metrics_annual = None
@@ -537,36 +546,115 @@ class ModelicaResults(ResultsBase):
 
         # should we resort the columns?
 
-    def create_summary(self):
-        """Create an annual end use summary by selecting key variables and values and transposing them for easy comparison.
-        In the dict the following conventions are used:
-            * `name` is the name of the variable in the data frame
-            * `units` is the units of the variable
-            * `display_name` will be the new name of the variable in the end use summary table.
+    def agg_for_reopt(self):
+        """Aggregate building-level results from the Modelica data.
+
+        Requires a full year Modelica simulation at hourly (8760) or 15-minute (8760 * 4) resolution
+
+        Parameters
+        ----------
+        None
         """
-        # get the list of all the columns to allocate the data frame correctly
-        columns = [c["display_name"] for c in self.end_use_summary_dict]
 
-        # Create a single column of data
-        self.end_use_summary = pd.DataFrame(
-            index=columns,
-            columns=["Units", self.display_name],
-            data=np.zeros((len(columns), 2)),
-        )
+        # Define patterns and output variable names
+        patterns = {
+            "heating_electric_power": r"^TimeSerLoa_\w+\.PHea$",
+            "cooling_electric_power": r"^TimeSerLoa_\w+\.PCoo$",
+            "pump_power": r"^TimeSerLoa_\w+\.PPum$",
+            "ets_pump_power": r"^TimeSerLoa_\w+\.PPumETS$",
+            "Heating system capacity": r"^TimeSerLoa_\w+\.ets.QHeaWat_flow_nominal$",
+            "Cooling system capacity": r"^TimeSerLoa_\w+\.ets.QChiWat_flow_nominal$",
+            "electrical_power_consumed": "pumDis.P",
+        }
 
-        # add the units column if it isn't already there
-        self.end_use_summary["Units"] = [c["units"] for c in self.end_use_summary_dict]
+        key_value_pairs = {}
+        time_values = None
 
-        # create a CSV file for the summary table with
-        # the columns as the rows and the results as the columns
-        for column in self.end_use_summary_dict:
-            # check if the column exists in the data frame and if not, then set the value to zero!
-            if column["name"] in self.annual.columns:
-                self.end_use_summary[self.display_name][column["display_name"]] = float(self.annual[column["name"]].iloc[0])
+        for name, pattern in patterns.items():
+            for var in self.modelica_data.varNames(pattern):
+                time, values = self.modelica_data.values(var)  # Unpack the tuple
+                if time_values is None:
+                    time_values = time.tolist()  # Initialize time_values from the first variable
+                key_value_pairs[var] = values.tolist()
+
+        # Convert seconds to timezone-aware datetime and adjust year to 2017
+        def adjust_year(dt):
+            return dt.replace(year=2017)
+
+        # Convert timestamps to timezone-aware datetime objects in UTC
+        time_values = [datetime.fromtimestamp(t, tz=timezone.utc) for t in time_values]
+        adjusted_time_values = [adjust_year(dt) for dt in time_values]
+
+        data_for_df = {
+            "Datetime": adjusted_time_values,
+            "TimeInSeconds": [int(dt.timestamp()) for dt in adjusted_time_values],
+        }
+
+        for var, values in key_value_pairs.items():
+            if len(values) < len(adjusted_time_values):
+                values.extend([None] * (len(adjusted_time_values) - len(values)))
+            elif len(values) > len(adjusted_time_values):
+                trimmed_values = values[: len(adjusted_time_values)]
+                data_for_df[var] = trimmed_values
             else:
-                self.end_use_summary[self.display_name][column["display_name"]] = 0.0
+                data_for_df[var] = values
 
-        return self.end_use_summary
+        df_values = pd.DataFrame(data_for_df)
+
+        # Convert 'Datetime' to datetime and set it as index
+        df_values["Datetime"] = pd.to_datetime(df_values["Datetime"])
+        df_values = df_values.set_index("Datetime")
+
+        # Resample to 1 hour data, taking the first occurrence for each interval
+        df_resampled = df_values.resample("1h").first().reset_index()
+
+        # Format datetime to desired format
+        df_resampled["Datetime"] = df_resampled["Datetime"].dt.strftime("%m/%d/%Y %H:%M")
+
+        # Interpolate only numeric columns
+        numeric_columns = df_resampled.select_dtypes(include=["number"]).columns
+        df_resampled[numeric_columns] = df_resampled[numeric_columns].interpolate(method="linear", inplace=False)
+
+        # Check if the number of rows is not equal to 8760 (hourly) or 8760 * 4 (15-minute)
+        if df_resampled.shape[0] != 8760 or df_resampled.shape[0] != 8760 * 4:
+            _log.warning(
+                "Data length is incorrect. Expected 8760 (hourly) or 8760 * 4 (15-minute) entries. "
+                f"Actual length is {df_resampled.shape[0]}."
+            )
+
+        # Define patterns with placeholders
+        patterns = {
+            "heating_electric_power_#{building_id}": r"^TimeSerLoa_(\w+)\.PHea$",
+            "cooling_electric_power_#{building_id}": r"^TimeSerLoa_(\w+)\.PCoo$",
+            "pump_power_#{building_id}": r"^TimeSerLoa_(\w+)\.PPum$",
+            "ets_pump_power_#{building_id}": r"^TimeSerLoa_(\w+)\.PPumETS$",
+            "heating_system_capacity_#{building_id}": r"^TimeSerLoa_(\w+)\.ets.QHeaWat_flow_nominal$",
+            "cooling_system_capacity_#{building_id}": r"^TimeSerLoa_(\w+)\.ets.QChiWat_flow_nominal$",
+            "electrical_power_consumed": "pumDis.P",
+        }
+
+        # Function to rename columns based on patterns
+        def rename_column(col_name):
+            for key, pattern in patterns.items():
+                match = re.match(pattern, col_name)
+                if match:
+                    if key == "electrical_power_consumed":
+                        return key
+                    try:
+                        building_id = match.group(1)
+                        return key.replace("#{building_id}", building_id)
+                    except IndexError:
+                        print(f"Error: Column '{col_name}' does not match expected pattern.")
+                        return col_name
+            # If no pattern matches, return the original column name
+            return col_name
+
+        # Rename columns
+        df_resampled.columns = [rename_column(col) for col in df_resampled.columns]
+
+        df_resampled.to_csv(self.path / "reopt_input.csv", index=False)
+
+        print(f"Results saved at: {self.path / 'reopt_input.csv'}")
 
     def calculate_carbon_emissions(
         self,
@@ -698,7 +786,7 @@ class ModelicaResults(ResultsBase):
             aggs[f"{meter} Load Factor"] = ["max", "min", "sum", "mean"]
             aggs[f"{meter} System Ramping"] = ["max", "min", "sum", "mean"]
 
-        df_tmp = df_tmp.groupby([pd.Grouper(freq="1y")]).agg(aggs)
+        df_tmp = df_tmp.groupby([pd.Grouper(freq="YE")]).agg(aggs)
         # rename the columns
         df_tmp.columns = [f"{c[0]} {c[1]}" for c in df_tmp.columns]
         # this is a strange section, the idxmax/idxmin are the indexes where the max/min values
@@ -706,6 +794,7 @@ class ModelicaResults(ResultsBase):
         for meter in meters:
             # there is only one year of data, so grab the idmax/idmin of the first element. If
             # we expand to multiple years, then this will need to be updated
+            # FIXME: this id_lookup produces Pandas FutureWarning
             id_lookup = df_tmp[f"{meter} Max idxmax"][0]
             df_tmp[f"{meter} Max idxmax"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Max Datetime"]
             id_lookup = df_tmp[f"{meter} Min idxmin"][0]
@@ -719,13 +808,13 @@ class ModelicaResults(ResultsBase):
             )
 
         # Add the MWh related metrics, can't sum up the 15 minute data, so we have to sum up the hourly
-        df_tmp["Total Electricity"] = self.min_60_with_buildings["Total Electricity"].resample("1y").sum() / 1e6  # MWh
-        df_tmp["Total Natural Gas"] = self.min_60_with_buildings["Total Natural Gas"].resample("1y").sum() / 1e6  # MWh
+        df_tmp["Total Electricity"] = self.min_60_with_buildings["Total Electricity"].resample("YE").sum() / 1e6  # MWh
+        df_tmp["Total Natural Gas"] = self.min_60_with_buildings["Total Natural Gas"].resample("YE").sum() / 1e6  # MWh
         df_tmp["Total Thermal Cooling Energy"] = (
-            self.min_60_with_buildings["Total Thermal Cooling Energy"].resample("1y").sum() / 1e6
+            self.min_60_with_buildings["Total Thermal Cooling Energy"].resample("YE").sum() / 1e6
         )  # MWh
         df_tmp["Total Thermal Heating Energy"] = (
-            self.min_60_with_buildings["Total Thermal Heating Energy"].resample("1y").sum() / 1e6
+            self.min_60_with_buildings["Total Thermal Heating Energy"].resample("YE").sum() / 1e6
         )  # MWh
 
         # graph the top 5 peak values for each of the meters
@@ -777,7 +866,7 @@ class ModelicaResults(ResultsBase):
             "min_15_with_buildings",
             "min_60_with_buildings",
             "monthly",
-            "annual",
+            "data_annual",
             "end_use_summary",
             "grid_metrics_daily",
             "grid_metrics_annual",
@@ -786,7 +875,9 @@ class ModelicaResults(ResultsBase):
         """Save all of the dataframes, assuming they are defined
 
         Args:
-            dfs_to_save (list, optional): Which ones to save. Defaults to ['min_5', 'min_15', 'min_60', 'min_15_with_buildings', 'min_60_with_buildings', 'monthly', 'annual', 'summary'].
+            dfs_to_save (list, optional): Which ones to save. Defaults to: ['min_5', 'min_15', 'min_60',
+            'min_15_with_buildings', 'min_60_with_buildings', 'monthly', 'data_annual', 'end_use_summary',
+            'grid_metrics_daily', 'grid_metrics_annual'].
         """
         if self.min_5 is not None and "min_5" in dfs_to_save:
             self.min_5.to_csv(self.path / "power_5min.csv")
@@ -802,8 +893,8 @@ class ModelicaResults(ResultsBase):
         # save the monthly and annual
         if self.monthly is not None and "monthly" in dfs_to_save:
             self.monthly.to_csv(self.path / "power_monthly.csv")
-        if self.annual is not None and "annual" in dfs_to_save:
-            self.annual.to_csv(self.path / "power_annual.csv")
+        if self.data_annual is not None and "annual" in dfs_to_save:
+            self.data_annual.to_csv(self.path / "power_annual.csv")
 
         # save the summary
         if self.end_use_summary is not None and "end_use_summary" in dfs_to_save:

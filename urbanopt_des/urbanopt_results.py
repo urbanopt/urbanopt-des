@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 from typing import Union
 
-import numpy as np
 import pandas as pd
 from modelica_builder.modelica_mos_file import ModelicaMOS
 
@@ -146,7 +145,7 @@ class URBANoptResults(ResultsBase):
             aggs[f"{meter} Load Factor"] = ["max", "min", "sum", "mean"]
             aggs[f"{meter} System Ramping"] = ["max", "min", "sum", "mean"]
 
-        df_tmp = df_tmp.groupby([pd.Grouper(freq="1y")]).agg(aggs)
+        df_tmp = df_tmp.groupby([pd.Grouper(freq="YE")]).agg(aggs)
         # rename the columns
         df_tmp.columns = [f"{c[0]} {c[1]}" for c in df_tmp.columns]
         # this is a strange section, the idxmax/idxmin are the indexes where the max/min values
@@ -167,10 +166,10 @@ class URBANoptResults(ResultsBase):
             )
 
         # Add the MWh related metrics, can't sum up the 15 minute data, so we have to sum up the hourly
-        df_tmp["Total Electricity"] = self.data["Total Electricity"].resample("1y").sum() / 1e6  # MWh
-        df_tmp["Total Natural Gas"] = self.data["Total Natural Gas"].resample("1y").sum() / 1e6  # MWh
-        df_tmp["Total Thermal Cooling Energy"] = self.data["Total Thermal Cooling Energy"].resample("1y").sum() / 1e6  # MWh
-        df_tmp["Total Thermal Heating Energy"] = self.data["Total Thermal Heating Energy"].resample("1y").sum() / 1e6  # MWh
+        df_tmp["Total Electricity"] = self.data["Total Electricity"].resample("YE").sum() / 1e6  # MWh
+        df_tmp["Total Natural Gas"] = self.data["Total Natural Gas"].resample("YE").sum() / 1e6  # MWh
+        df_tmp["Total Thermal Cooling Energy"] = self.data["Total Thermal Cooling Energy"].resample("YE").sum() / 1e6  # MWh
+        df_tmp["Total Thermal Heating Energy"] = self.data["Total Thermal Heating Energy"].resample("YE").sum() / 1e6  # MWh
 
         # graph the top 5 peak values for each of the meters
         meters = [
@@ -211,38 +210,6 @@ class URBANoptResults(ResultsBase):
         self.grid_metrics_annual = df_tmp
 
         return self.grid_metrics_annual
-
-    def create_summary(self):
-        """Create an annual end use summary by selecting key variables and values and transposing them for easy comparison.
-        In the dict the following conventions are used:
-            * `name` is the name of the variable in the data frame
-            * `units` is the units of the variable
-            * `display_name` will be the new name of the variable in the end use summary table.
-        """
-        # get the list of all the columns to allocate the data frame correctly
-        columns = [c["display_name"] for c in self.end_use_summary_dict]
-
-        # Create a single column of data
-        self.end_use_summary = pd.DataFrame(
-            index=columns,
-            columns=["Units", self.display_name],
-            data=np.zeros((len(columns), 2)),
-        )
-
-        # add the units column if it isn't already there
-        self.end_use_summary["Units"] = [c["units"] for c in self.end_use_summary_dict]
-
-        # create a CSV file for the summary table with
-        # the columns as the rows and the results as the columns
-        for column in self.end_use_summary_dict:
-            # check if the column exists in the data frame and if not, then set the value to zero!
-            # TODO: rename data_annual to annual to be consistent with the other *results* processing.
-            if column["name"] in self.data_annual.columns:
-                self.end_use_summary[self.display_name][column["display_name"]] = float(self.data_annual[column["name"]].iloc[0])
-            else:
-                self.end_use_summary[self.display_name][column["display_name"]] = 0.0
-
-        return self.end_use_summary
 
     def save_dataframes(self) -> None:
         """Save the data and data_15min dataframes to the outputs directory."""

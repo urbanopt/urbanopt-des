@@ -9,7 +9,7 @@ packages = [{ include = "urbanopt_des", from = "." }]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
 geopandas = "^1.0.1"
-
+cyclopts = "^3.10.1"
 # release mode
 geojson-modelica-translator = "^0.9.3"
 # pre-release mode, use github
@@ -27,3 +27,6 @@ buildingspy = "^5.2.0"
 [build-system]
 requires = ["poetry-core>=2.0.1"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+des-output = "urbanopt_des.cli:app"
