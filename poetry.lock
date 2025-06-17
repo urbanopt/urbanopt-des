@@ -401,14 +401,14 @@ tests = ["pytest", "pytest-cov", "pytest-xdist"]
 
 [[package]]
 name = "cyclopts"
-version = "3.17.0"
+version = "3.19.0"
 description = "Intuitive, easy CLIs based on type hints."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "cyclopts-3.17.0-py3-none-any.whl", hash = "sha256:9d351811eaeb28501fd7967c4e810d6b8661c9ba4760dd1e95a9881f0ced2b53"},
-    {file = "cyclopts-3.17.0.tar.gz", hash = "sha256:bc4057c0cfc7b14ce7ec6395ddcfcf02a1e9d21a00c01b7871b5c4f648b832c5"},
+    {file = "cyclopts-3.19.0-py3-none-any.whl", hash = "sha256:776a5747945bbafd23e007d3813b2bc4e6483adfe9f12f5684e941a726851ee4"},
+    {file = "cyclopts-3.19.0.tar.gz", hash = "sha256:0825c5dbca16c85ebbcaca8ab0952e9a2b62bacf25c704ab8cdb2ce229d46163"},
 ]
 
 [package.dependencies]
@@ -2368,4 +2368,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "4b86af084fba66983b6f490aabe2e9a9d63436280263fd630096aa5021ee5515"
+content-hash = "76293353bb69d6cbc3c987ec017db277f58eac19b63685812b6cf991e86c0e9c"
