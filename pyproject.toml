@@ -19,9 +19,9 @@ geojson-modelica-translator = "^0.10.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "~=4.0"
-mypy = "~1.14"
+mypy = "~1.16"
 pytest = "~=8.3"
-pytest-cov = "~6.0"
+pytest-cov = "~6.2"
 buildingspy = "^5.2.0"
 
 [build-system]
