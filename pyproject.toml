@@ -11,7 +11,7 @@ python = ">=3.10,<3.14"
 geopandas = "^1.0.1"
 cyclopts = "^3.10.1"
 # release mode
-geojson-modelica-translator = "^0.9.3"
+geojson-modelica-translator = "^0.10.0"
 # pre-release mode, use github
 # geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
 # dev mode
