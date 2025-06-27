@@ -401,14 +401,14 @@ tests = ["pytest", "pytest-cov", "pytest-xdist"]
 
 [[package]]
 name = "cyclopts"
-version = "3.19.0"
+version = "3.21.0"
 description = "Intuitive, easy CLIs based on type hints."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "cyclopts-3.19.0-py3-none-any.whl", hash = "sha256:776a5747945bbafd23e007d3813b2bc4e6483adfe9f12f5684e941a726851ee4"},
-    {file = "cyclopts-3.19.0.tar.gz", hash = "sha256:0825c5dbca16c85ebbcaca8ab0952e9a2b62bacf25c704ab8cdb2ce229d46163"},
+    {file = "cyclopts-3.21.0-py3-none-any.whl", hash = "sha256:0be9cc8dee760da0c256391b81dff3c2c6ab8bafbac6f6170e544528b2419f97"},
+    {file = "cyclopts-3.21.0.tar.gz", hash = "sha256:9792a2e25aad3211feb8b7ac968566a7660dad4936cd03576a3698fe15dfddaf"},
 ]
 
 [package.dependencies]
@@ -575,38 +575,38 @@ files = [
 
 [[package]]
 name = "geojson-modelica-translator"
-version = "0.10.0"
+version = "0.11.0"
 description = "Package for converting GeoJSON to Modelica models for urban scale analyses."
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "geojson_modelica_translator-0.10.0-py3-none-any.whl", hash = "sha256:7e710d4847d1827913b5c79fdfcfcaba49b5d23f6a150871e8b932fbc35e79d1"},
-    {file = "geojson_modelica_translator-0.10.0.tar.gz", hash = "sha256:be19ecb0c09bc31bbc3d747a58d12f5edaba7d5582c8153dd5a9a3a0c8a7ddfa"},
+    {file = "geojson_modelica_translator-0.11.0-py3-none-any.whl", hash = "sha256:c4ce519e4eb205cfa44738a3183d4358c2e037d76b14b1390a2fe7fb0215cbb0"},
+    {file = "geojson_modelica_translator-0.11.0.tar.gz", hash = "sha256:5dfa99a4b8ee65461d1c1f961f30cdbad338a535246cb6239c9242eaca1596aa"},
 ]
 
 [package.dependencies]
 BuildingsPy = ">=5.1,<6.0"
-click = ">=8.1,<9.0"
+click = ">=8.2,<9.0"
 geojson = ">=3.1,<4.0"
 jinja2 = ">=3.1,<4.0"
 jsonpath-ng = ">=1.6,<2.0"
 jsonschema = ">=4.20,<5.0"
 modelica-builder = ">=0.6.0,<0.7.0"
-pandas = ">=2,<3"
+pandas = ">=2.0,<3.0"
 requests = ">=2.28,<3.0"
 teaser = "1.1.0"
 
 [[package]]
 name = "geopandas"
-version = "1.1.0"
+version = "1.1.1"
 description = "Geographic pandas extensions"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "geopandas-1.1.0-py3-none-any.whl", hash = "sha256:b19b18bdc736ee05b237f5e9184211c452768a4c883f7d7f8421b0cbe1da5875"},
-    {file = "geopandas-1.1.0.tar.gz", hash = "sha256:d176b084170539044ce7554a1219a4433fa1bfba94035b5a519c8986330e429e"},
+    {file = "geopandas-1.1.1-py3-none-any.whl", hash = "sha256:589e61aaf39b19828843df16cb90234e72897e2579be236f10eee0d052ad98e8"},
+    {file = "geopandas-1.1.1.tar.gz", hash = "sha256:1745713f64d095c43e72e08e753dbd271678254b24f2e01db8cdb8debe1d293d"},
 ]
 
 [package.dependencies]
@@ -2368,4 +2368,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "5c92773e8e1a32744b7efd24524701a6c5ef79c083f1bf2518280dc9d651623f"
+content-hash = "e62a0c69001a5fc45d26764ddd24a584f02becae81db32193cc7d69dcf5c8882"
