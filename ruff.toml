@@ -62,7 +62,6 @@ ignore = [
     "RUF012",  # mutable-class-default
     "S106",    # hardcoded-password-func-arg
     "S311",    # suspicious-non-cryptographic-random-usage
-    "S320",    # suspicious-xmle-tree-usage
     "S603",    # subprocess-without-shell-equals-true
     "S607",    # start-process-with-partial-path
     "S701",    # jinja2-autoescape-false
@@ -86,6 +85,9 @@ ignore = [
     "F401", # unused-import
     "F403", # undefined-local-with-import-star
     "I001", # unsorted-imports
+]
+"urbanopt_des/modelica_results.py" = [
+    "PLC0415", # import at top-level
 ]
 
 [lint.pylint]
