@@ -1,8 +1,10 @@
 # Changelog
 
-## Version 0.1.0
+## Version 0.1.1
 
-### What's Changed
+- Bump GMT to version 0.11.0 by @vtnate in <https://github.com/urbanopt/urbanopt-des/pull/26>
+
+## Version 0.1.0
 
 - Add build test by @nllong in https://github.com/urbanopt/urbanopt-des/pull/2
 - Use ruff, cleanup formatting by @nllong in https://github.com/urbanopt/urbanopt-des/pull/1
