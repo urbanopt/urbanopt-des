@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "urbanopt-des"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Nicholas Long <nicholas.long@nrel.gov>"]
 readme = "README.md"
