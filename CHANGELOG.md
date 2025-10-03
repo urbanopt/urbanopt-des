@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.1.2
+
+- Bump GMT to version 0.12.0 by @vtnate in <https://github.com/urbanopt/urbanopt-des/pull/39>
+
 ## Version 0.1.1
 
 - Bump GMT to version 0.11.0 by @vtnate in <https://github.com/urbanopt/urbanopt-des/pull/26>
