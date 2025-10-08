@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "urbanopt-des"
-version = "0.1.2"
+version = "0.1.3"
 description = ""
 authors = ["Nicholas Long <nicholas.long@nrel.gov>"]
 readme = "README.md"
@@ -8,7 +8,9 @@ packages = [{ include = "urbanopt_des", from = "." }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
-geopandas = "^1.0.1"
+geopandas = "<1.0"
+# Below 1.0 keeps Shapely <2.0, to avoid conflicts with nrel-disco's requirements for Shapely (via pydss)
+# Comes from uo-sdk using both this and nrel-disco
 cyclopts = "^3.24.0"
 # release mode
 geojson-modelica-translator = "^0.12.0"
