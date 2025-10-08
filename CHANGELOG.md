@@ -2,7 +2,7 @@
 
 ## Version 0.1.3
 
-- Downgrade Geopands to <1.0 by @vtnate in <https://github.com/urbanopt/urbanopt-des/pull/40>
+- Downgrade Geopandas to <1.0 by @vtnate in <https://github.com/urbanopt/urbanopt-des/pull/40>
 
 ## Version 0.1.2
 
