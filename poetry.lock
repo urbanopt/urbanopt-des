@@ -569,24 +569,28 @@ tests = ["pytest", "pytest-cov", "pytest-xdist"]
 
 [[package]]
 name = "cyclopts"
-version = "3.24.0"
+version = "4.2.4"
 description = "Intuitive, easy CLIs based on type hints."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "cyclopts-3.24.0-py3-none-any.whl", hash = "sha256:809d04cde9108617106091140c3964ee6fceb33cecdd537f7ffa360bde13ed71"},
-    {file = "cyclopts-3.24.0.tar.gz", hash = "sha256:de6964a041dfb3c57bf043b41e68c43548227a17de1bad246e3a0bfc5c4b7417"},
+    {file = "cyclopts-4.2.4-py3-none-any.whl", hash = "sha256:41054f5e921a4f2b8ab9c839f12a274dec06a19560dc4898ce37cb775ca68ca4"},
+    {file = "cyclopts-4.2.4.tar.gz", hash = "sha256:27e1d175df2889aba72cd960c4e34c8b0a501c5b0161e849c72d9fee5903ecbb"},
 ]
 
 [package.dependencies]
 attrs = ">=23.1.0"
-docstring-parser = {version = ">=0.15", markers = "python_version < \"4.0\""}
+docstring-parser = ">=0.15,<4.0"
 rich = ">=13.6.0"
 rich-rst = ">=1.3.1,<2.0.0"
+tomli = {version = ">=2.0.0", markers = "python_version < \"3.11\""}
 typing-extensions = {version = ">=4.8.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
+debug = ["ipdb (>=0.13.9)", "line-profiler (>=3.5.1)"]
+dev = ["coverage[toml] (>=5.1)", "pre-commit (>=2.16.0)", "pydantic (>=2.11.2,<3.0.0)", "pytest (>=8.2.0)", "pytest-cov (>=3.0.0)", "pytest-mock (>=3.7.0)", "pyyaml (>=6.0.1)", "toml (>=0.10.2,<1.0.0)", "trio (>=0.10.0)"]
+docs = ["gitpython (>=3.1.31)", "myst-parser[linkify] (>=3.0.1,<5.0.0)", "sphinx (>=7.4.7,<8.2.0)", "sphinx-autodoc-typehints (>=1.25.2,<4.0.0)", "sphinx-copybutton (>=0.5,<1.0)", "sphinx-rtd-dark-mode (>=1.3.0,<2.0.0)", "sphinx-rtd-theme (>=3.0.0,<4.0.0)"]
 toml = ["tomli (>=2.0.0) ; python_version < \"3.11\""]
 trio = ["trio (>=0.10.0)"]
 yaml = ["pyyaml (>=6.0.1)"]
@@ -806,7 +810,7 @@ files = [
 
 [[package]]
 name = "geojson-modelica-translator"
-version = "0.12.0"
+version = "0.13.0"
 description = "Package for converting GeoJSON to Modelica models for urban scale analyses."
 optional = false
 python-versions = ">=3.10, <3.14"
@@ -2921,4 +2925,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "153dd6a9acc22ca80838b2725af9c273bfd49cbbc5f6966aeb8df2a78f9d6c40"
+content-hash = "27361626fdaa82f72173ce4fb5e63ab1ba1aea2354a6f7df6318dfb3227cbcfa"

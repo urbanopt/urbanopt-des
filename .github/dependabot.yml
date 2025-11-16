@@ -9,6 +9,8 @@ updates:
         dependency-type: "development"
       prod-deps:
         dependency-type: "production"
+    ignore:
+      - dependency-name: "geopandas"
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
