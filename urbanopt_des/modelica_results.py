@@ -727,21 +727,6 @@ class ModelicaResults(ResultsBase):
         self.min_15_with_buildings_to_process = self.min_15_with_buildings_to_process.iloc[skip_time:]
         # # END NEED TO FIX
 
-        # # THIS IS HARD CODED -- NEED TO FIX!
-        # # Start with the latest in the year...
-
-        # # remove 2017-02-06 -- 2017-02-07 from the data, as it is a warm up period
-        # # convert 2/6 to hours
-        # skip_time = 96 * (31)
-        # # remove skip_time to skip_time + 96
-        # print(f"Removing {skip_time} to {skip_time + 96} from the data")
-        # # remove rows 96*31 to 96*38
-        # self.min_15_with_buildings_to_process = self.min_15_with_buildings_to_process.drop(
-        #     self.min_15_with_buildings_to_process.index[range(skip_time, skip_time + 168)]
-        # )
-
-        # END NEED TO FIX
-
         self.grid_metrics_daily = None
         for meter in meters:
             df_tmp = self.min_15_with_buildings_to_process.copy()
@@ -794,11 +779,10 @@ class ModelicaResults(ResultsBase):
         for meter in meters:
             # there is only one year of data, so grab the idmax/idmin of the first element. If
             # we expand to multiple years, then this will need to be updated
-            # FIXME: this id_lookup produces Pandas FutureWarning
-            id_lookup = df_tmp[f"{meter} Max idxmax"][0]
-            df_tmp[f"{meter} Max idxmax"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Max Datetime"]
-            id_lookup = df_tmp[f"{meter} Min idxmin"][0]
-            df_tmp[f"{meter} Min idxmin"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Min Datetime"]
+            id_lookup = df_tmp[f"{meter} Max idxmax"].iloc[0]  # Use .iloc[0] instead of [0]
+            df_tmp.loc[df_tmp.index[0], f"{meter} Max idxmax"] = self.grid_metrics_daily.loc[id_lookup, f"{meter} Max Datetime"]
+            id_lookup = df_tmp[f"{meter} Min idxmin"].iloc[0]
+            df_tmp.loc[df_tmp.index[0], f"{meter} Min idxmin"] = self.grid_metrics_daily.loc[id_lookup, f"{meter} Min Datetime"]
             # rename these two columns to remove the idxmax/idxmin nomenclature
             df_tmp = df_tmp.rename(
                 columns={
