@@ -15,7 +15,7 @@ class TestModelicaResampleAndConvert(unittest.TestCase):
             self.output_dir.mkdir()
 
     def test_simple_aggregation_single_building(self):
-        """Test that aggregations work correctly with simple known values"""
+        """Test that aggregations work correctly with simple known values."""
         # Create simple test data: 24 hours of hourly data
         n_hours = 24
 
