@@ -556,6 +556,7 @@ class ModelicaResults(ResultsBase):
             # as they are not necessarily being met
             # by the Modelica simulation. This is
             # a `bug` that needs to be confirmed.
+            "WaterSystems:Electricity Building",
             "WaterSystems:NaturalGas Building",
         ]
         meter_names = [f"{meter_name} {building_id}" for building_id in building_ids for meter_name in building_meter_names]
@@ -567,8 +568,10 @@ class ModelicaResults(ResultsBase):
             "Total Building Exterior Equipment Electricity",
             "Total Building Interior Equipment Natural Gas",
             "Total Building Exterior Equipment Natural Gas",
-            "Total Building Water Systems Natural Gas",
             "Total Building Interior Equipment",
+            "Total Building Water Systems Electricity",
+            "Total Building Water Systems Natural Gas",
+            "Total Building Water Systems"       
         ]
 
         # Filter meter_names to only include columns that actually exist in the dataframes

@@ -85,12 +85,12 @@ class ResultsBase:
             {
                 "name": "Total Cooling Plant",
                 "units": "Wh",
-                "display_name": "District Cooling",
+                "display_name": "District Plant Cooling",
             },
             {
                 "name": "Total Heating Plant",
                 "units": "Wh",
-                "display_name": "District Heating",
+                "display_name": "District Plant Heating",
             },
             {
                 "name": "Total Electricity",
