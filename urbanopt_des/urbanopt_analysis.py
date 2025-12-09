@@ -530,9 +530,13 @@ class URBANoptAnalysis:
                 "Total Building Exterior Lighting",
                 "Total Building Interior Equipment Electricity",
                 "Total Building Exterior Equipment Electricity",
+                "Total Building Water Systems Electricity",
             ]
+            # Note: Only include natural gas columns that exist in the dataframe
+            # Some columns like Exterior Equipment Natural Gas may not exist if buildings don't use them
             building_aggs["Total Building Natural Gas"]["agg_columns"] = [
                 "Total Building Interior Equipment Natural Gas",
+                "Total Building Water Systems Natural Gas",
             ]
             building_aggs["Total Building and ETS Energy"]["agg_columns"] = [
                 "Total Building Electricity",
@@ -542,7 +546,10 @@ class URBANoptAnalysis:
                 "Total Building and ETS Energy",
                 "Total DES Electricity",
             ]
-            building_aggs["Total Natural Gas"]["agg_columns"] = ["Total Building Natural Gas"]
+            building_aggs["Total Natural Gas"]["agg_columns"] = [
+                "Total Building Natural Gas",
+                "Total DES Natural Gas",
+            ]
             building_aggs["Total Energy"]["agg_columns"] = [
                 "Total Electricity",
                 "Total Natural Gas",
@@ -563,9 +570,16 @@ class URBANoptAnalysis:
                     if not value["agg_columns"]:
                         raise Exception(f"Agg columns for {key} have not been defined")
 
+                    # Filter to only include columns that exist in the dataframe
+                    available_columns = [col for col in value["agg_columns"] if col in temp_df.columns]
+
                     # sum up the columns in the agg_columns defined above for the dataframe of
-                    # the analysis
-                    temp_df[key] = temp_df[value["agg_columns"]].sum(axis=1)
+                    # the analysis (only if there are available columns)
+                    if available_columns:
+                        temp_df[key] = temp_df[available_columns].sum(axis=1)
+                    else:
+                        # If no columns are available, set to zero
+                        temp_df[key] = 0
 
     def create_rollups(self) -> None:
         """Rollups take the 60 minute data sets and roll up to monthly and annual"""

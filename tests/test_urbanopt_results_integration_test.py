@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-class UrbanoptDesResultsTest(unittest.TestCase):
+class UrbanoptResultsIntegrationTest(unittest.TestCase):
     # More comprehensive test with 3 buildings and a 5G district energy system.
     # This file requires the OpenStudio/EnergyPlus results
     # for each building to be present in the tests/data/three_building_5G directory.
