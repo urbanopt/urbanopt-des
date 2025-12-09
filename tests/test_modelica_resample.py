@@ -7,7 +7,7 @@ from urbanopt_des.modelica_results import ModelicaResults
 
 
 class TestModelicaResampleAndConvert(unittest.TestCase):
-    """Test the mathematical calculations in resample_and_convert_to_df"""
+    """Test the mathematical calculations in resample_and_convert_to_df."""
 
     def setUp(self):
         self.output_dir = Path(__file__).parent / "test_output"
