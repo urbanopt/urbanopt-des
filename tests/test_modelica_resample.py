@@ -212,7 +212,7 @@ class TestModelicaResampleAndConvert(unittest.TestCase):
                     mock_file.unlink()
 
     def test_fallback_to_bui_pattern(self):
-        """Test that the method falls back to bui[n].bui.disFloCoo.PPum pattern when TimeSerLoa pattern doesn't exist"""
+        """Test that the method falls back to bui[n].bui.disFloCoo.PPum pattern when TimeSerLoa pattern doesn't exist."""
         n_hours = 12
 
         mock_data = {
