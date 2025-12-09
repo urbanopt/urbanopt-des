@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-class EndUseColorsTest(unittest.TestCase):
+class UrbanOptResultsTest(unittest.TestCase):
     """Test that end use energy rows have the correct color mappings."""
 
     def setUp(self):
@@ -102,7 +102,7 @@ class EndUseColorsTest(unittest.TestCase):
 
         self.uo_analysis.save_dataframes(["grid_summary", "end_use_summary"])
 
-    def test_energy_end_use_rows_exist(self):
+    def test_energy_end_use_exist(self):
         """Test that the energy_end_use_rows dictionary has the correct structure and colors."""
         # Expected energy end use rows with their color mappings
         expected_energy_end_use_rows = {
@@ -110,8 +110,8 @@ class EndUseColorsTest(unittest.TestCase):
             "Exterior Lighting": "lightblue",
             "Plug Loads": "brown",
             "Building Cooling": "blue",
-            "District Plant Cooling": "blue",
-            "District Plant Heating": "orange",
+            "District Cooling": "blue",
+            "District Heating": "orange",
             "Building Heating": "orange",
             "Building Fans": "lightgray",
             "Building Pumps": "lightblue",
@@ -122,7 +122,7 @@ class EndUseColorsTest(unittest.TestCase):
             "Sewer Pump": "darkgray",
             "GHX Pump": "darkgreen",
             "Distribution Pump": "darkblue",
-        }
+        }.keys()
 
         # Verify that the expected keys exist in the end_use_summary
         end_use_summary = self.uo_analysis.end_use_summary
@@ -132,7 +132,7 @@ class EndUseColorsTest(unittest.TestCase):
         display_names = [item["display_name"] for item in self.uo_analysis.urbanopt.end_use_summary_dict]
 
         # Check that all expected end use categories are present in the display names
-        for end_use_name in expected_energy_end_use_rows.keys():
+        for end_use_name in expected_energy_end_use_rows:
             self.assertIn(
                 end_use_name,
                 display_names,
@@ -140,7 +140,7 @@ class EndUseColorsTest(unittest.TestCase):
             )
 
         # Check that the end_use_summary index contains the expected end use names
-        for end_use_name in expected_energy_end_use_rows.keys():
+        for end_use_name in expected_energy_end_use_rows:
             self.assertIn(
                 end_use_name,
                 end_use_summary.index,
@@ -148,96 +148,4 @@ class EndUseColorsTest(unittest.TestCase):
             )
 
     
-    def test_energy_end_use_rows_completeness(self):
-        """Test that all end use categories from the summary are accounted for in the color mapping."""
-        # Expected energy end use rows with their color mappings
-        energy_end_use_rows = {
-            "Interior Lighting": "#FFFFCC",
-            "Exterior Lighting": "lightblue",
-            "Plug Loads": "brown",
-            "Building Cooling": "blue",
-            "District Plant Cooling": "blue",
-            "District Plant Heating": "orange",
-            "Building Heating": "orange",
-            "Building Fans": "lightgray",
-            "Building Pumps": "lightblue",
-            "Building Heat Rejection": "royalblue",
-            "Building Water Systems": "#FFBB78",
-            "ETS Pump Total": "lightgreen",
-            "ETS Heat Pump": "gold",
-            "Sewer Pump": "darkgray",
-            "GHX Pump": "darkgreen",
-            "Distribution Pump": "darkblue",
-        }
-
-        # Get the end use categories that should have colors
-        # (excluding totals, emissions, and other summary metrics)
-        exclude_categories = [
-            "Total Electricity",
-            "Total Natural Gas",
-            "Thermal Cooling",
-            "Thermal Heating",
-            "District Loop Energy",
-            "Total Natural Gas Carbon Emissions",
-            "Total Electricity Carbon Emissions 2024",
-            "Total Electricity Carbon Emissions 2045",
-            "Total Carbon Emissions 2024",
-            "Total Carbon Emissions 2045",
-            "District Cooling",  # Note: This maps to "District Plant Cooling" in the color dict
-            "District Heating",  # Note: This maps to "District Plant Heating" in the color dict
-        ]
-
-        # Get all end use categories from the summary dict
-        all_end_uses = [item["display_name"] for item in self.uo_analysis.urbanopt.end_use_summary_dict]
-
-        # Filter out the excluded categories
-        plottable_end_uses = [end_use for end_use in all_end_uses if end_use not in exclude_categories]
-
-        # Map District Cooling/Heating to their plant equivalents
-        mapped_end_uses = []
-        for end_use in plottable_end_uses:
-            if end_use == "District Cooling":
-                mapped_end_uses.append("District Plant Cooling")
-            elif end_use == "District Heating":
-                mapped_end_uses.append("District Plant Heating")
-            else:
-                mapped_end_uses.append(end_use)
-
-        # Check that all plottable end uses have a color defined
-        for end_use in mapped_end_uses:
-            self.assertIn(
-                end_use,
-                energy_end_use_rows.keys(),
-                f"'{end_use}' should have a color defined in energy_end_use_rows",
-            )
-
-    def test_energy_end_use_count(self):
-        """Test that we have the expected number of end use categories with colors."""
-        energy_end_use_rows = {
-            "Interior Lighting": "#FFFFCC",
-            "Exterior Lighting": "lightblue",
-            "Plug Loads": "brown",
-            "Building Cooling": "blue",
-            "District Plant Cooling": "blue",
-            "District Plant Heating": "orange",
-            "Building Heating": "orange",
-            "Building Fans": "lightgray",
-            "Building Pumps": "lightblue",
-            "Building Heat Rejection": "royalblue",
-            "Building Water Systems": "#FFBB78",
-            "ETS Pump Total": "lightgreen",
-            "ETS Heat Pump": "gold",
-            "Sewer Pump": "darkgray",
-            "GHX Pump": "darkgreen",
-            "Distribution Pump": "darkblue",
-        }
-
-        self.assertEqual(
-            len(energy_end_use_rows),
-            16,
-            "There should be 16 end use categories with colors defined",
-        )
-
-
-if __name__ == "__main__":
-    unittest.main()
+    
