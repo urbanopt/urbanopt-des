@@ -13,8 +13,14 @@ jobs:
         run: |
           if grep -E '^[^#]*geojson-modelica-translator.*path.*=.*"\.\./' pyproject.toml; then
             echo "using_local=true" >> $GITHUB_OUTPUT
-            echo "⚠️ Skipping build test: pyproject.toml is configured to use local GMT checkout"
-            echo "This is expected during development when testing with ../geojson-modelica-translator"
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              echo "❌ ERROR: main branch cannot use local GMT checkout"
+              echo "Please update pyproject.toml to use a published version or git reference"
+              exit 1
+            else
+              echo "⚠️ Skipping build test: pyproject.toml is configured to use local GMT checkout"
+              echo "This is expected during development when testing with ../geojson-modelica-translator"
+            fi
           else
             echo "using_local=false" >> $GITHUB_OUTPUT
           fi
