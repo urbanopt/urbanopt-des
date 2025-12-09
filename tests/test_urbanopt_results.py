@@ -102,7 +102,7 @@ class UrbanOptResultsTest(unittest.TestCase):
 
         self.uo_analysis.save_dataframes(["grid_summary", "end_use_summary"])
 
-    def test_energy_end_use_exist(self):
+    def test_energy_end_use_exist_in_urbanopt(self):
         """Test that the energy_end_use_rows dictionary has the correct structure and colors."""
         # Expected energy end use rows with their color mappings
         expected_energy_end_use_rows = {
@@ -147,5 +147,53 @@ class UrbanOptResultsTest(unittest.TestCase):
                 f"'{end_use_name}' should be present in the end use summary index",
             )
 
-    
-    
+    def test_energy_end_use_exist_in_modelica_results(self):
+        """Test that the energy end use variables also exist in the modelica results."""
+        # Expected energy end use rows
+        expected_energy_end_use_rows = {
+            "Interior Lighting": "#FFFFCC",
+            "Exterior Lighting": "lightblue",
+            "Plug Loads": "brown",
+            "Building Cooling": "blue",
+            "District Cooling": "blue",
+            "District Heating": "orange",
+            "Building Heating": "orange",
+            "Building Fans": "lightgray",
+            "Building Pumps": "lightblue",
+            "Building Heat Rejection": "royalblue",
+            "Building Water Systems": "#FFBB78",
+            "ETS Pump Total": "lightgreen",
+            "ETS Heat Pump": "gold",
+            "Sewer Pump": "darkgray",
+            "GHX Pump": "darkgreen",
+            "Distribution Pump": "darkblue",
+        }.keys()
+
+        # Verify that modelica results exist
+        self.assertGreater(len(self.uo_analysis.modelica), 0, "Should have at least one modelica result")
+
+        # Get the first modelica result
+        modelica_key = next(iter(self.uo_analysis.modelica.keys()))
+        modelica_result = self.uo_analysis.modelica[modelica_key]
+
+        # Get the list of display names from the modelica end_use_summary_dict
+        modelica_display_names = [item["display_name"] for item in modelica_result.end_use_summary_dict]
+
+        # Check that all expected end use categories are present in the modelica display names
+        for end_use_name in expected_energy_end_use_rows:
+            self.assertIn(
+                end_use_name,
+                modelica_display_names,
+                f"'{end_use_name}' should be present in the modelica end use summary display names",
+            )
+
+        # Check that the modelica end_use_summary index contains the expected end use names
+        modelica_end_use_summary = modelica_result.end_use_summary
+        self.assertIsNotNone(modelica_end_use_summary, "modelica end_use_summary should not be None")
+
+        for end_use_name in expected_energy_end_use_rows:
+            self.assertIn(
+                end_use_name,
+                modelica_end_use_summary.index,
+                f"'{end_use_name}' should be present in the modelica end use summary index",
+            )

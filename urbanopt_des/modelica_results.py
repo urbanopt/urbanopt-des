@@ -323,7 +323,7 @@ class ModelicaResults(ResultsBase):
 
         ### HEATING PLANT ###
         # Keep track of all the components, so that we can create the aggregation at the end
-        heating_plant_components = []
+        heating_plant_natural_gas_components = []
         boiler_data: dict[str, list[float]] = {}
         # 1. get the variables of all the boilers
         boiler_vars = self.modelica_data.varNames(r"heaPla.*boiHotWat.boi.\d..QFue_flow")
@@ -332,12 +332,13 @@ class ModelicaResults(ResultsBase):
             for var_id, boiler_var in enumerate(boiler_vars):
                 energy = self.retrieve_variable_data(boiler_var, len(time1))
                 boiler_data[f"Boiler {var_id + 1}"] = energy
-                heating_plant_components.append(f"Boiler {var_id + 1}")
+                heating_plant_natural_gas_components.append(f"Boiler {var_id + 1}")
         else:
             boiler_data["Boiler 1"] = [0] * len(time1)
-            heating_plant_components.append("Boiler 1")
+            heating_plant_natural_gas_components.append("Boiler 1")
 
-        # Other heating plant data
+        # Other heating plant data - electric
+        heating_plant_electricity_components = []
         heating_plant_pumps: dict[str, list[float]] = {}
         # 1. get the variables of all the condenser water pumps, which is in e.g., cooPla_67e4a0e1.pumCW.P[1]
         heating_plant_pumps_vars = self.modelica_data.varNames(r"heaPla.*pumHW.P.\d.")
@@ -345,12 +346,12 @@ class ModelicaResults(ResultsBase):
         if len(heating_plant_pumps_vars) > 0:
             for var_id, heating_plant_pumps_var in enumerate(heating_plant_pumps_vars):
                 energy = self.retrieve_variable_data(heating_plant_pumps_var, len(time1))
-                heating_plant_components.append(f"HW Pump {var_id + 1}")
+                heating_plant_electricity_components.append(f"HW Pump {var_id + 1}")
                 heating_plant_pumps[f"HW Pump {var_id + 1}"] = energy
         else:
             print("DEBUG: no HW pumps found")
             heating_plant_pumps["HW Pump"] = [0] * len(time1)
-            heating_plant_components.append("HW Pump")
+            heating_plant_electricity_components.append("HW Pump")
 
         # building related data
         building_data: dict[str, list[float]] = {}
@@ -413,7 +414,8 @@ class ModelicaResults(ResultsBase):
             agg_columns["Boilers Total"].append(f"Boiler {n_c}")
 
         # Add in all of the heating plant variables
-        agg_columns["Heating Plant Total"] = heating_plant_components.copy()
+        agg_columns["Heating Plant Electricity Total"] = heating_plant_electricity_components.copy()
+        agg_columns["Heating Plant Natural Gas Total"] = heating_plant_natural_gas_components.copy()
 
         # convert time to timestamps for pandas
         time = [datetime(year_of_data, 1, 1, 0, 0, 0) + timedelta(seconds=int(t)) for t in time1]
@@ -451,11 +453,14 @@ class ModelicaResults(ResultsBase):
 
         # create aggregations for the cooling plant
         df_power["Total Chillers"] = df_power[agg_columns["Chillers Total"]].sum(axis=1)
+        # Add in pumps of cooling plant?
         df_power["Total Cooling Plant"] = df_power[agg_columns["Cooling Plant Total"]].sum(axis=1)
 
-        # create aggregations for the heating plant
+        # create aggregations for the heating plant - Assume natural gas for now
         df_power["Total Boilers"] = df_power[agg_columns["Boilers Total"]].sum(axis=1)
-        df_power["Total Heating Plant"] = df_power[agg_columns["Heating Plant Total"]].sum(axis=1)
+        # Add in pumps for heating plant?
+        df_power["Total Heating Electricity Plant"] = df_power[agg_columns["Heating Plant Electricity Total"]].sum(axis=1)
+        df_power["Total Heating Natural Gas Plant"] = df_power[agg_columns["Heating Plant Natural Gas Total"]].sum(axis=1)
 
         # create aggregation columns for total pumps, total heat pumps, and total
         df_power["ETS Pump Electricity Total"] = df_power[agg_columns["ETS Pump Electricity Total"]].sum(axis=1)
@@ -479,13 +484,21 @@ class ModelicaResults(ResultsBase):
             "GHX Pump Electricity",
             "Distribution Pump Electricity",
             "Total Cooling Plant",
-            "Total Heating Plant",
+            "Total Heating Electricity Plant",
         ]
         df_power["Total DES Electricity"] = df_power[column_names].sum(axis=1)
 
-        # TODO: Add in total DES Natural Gas
+        column_names = [
+            "Total Heating Natural Gas Plant"
+        ]
+        df_power["Total DES Natural Gas"] = df_power[column_names].sum(axis=1)
 
-        # sum up all ETS data (pump and heat pump)
+        column_names = [
+            "Total Heating Electricity Plant",
+            "Total Heating Natural Gas Plant",
+        ]
+        df_power["Total Heating Plant"] = df_power[column_names].sum(axis=1)
+
         # df_power.to_csv(self.path / "power_original.csv")
         df_power = df_power.drop_duplicates(subset="datetime")
         df_power = df_power.set_index("datetime")
@@ -520,6 +533,11 @@ class ModelicaResults(ResultsBase):
             NoneType: None
         """
         # create the list of columns from the building name
+        # NOTE: Building HVAC heating and cooling energy (Heating:Electricity, Cooling:Electricity, 
+        # Heating:NaturalGas, Fans:Electricity, Pumps:Electricity, HeatRejection:NaturalGas) are 
+        # NOT included here because those loads are provided by the district energy system (DES) 
+        # in the Modelica simulation. The ETS (Energy Transfer Station) handles the heating/cooling 
+        # interface between the building and the district system.
         building_meter_names = [
             # by building end use and fuel type
             "InteriorLights:Electricity Building",
@@ -527,6 +545,12 @@ class ModelicaResults(ResultsBase):
             "InteriorEquipment:Electricity Building",
             "ExteriorEquipment:Electricity Building",
             "InteriorEquipment:NaturalGas Building",
+            "ExteriorEquipment:NaturalGas Building",
+            # WaterSystems are being passed for now
+            # as they are not necessarily being met
+            # by the Modelica simulation. This is 
+            # a `bug` that needs to be confirmed.
+            "WaterSystems:NaturalGas Building",
         ]
         meter_names = [f"{meter_name} {building_id}" for building_id in building_ids for meter_name in building_meter_names]
         # add in the end use totals that are non-HVAC
@@ -536,14 +560,20 @@ class ModelicaResults(ResultsBase):
             "Total Building Interior Equipment Electricity",
             "Total Building Exterior Equipment Electricity",
             "Total Building Interior Equipment Natural Gas",
+            "Total Building Exterior Equipment Natural Gas",
+            "Total Building Water Systems Natural Gas",
             "Total Building Interior Equipment",
         ]
 
-        self.min_60_with_buildings = pd.concat([self.min_60, openstudio_df[meter_names]], axis=1, join="inner")
+        # Filter meter_names to only include columns that actually exist in the dataframes
+        available_meter_names_60 = [col for col in meter_names if col in openstudio_df.columns]
+        available_meter_names_15 = [col for col in meter_names if col in openstudio_df_15.columns]
+
+        self.min_60_with_buildings = pd.concat([self.min_60, openstudio_df[available_meter_names_60]], axis=1, join="inner")
         self.min_60_with_buildings.index.name = "datetime"
 
         # also conduct this for the 15 minute time step
-        self.min_15_with_buildings = pd.concat([self.min_15, openstudio_df_15[meter_names]], axis=1, join="inner")
+        self.min_15_with_buildings = pd.concat([self.min_15, openstudio_df_15[available_meter_names_15]], axis=1, join="inner")
         self.min_15_with_buildings.index.name = "datetime"
 
         # should we resort the columns?
