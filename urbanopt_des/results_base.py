@@ -3,15 +3,20 @@ import pandas as pd
 
 
 class ResultsBase:
+    # Attributes that subclasses must provide
+    display_name: str
+    data_annual: pd.DataFrame
+    end_use_summary: pd.DataFrame
+
     def __init__(self) -> None:
         """Base class for processing results. This is used for the Modelica and OpenStudio results to create
         common methods/datasets that can be used for easy comparison."""
 
     @property
-    def end_use_summary_dict(self) -> dict:
+    def end_use_summary_dict(self) -> list[dict[str, str]]:
         """Return a dictionary with the end use summary data structure."""
 
-        summary_columns = [
+        summary_columns: list[dict[str, str]] = [
             {
                 "name": "Total Building Interior Lighting",
                 "units": "Wh",
@@ -146,7 +151,7 @@ class ResultsBase:
 
         return summary_columns
 
-    def create_summary(self):
+    def create_summary(self) -> pd.DataFrame:
         """Create an annual end use summary by selecting key variables and values and transposing them for easy comparison.
         In the dict the following conventions are used:
             * `name` is the name of the variable in the data frame
