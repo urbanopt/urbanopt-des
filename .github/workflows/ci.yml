@@ -13,6 +13,24 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          path: urbanopt-des
+      - name: Check if geojson-modelica-translator needs to be checked out
+        id: check_gmt
+        working-directory: urbanopt-des
+        run: |
+          if grep -E '^[^#]*geojson-modelica-translator.*path.*=.*"\.\./' pyproject.toml; then
+            echo "needs_checkout=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_checkout=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Checkout geojson-modelica-translator
+        if: steps.check_gmt.outputs.needs_checkout == 'true'
+        uses: actions/checkout@v6
+        with:
+          repository: urbanopt/geojson-modelica-translator
+          ref: add-heatpump-trio-to-5g-template
+          path: geojson-modelica-translator
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with:
@@ -22,10 +40,13 @@ jobs:
         with:
           poetry-version: "latest"
       - name: Install dependencies
+        working-directory: urbanopt-des
         run: |
           python -m pip install --upgrade pip
-          poetry install
+          poetry install --no-root
       - name: Run pre-commit
+        working-directory: urbanopt-des
         run: poetry run pre-commit run --all-files
       - name: Run pytest
+        working-directory: urbanopt-des
         run: poetry run pytest -v --cov-report term-missing --cov
