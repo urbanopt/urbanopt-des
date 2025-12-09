@@ -373,19 +373,27 @@ class ModelicaResults(ResultsBase):
 
             # ETS pump data - disFloCoo is on the building_id, not the building number.
             ets_pump_data = self.retrieve_variable_data(f"PPumETS.u[{n_b}]", len(time1))  # This is ambient / 5g pump
-            ets_pump_chw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloCoo.PPum", len(time1))
-            # bui[1].bui.disFloCoo.PPum
-            ets_pump_hhw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloHea.PPum", len(time1))
-            # bui[1].bui.disFloHea.PPum
+
+            # Depending on the setup of the 5G system, the disFloCoo could be on the bui[n] or the TimeSerLoa_[building_id]
+            # Try TimeSerLoa pattern first, then fall back to bui pattern
+            if f"TimeSerLoa_{building_id}.disFloCoo.PPum" in self.modelica_data.varNames():
+                ets_pump_chw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloCoo.PPum", len(time1))
+            else:
+                ets_pump_chw_data = self.retrieve_variable_data(f"bui[{n_b}].bui.disFloCoo.PPum", len(time1))
+
+            if f"TimeSerLoa_{building_id}.disFloHea.PPum" in self.modelica_data.varNames():
+                ets_pump_hhw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloHea.PPum", len(time1))
+            else:
+                ets_pump_hhw_data = self.retrieve_variable_data(f"bui[{n_b}].bui.disFloHea.PPum", len(time1))
 
             # Thermal energy to buildings
             ets_q_cooling = self.retrieve_variable_data(f"bui[{n_b}].QCoo_flow", len(time1))
             ets_q_heating = self.retrieve_variable_data(f"bui[{n_b}].QHea_flow", len(time1))
 
+            building_data[f"ETS Heat Pump Electricity Building {building_id}"] = ets_hp_data
             building_data[f"ETS Pump Electricity Building {building_id}"] = ets_pump_data
             building_data[f"ETS Pump CHW Electricity Building {building_id}"] = ets_pump_chw_data
             building_data[f"ETS Pump HHW Electricity Building {building_id}"] = ets_pump_hhw_data
-            building_data[f"ETS Heat Pump Electricity Building {building_id}"] = ets_hp_data
             building_data[f"ETS Thermal Cooling Building {building_id}"] = ets_q_cooling
             building_data[f"ETS Thermal Heating Building {building_id}"] = ets_q_heating
 
