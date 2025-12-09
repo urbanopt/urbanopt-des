@@ -13,11 +13,11 @@ geopandas = "<1.0"
 # Comes from uo-sdk using both this and nrel-disco
 cyclopts = "^3.24.0"
 # release mode
-geojson-modelica-translator = "^0.12.0"
+# geojson-modelica-translator = "^0.12.0"
 # pre-release mode, use github
 # geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
 # dev mode
-# geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
+geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "~=4.5"
