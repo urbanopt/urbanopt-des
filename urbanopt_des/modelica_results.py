@@ -373,7 +373,9 @@ class ModelicaResults(ResultsBase):
             # ETS pump data - disFloCoo is on the building_id, not the building number.
             ets_pump_data = self.retrieve_variable_data(f"PPumETS.u[{n_b}]", len(time1))  # This is ambient / 5g pump
             ets_pump_chw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloCoo.PPum", len(time1))
+            # bui[1].bui.disFloCoo.PPum
             ets_pump_hhw_data = self.retrieve_variable_data(f"TimeSerLoa_{building_id}.disFloHea.PPum", len(time1))
+            # bui[1].bui.disFloHea.PPum
 
             # Thermal energy to buildings
             ets_q_cooling = self.retrieve_variable_data(f"bui[{n_b}].QCoo_flow", len(time1))
