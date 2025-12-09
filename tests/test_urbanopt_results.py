@@ -3,8 +3,6 @@ import unittest
 import warnings
 from pathlib import Path
 
-import pandas as pd
-
 from urbanopt_des.urbanopt_analysis import URBANoptAnalysis
 from urbanopt_des.urbanopt_geojson import DESGeoJSON as URBANoptGeoJSON
 
@@ -32,9 +30,7 @@ class UrbanOptResultsTest(unittest.TestCase):
                 path.unlink()
 
         # Run the post-processing to generate the data
-        modelica_results, _ = URBANoptAnalysis.get_list_of_valid_result_folders(
-            self.data_dir / "three_building_test_des_agg"
-        )
+        modelica_results, _ = URBANoptAnalysis.get_list_of_valid_result_folders(self.data_dir / "three_building_test_des_agg")
 
         uo_geojson_filename = self.data_dir / "three_building_test" / "FLXenabler.json"
         uo_des_analysis_dir = self.data_dir / "three_building_test_des_agg"
@@ -58,9 +54,7 @@ class UrbanOptResultsTest(unittest.TestCase):
             self.uo_analysis.modelica[key].save_variables()
 
         # this test has an aggregation of the modelica results
-        geojson_agg = URBANoptGeoJSON(
-            self.data_dir / "three_building_test_des_agg" / "FLXenabler.json", skip_validation=True
-        )
+        geojson_agg = URBANoptGeoJSON(self.data_dir / "three_building_test_des_agg" / "FLXenabler.json", skip_validation=True)
 
         other_vars_to_gather = [
             "borFie.Q_flow",
@@ -77,12 +71,8 @@ class UrbanOptResultsTest(unittest.TestCase):
         self.uo_analysis.create_modelica_aggregations()
 
         # run carbon calculations
-        self.uo_analysis.calculate_carbon_emissions(
-            "RFCE", 2024, analysis_year=2017, emissions_type="marginal", with_td_losses=True
-        )
-        self.uo_analysis.calculate_carbon_emissions(
-            "RFCE", 2045, analysis_year=2017, emissions_type="marginal", with_td_losses=True
-        )
+        self.uo_analysis.calculate_carbon_emissions("RFCE", 2024, analysis_year=2017, emissions_type="marginal", with_td_losses=True)
+        self.uo_analysis.calculate_carbon_emissions("RFCE", 2045, analysis_year=2017, emissions_type="marginal", with_td_losses=True)
 
         # now roll up to combine rows to monthly, annual, etc.
         self.uo_analysis.create_rollups()

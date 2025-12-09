@@ -571,7 +571,7 @@ class URBANoptAnalysis:
 
                     # Filter to only include columns that exist in the dataframe
                     available_columns = [col for col in value["agg_columns"] if col in temp_df.columns]
-                    
+
                     # sum up the columns in the agg_columns defined above for the dataframe of
                     # the analysis (only if there are available columns)
                     if available_columns:

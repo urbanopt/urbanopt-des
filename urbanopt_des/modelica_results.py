@@ -488,9 +488,7 @@ class ModelicaResults(ResultsBase):
         ]
         df_power["Total DES Electricity"] = df_power[column_names].sum(axis=1)
 
-        column_names = [
-            "Total Heating Natural Gas Plant"
-        ]
+        column_names = ["Total Heating Natural Gas Plant"]
         df_power["Total DES Natural Gas"] = df_power[column_names].sum(axis=1)
 
         column_names = [
@@ -533,10 +531,10 @@ class ModelicaResults(ResultsBase):
             NoneType: None
         """
         # create the list of columns from the building name
-        # NOTE: Building HVAC heating and cooling energy (Heating:Electricity, Cooling:Electricity, 
-        # Heating:NaturalGas, Fans:Electricity, Pumps:Electricity, HeatRejection:NaturalGas) are 
-        # NOT included here because those loads are provided by the district energy system (DES) 
-        # in the Modelica simulation. The ETS (Energy Transfer Station) handles the heating/cooling 
+        # NOTE: Building HVAC heating and cooling energy (Heating:Electricity, Cooling:Electricity,
+        # Heating:NaturalGas, Fans:Electricity, Pumps:Electricity, HeatRejection:NaturalGas) are
+        # NOT included here because those loads are provided by the district energy system (DES)
+        # in the Modelica simulation. The ETS (Energy Transfer Station) handles the heating/cooling
         # interface between the building and the district system.
         building_meter_names = [
             # by building end use and fuel type
@@ -548,7 +546,7 @@ class ModelicaResults(ResultsBase):
             "ExteriorEquipment:NaturalGas Building",
             # WaterSystems are being passed for now
             # as they are not necessarily being met
-            # by the Modelica simulation. This is 
+            # by the Modelica simulation. This is
             # a `bug` that needs to be confirmed.
             "WaterSystems:NaturalGas Building",
         ]
