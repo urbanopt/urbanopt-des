@@ -571,7 +571,7 @@ class ModelicaResults(ResultsBase):
             "Total Building Interior Equipment",
             "Total Building Water Systems Electricity",
             "Total Building Water Systems Natural Gas",
-            "Total Building Water Systems"       
+            "Total Building Water Systems",
         ]
 
         # Filter meter_names to only include columns that actually exist in the dataframes
