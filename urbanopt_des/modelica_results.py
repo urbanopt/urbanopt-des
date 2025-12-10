@@ -887,8 +887,6 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             aggs[f"{meter} System Ramping"] = ["max", "min", "sum", "mean"]
 
         df_tmp = df_tmp.groupby([pd.Grouper(freq="YE")]).agg(aggs)
-        if self.grid_metrics_daily is None:
-            raise ValueError("grid_metrics_daily must be initialized before use")
 
         # rename the columns
         df_tmp.columns = [f"{c[0]} {c[1]}" for c in df_tmp.columns]
