@@ -3,13 +3,13 @@
 
 import numpy as np
 import pandas as pd
-
+from typing import Optional
 
 class ResultsBase:
     # Attributes that subclasses must provide
-    display_name: str
-    data_annual: pd.DataFrame
-    end_use_summary: pd.DataFrame
+    display_name: Optional[str]
+    data_annual: Optional[pd.DataFrame]
+    end_use_summary: Optional[pd.DataFrame]
 
     def __init__(self) -> None:
         """Base class for processing results. This is used for the Modelica and OpenStudio results to create
