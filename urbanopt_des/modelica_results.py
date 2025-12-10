@@ -179,7 +179,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
         self.logger.info(f"Modelica data contains {n_buildings} buildings")
         return n_buildings
 
-    def retrieve_time_variable_list(self) -> list:
+    def retrieve_time_variable_list(self) -> list[float]:
         """Retrieve the time variable from the .mat file.
 
         Searches for time variables with known patterns and validates they have consistent lengths.
