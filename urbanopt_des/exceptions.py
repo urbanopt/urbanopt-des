@@ -10,8 +10,8 @@ class URBANoptDESError(Exception):
     """Base exception for all urbanopt-des errors."""
 
 
-class FileNotFoundError(URBANoptDESError):
-    """Raised when a required file is not found."""
+class URBANoptFileNotFoundError(URBANoptDESError):
+    """Raised when a required file is not found (urbanopt-des specific)."""
 
 
 class FileTypeError(URBANoptDESError):
