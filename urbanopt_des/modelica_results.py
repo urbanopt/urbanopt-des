@@ -231,10 +231,8 @@ class ModelicaResults(ResultsBase, LoggingMixin):
 
         # Validate all time variables have the same length
         if len(set(lengths_of_time)) != 1:
-            raise TimeSeriesMismatchError(
-                actual_length=len(set(lengths_of_time)),
-                expected_length=1,
-                variable_name=f"Multiple time variables with different lengths: {dict(zip(variables_of_time, lengths_of_time))}",
+            raise ValueError(
+                f"Multiple time variables have different lengths: {dict(zip(variables_of_time, lengths_of_time))}"
             )
 
         self.logger.info(f"Found time variable of length {len(time1)}")
