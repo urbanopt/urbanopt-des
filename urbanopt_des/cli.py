@@ -1,3 +1,6 @@
+# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
+
 from importlib.metadata import version
 from pathlib import Path
 

@@ -41,8 +41,6 @@ exclude = [
 ]
 ignore_missing_imports = true
 # Start with permissive settings - can be tightened incrementally
-allow_untyped_defs = true
-allow_untyped_calls = true
 disallow_untyped_defs = false
 # Still catch some useful errors
 warn_return_any = false

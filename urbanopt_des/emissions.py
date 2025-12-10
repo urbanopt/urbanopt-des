@@ -1,3 +1,6 @@
+# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
+
 # Create a class to load in the CSV files in the emissions folder and
 # convert hours to a datetime object.
 

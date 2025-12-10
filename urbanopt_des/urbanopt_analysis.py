@@ -1,3 +1,6 @@
+# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
+
 # helpers to build an analysis
 # mypy: disable-error-code="union-attr,index,arg-type,return-value,attr-defined,assignment,syntax,operator"
 import copy
