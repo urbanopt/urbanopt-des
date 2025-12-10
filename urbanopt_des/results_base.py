@@ -1,9 +1,11 @@
 # :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
 # See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
 
+from typing import Optional
+
 import numpy as np
 import pandas as pd
-from typing import Optional
+
 
 class ResultsBase:
     # Attributes that subclasses must provide
@@ -179,7 +181,7 @@ class ResultsBase:
         for column in self.end_use_summary_dict:
             # check if the column exists in the data frame and if not, then set the value to zero!
             # TODO: rename data_annual to annual to be consistent with the other *results* processing.
-            if column["name"] in self.data_annual.columns:
+            if self.data_annual is not None and column["name"] in self.data_annual.columns:
                 self.end_use_summary.loc[column["display_name"], self.display_name] = float(self.data_annual[column["name"]].iloc[0])
             else:
                 self.end_use_summary.loc[column["display_name"], self.display_name] = 0.0

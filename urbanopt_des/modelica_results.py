@@ -22,12 +22,10 @@ from .constants import (
 )
 from .emissions import HourlyEmissionsData
 from .exceptions import (
-    FileNotFoundError as URBANoptFileNotFoundError,
-)
-from .exceptions import (
     FileTypeError,
     NoTimeVariablesError,
     TimeSeriesMismatchError,
+    URBANoptFileNotFoundError,
 )
 from .logging_config import LoggingMixin
 from .results_base import ResultsBase
@@ -231,9 +229,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
 
         # Validate all time variables have the same length
         if len(set(lengths_of_time)) != 1:
-            raise ValueError(
-                f"Multiple time variables have different lengths: {dict(zip(variables_of_time, lengths_of_time))}"
-            )
+            raise ValueError(f"Multiple time variables have different lengths: {dict(zip(variables_of_time, lengths_of_time))}")
 
         self.logger.info(f"Found time variable of length {len(time1)}")
         return time1
