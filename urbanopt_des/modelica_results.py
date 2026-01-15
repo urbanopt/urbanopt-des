@@ -803,6 +803,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             "Total Building Electricity",
             "Total Building Natural Gas",
             "Total Electricity",
+            "Total Natural Gas",
             "Total Thermal Cooling Energy",
             "Total Thermal Heating Energy",
             "District Loop Energy",
