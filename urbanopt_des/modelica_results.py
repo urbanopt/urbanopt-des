@@ -524,9 +524,10 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             )
             self.logger.debug("Calculated district loop energy from flow and temperature data")
 
+        # NOTE: ETS Pump and ETS Heat Pump are NOT included in Total DES Electricity
+        # because they're already counted separately in Total ETS Electricity.
+        # Total Electricity = Total Building Electricity + Total ETS Electricity + Total DES Electricity
         column_names = [
-            "ETS Pump Electricity Total",
-            "ETS Heat Pump Electricity Total",
             "Sewer Pump Electricity",
             "GHX Pump Electricity",
             "Distribution Pump Electricity",
@@ -618,6 +619,9 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             "Total Building Water Systems Natural Gas",
             "Total Building Water Systems",
         ]
+        # NOTE: HVAC totals (cooling, heating, fans, pumps, heat rejection) are NOT included here
+        # because those loads are handled by the District Energy System (DES) through the ETS.
+        # HVAC columns will be created as zeros in create_modelica_aggregations() for end_use_summary compatibility.
 
         # Filter meter_names to only include columns that actually exist in the dataframes
         available_meter_names_60 = [col for col in meter_names if col in openstudio_df.columns]

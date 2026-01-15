@@ -387,7 +387,6 @@ class URBANoptAnalysis:
             "grid_metrics_daily",
             "grid_metrics_annual",
             "grid_summary",
-            "end_use_summary",
         ],
     ) -> None:
         """For all of the analyses, save the dataframes. Does NOT save the URBANopt results in the modelica paths."""
@@ -487,43 +486,37 @@ class URBANoptAnalysis:
         # Note that the order of aggregations matter if a new aggregation is dependent on another
         try:
             building_aggs: dict[str, dict] = {
+                # Building-level aggregations (created from OpenStudio results in combine_with_openstudio_results)
+                # These are referenced in end_use_summary_dict
+                "Total Building Interior Lighting": {},
+                "Total Building Exterior Lighting": {},
+                "Total Building Interior Equipment": {},
+                "Total Building HVAC Cooling Energy": {},
+                "Total Building HVAC Heating Energy": {},
+                "Total Building Fans Electricity": {},
+                "Total Building Pumps Electricity": {},
+                "Total Building Heat Rejection Electricity": {},
+                "Total Building Water Systems": {},
+                # Building totals by fuel type
                 "Total Building Electricity": {},
                 "Total Building Natural Gas": {},
-                # Below is a list of values pulled from openstudio, that are
-                # used in the calculations here, not new aggregations
-                # "Total Building Cooling Electricity": {},
-                # "Total Building Heating Electricity": {},
-                # "Total Building Heating Natural Gas": {},
-                # "Total Building Fans Electricity": {},
-                # "Total Building Pumps Electricity": {},
-                # "Total Building Heat Rejection Electricity": {},
-                # "Total Building Heat Rejection Natural Gas": {},
-                # "Total Building Water Systems Natural Gas": {},
-                # "Total Building Interior Lighting": {},
-                # "Total Building Exterior Lighting": {},
-                # "Total Building Interior Equipment Electricity": {},
-                # "Total Building Interior Equipment Natural Gas": {},
-                # "Total Building Interior Equipment": {},  # electric and gas
-                # "Total Building Exterior Equipment Electricity": {},
-                # HVAC Aggregations used in OpenStudio/EnergyPlus
-                # "Total Building HVAC Electricity": {},
-                # "Total Building HVAC Natural Gas": {},
-                # "Total Building HVAC Cooling Energy": {},
-                # "Total Building HVAC Heating Energy": {},
-                # "Total Building HVAC Energy": {},
-                # Total by energies
+                # ETS and system totals
                 "Total ETS Electricity": {},
                 "Total Building and ETS Energy": {},
                 "Total Electricity": {},
                 "Total Natural Gas": {},
-                "Total Thermal Energy Cooling": {},
-                "Total Thermal Energy Heating": {},
+                "Total Thermal Cooling Energy": {},
+                "Total Thermal Heating Energy": {},
                 "Total Energy": {},  # not thermal
             }
 
             # add agg columns for each building
             for key, _ in building_aggs.items():
                 building_aggs[key]["agg_columns"] = []
+
+            # Note: Building-level components come from OpenStudio results via combine_with_openstudio_results()
+            # Set them as passthrough (empty agg_columns) since they're already created
+            # If these columns don't exist in the dataframe, they'll be set to 0 by the logic below
 
             building_aggs["Total ETS Electricity"]["agg_columns"] = [
                 "ETS Pump Electricity Total",
@@ -538,16 +531,19 @@ class URBANoptAnalysis:
             ]
             # Note: Only include natural gas columns that exist in the dataframe
             # Some columns like Exterior Equipment Natural Gas may not exist if buildings don't use them
+            # Note: HVAC is NOT included here because Modelica handles building HVAC through district energy (ETS)
             building_aggs["Total Building Natural Gas"]["agg_columns"] = [
                 "Total Building Interior Equipment Natural Gas",
                 "Total Building Water Systems Natural Gas",
             ]
             building_aggs["Total Building and ETS Energy"]["agg_columns"] = [
                 "Total Building Electricity",
+                "Total Building Natural Gas",
                 "Total ETS Electricity",
             ]
             building_aggs["Total Electricity"]["agg_columns"] = [
-                "Total Building and ETS Energy",
+                "Total Building Electricity",
+                "Total ETS Electricity",
                 "Total DES Electricity",
             ]
             building_aggs["Total Natural Gas"]["agg_columns"] = [
@@ -558,8 +554,9 @@ class URBANoptAnalysis:
                 "Total Electricity",
                 "Total Natural Gas",
             ]
-            building_aggs["Total Thermal Energy Cooling"]["agg_columns"] = ["Total Thermal Cooling Energy"]
-            building_aggs["Total Thermal Energy Heating"]["agg_columns"] = ["Total Thermal Heating Energy"]
+            # Fix naming to match end_use_summary_dict exactly
+            building_aggs["Total Thermal Cooling Energy"]["agg_columns"] = ["ETS Thermal Cooling Total"]
+            building_aggs["Total Thermal Heating Energy"]["agg_columns"] = ["ETS Thermal Heating Total"]
         finally:
             pass
 
@@ -570,9 +567,13 @@ class URBANoptAnalysis:
 
                 # Go through each building_aggs and create the aggregation
                 for key, value in building_aggs.items():
-                    # check to make sure that each of the agg_columns have been defined
+                    # Skip if agg_columns is empty - these are passthrough columns from OpenStudio
+                    # They should already exist in the dataframe from combine_with_openstudio_results()
                     if not value["agg_columns"]:
-                        raise Exception(f"Agg columns for {key} have not been defined")
+                        # If the column doesn't exist, set it to zero
+                        if key not in temp_df.columns:
+                            temp_df[key] = 0
+                        continue
 
                     # Filter to only include columns that exist in the dataframe
                     available_columns = [col for col in value["agg_columns"] if col in temp_df.columns]
