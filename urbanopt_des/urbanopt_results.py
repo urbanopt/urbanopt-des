@@ -1,4 +1,4 @@
-# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# :copyright (c) URBANopt, Alliance for Energy Innovation, LLC, and other contributors.
 # See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
 
 # mypy: disable-error-code="union-attr,index,arg-type,return-value,attr-defined"
