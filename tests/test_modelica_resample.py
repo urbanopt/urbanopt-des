@@ -1,3 +1,6 @@
+# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
+
 import unittest
 from pathlib import Path
 from unittest.mock import patch

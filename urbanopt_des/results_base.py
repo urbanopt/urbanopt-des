@@ -1,17 +1,27 @@
+# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
+
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 
 
 class ResultsBase:
+    # Attributes that subclasses must provide
+    display_name: Optional[str]
+    data_annual: Optional[pd.DataFrame]
+    end_use_summary: Optional[pd.DataFrame]
+
     def __init__(self) -> None:
         """Base class for processing results. This is used for the Modelica and OpenStudio results to create
         common methods/datasets that can be used for easy comparison."""
 
     @property
-    def end_use_summary_dict(self) -> dict:
+    def end_use_summary_dict(self) -> list[dict[str, str]]:
         """Return a dictionary with the end use summary data structure."""
 
-        summary_columns = [
+        summary_columns: list[dict[str, str]] = [
             {
                 "name": "Total Building Interior Lighting",
                 "units": "Wh",
@@ -146,7 +156,7 @@ class ResultsBase:
 
         return summary_columns
 
-    def create_summary(self):
+    def create_summary(self) -> pd.DataFrame:
         """Create an annual end use summary by selecting key variables and values and transposing them for easy comparison.
         In the dict the following conventions are used:
             * `name` is the name of the variable in the data frame
@@ -171,7 +181,7 @@ class ResultsBase:
         for column in self.end_use_summary_dict:
             # check if the column exists in the data frame and if not, then set the value to zero!
             # TODO: rename data_annual to annual to be consistent with the other *results* processing.
-            if column["name"] in self.data_annual.columns:
+            if self.data_annual is not None and column["name"] in self.data_annual.columns:
                 self.end_use_summary.loc[column["display_name"], self.display_name] = float(self.data_annual[column["name"]].iloc[0])
             else:
                 self.end_use_summary.loc[column["display_name"], self.display_name] = 0.0

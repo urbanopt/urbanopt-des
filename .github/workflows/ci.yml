@@ -47,6 +47,9 @@ jobs:
       - name: Run pre-commit
         working-directory: urbanopt-des
         run: poetry run pre-commit run --all-files
+      - name: Run mypy
+        working-directory: urbanopt-des
+        run: poetry run mypy urbanopt_des
       - name: Run pytest
         working-directory: urbanopt-des
         run: poetry run pytest -v --cov-report term-missing --cov

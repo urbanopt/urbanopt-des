@@ -32,3 +32,18 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 des-output = "urbanopt_des.cli:app"
+
+[tool.mypy]
+# Exclude directories and files that need type fixing
+exclude = [
+    "urbanopt_des/measures/",
+    "urbanopt_des/activity_to_osa/",
+]
+ignore_missing_imports = true
+# Start with permissive settings - can be tightened incrementally
+disallow_untyped_defs = false
+# Still catch some useful errors
+warn_return_any = false
+warn_unused_ignores = true
+# Don't require complete type coverage yet
+check_untyped_defs = false

@@ -1,81 +1,100 @@
+# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
+
 import json
-import logging
 import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 from buildingspy.io.outputfile import Reader
 
+from .constants import (
+    DEFAULT_VALUE,
+    MAT_FILE_EXTENSION,
+    RESAMPLE_1MIN,
+    RESAMPLE_5MIN,
+    RESAMPLE_15MIN,
+    RESAMPLE_60MIN,
+    WATER_SPECIFIC_HEAT,
+    ZIP_FILE_EXTENSION,
+)
 from .emissions import HourlyEmissionsData
+from .exceptions import (
+    FileTypeError,
+    NoTimeVariablesError,
+    TimeSeriesMismatchError,
+    URBANoptFileNotFoundError,
+)
+from .logging_config import LoggingMixin
 from .results_base import ResultsBase
 
-_log = logging.getLogger(__name__)
-
-VariablesDict = dict[str, bool | str | int]
+VariablesDict = dict[str, dict[str, str | int | bool | None]]
 
 
-class ModelicaResults(ResultsBase):
-    """Catch for modelica methods. This needs to be refactored"""
+class ModelicaResults(ResultsBase, LoggingMixin):
+    """Process and analyze Modelica simulation results.
 
-    def __init__(self, mat_filename: Path, output_path: Path | None = None) -> None:
-        """Class for holding the results of a Modelica simulation. This class will handle the post processing
-        necessary to create data frames that can be easily compared with other simulation results including
-        OpenStudio-based results.
+    This class handles post-processing of Modelica .mat files to create DataFrames
+    that can be compared with OpenStudio/URBANopt results.
+    """
+
+    def __init__(self, mat_filename: Path, output_path: Optional[Path] = None) -> None:
+        """Initialize ModelicaResults with a Modelica .mat file.
 
         Args:
-            mat_filename (Path): Fully qualified path to the .mat (or zipped .mat) file to load and process
-            output_path (Path, optional): Path to save the post-processed data. Defaults to None.
+            mat_filename: Fully qualified path to the .mat (or zipped .mat) file
+            output_path: Path to save the post-processed data. Defaults to mat file directory.
 
         Raises:
-            FileNotFoundError: If the path to a results file does not exist
-            TypeError: If a results file type is neither .mat or a zip of a .mat file
+            URBANoptFileNotFoundError: If the mat_filename does not exist
+            FileTypeError: If file type is not .mat or .zip
         """
         super().__init__()
 
-        if mat_filename.exists():
-            # zip files are used for tests, and this
-            if mat_filename.suffix == ".zip":
-                from tempfile import TemporaryDirectory
-                from zipfile import ZipFile
+        if not mat_filename.exists():
+            raise URBANoptFileNotFoundError(f"Could not find {mat_filename}")
 
-                # Extract the DistrictEnergySystem.mat file from the zip file to a temporary directory,
-                # which will be deleted when the context manager exits
-                with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
-                    extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
-                    # Create a ModelicaResults object
-                    self.mat_filename = Path(extracted_path)
-                    self.modelica_data = Reader(extracted_path, "dymola")
-            elif mat_filename.suffix == ".mat":
-                self.mat_filename = mat_filename
-                # read in the mat file
-                self.modelica_data = Reader(self.mat_filename, "dymola")
-            else:
-                raise TypeError(f"File type {mat_filename.suffix} not supported. Will not continue.")
+        # Handle different file types
+        if mat_filename.suffix == ZIP_FILE_EXTENSION:
+            self.logger.info(f"Extracting zipped .mat file: {mat_filename}")
+            from tempfile import TemporaryDirectory
+            from zipfile import ZipFile
+
+            # Extract the mat file from zip to a temporary directory
+            with TemporaryDirectory() as temp_dir, ZipFile(mat_filename) as the_zip:
+                extracted_path = the_zip.extract(mat_filename.stem, path=temp_dir)
+                self.mat_filename = Path(extracted_path)
+                self.modelica_data = Reader(extracted_path, "dymola")
+                self.logger.debug(f"Extracted to: {extracted_path}")
+        elif mat_filename.suffix == MAT_FILE_EXTENSION:
+            self.logger.info(f"Loading .mat file: {mat_filename}")
+            self.mat_filename = mat_filename
+            self.modelica_data = Reader(str(self.mat_filename), "dymola")
         else:
-            raise FileNotFoundError(f"Could not find {mat_filename}. Will not continue.")
+            raise FileTypeError(f"Unsupported file type '{mat_filename.suffix}'. Expected '{MAT_FILE_EXTENSION}' or '{ZIP_FILE_EXTENSION}'")
 
-        # Determine where the outputs of the Modelica results post-processing will be stored.
-        # Typically this is alongside the .mat file, but can be user defined.
-        if output_path:
-            self.path = output_path
-        else:
-            self.path = self.mat_filename.parent
+        # Output directory for post-processed results
+        self.path = output_path if output_path else self.mat_filename.parent
+        self.logger.debug(f"Output directory: {self.path}")
 
-        # initialize the analysis name to the scenario name, but this can be changed
+        # Display name for this analysis
         self.display_name = self.path.name
 
-        # member variables in which to store downsampled data
-        self.min_5 = None
-        self.min_15 = None
-        self.min_15_with_buildings = None
-        self.min_60 = None
-        self.min_60_with_buildings = None
-        self.monthly = None
-        self.data_annual = None
-        self.end_use_summary = None
-        self.grid_metrics_daily = None
-        self.grid_metrics_annual = None
+        # Time-series data at different resolutions
+        self.min_5: Optional[pd.DataFrame] = None
+        self.min_15: Optional[pd.DataFrame] = None
+        self.min_15_with_buildings: Optional[pd.DataFrame] = None
+        self.min_60: Optional[pd.DataFrame] = None
+        self.min_60_with_buildings: Optional[pd.DataFrame] = None
+
+        # Aggregated data
+        self.monthly: Optional[pd.DataFrame] = None
+        self.data_annual: Optional[pd.DataFrame] = None
+        self.end_use_summary: Optional[pd.DataFrame] = None
+        self.grid_metrics_daily: Optional[pd.DataFrame] = None
+        self.grid_metrics_annual: Optional[pd.DataFrame] = None
 
     def save_variables(self, path_to_save: Path | None = None) -> dict:
         """Save the names of the Modelica variables, including the descriptions and units (if available).
@@ -103,16 +122,19 @@ class ModelicaResults(ResultsBase):
             else:
                 units = None
 
-            modelica_variables[var] = {}
-            modelica_variables[var]["description"] = description
-            modelica_variables[var]["unit_original"] = units
-            modelica_variables[var]["units"] = units
-            modelica_variables[var]["conversion"] = 1
-            modelica_variables[var]["name"] = var
+            var_info: dict[str, str | int | bool | None] = {
+                "description": description,
+                "unit_original": units,
+                "units": units,
+                "conversion": 1,
+                "name": var,
+            }
 
             # if the variable is CPUtime, then add skip_renaming
             if var == "CPUtime":
-                modelica_variables[var]["skip_renaming"] = True
+                var_info["skip_renaming"] = True
+
+            modelica_variables[var] = var_info
 
         with open(path_to_save / "modelica_variables.json", "w") as f:
             json.dump(modelica_variables, f, indent=2)
@@ -129,36 +151,48 @@ class ModelicaResults(ResultsBase):
         Returns:
             int: Number of buildings
         """
-        # first check if the key appears in the variables
+        # First check if the key appears in the variables
         if building_count_var in self.modelica_data.varNames():
             _, n_buildings = self.modelica_data.values(building_count_var)
             n_buildings = int(n_buildings[0])
+            self.logger.debug(f"Found {n_buildings} buildings from variable '{building_count_var}'")
         else:
-            # find all of the nBui_disNet_* in the varNames. There is one for heating and cooling,
-            # so the number of buildings should be equal (for now).
+            # Find all nBui_disNet_* variables - one for heating and cooling
+            # The number of buildings should be equal across all networks
             n_buildings = 0
+            network_counts = {}
             for var in self.modelica_data.varNames():
                 if "nBui_disNet" in var:
                     _, n_b = self.modelica_data.values(var)
                     n_b = int(n_b[0])
+                    network_counts[var] = n_b
                     if n_buildings == 0:
                         n_buildings = n_b
                     elif n_b != n_buildings:
-                        raise Exception(f"Number of buildings on the multiple distribution networks do not match: {n_b} != {n_buildings}")
+                        from .exceptions import BuildingCountMismatchError
 
-        # TODO: implement a debugging method and then report this value
-        # print(f"DEBUG: the .mat files has {n_buildings}")
+                        raise BuildingCountMismatchError(geojson_count=n_buildings, modelica_count=n_b)
+            self.logger.debug(f"Found {n_buildings} buildings from network variables: {network_counts}")
+
+        self.logger.info(f"Modelica data contains {n_buildings} buildings")
         return n_buildings
 
-    def retrieve_time_variable_list(self) -> list:
-        """Retrieve the time variable from the .mat file which is tied to a variable. There are cases
-        where the time on a variable is of different length than the other variables, so this method
-        looks at the time variable and returns the time data."""
+    def retrieve_time_variable_list(self) -> list[float]:
+        """Retrieve the time variable from the .mat file.
+
+        Searches for time variables with known patterns and validates they have consistent lengths.
+
+        Returns:
+            list: Time array from the Modelica data
+
+        Raises:
+            NoTimeVariablesError: If no time variables are found
+            TimeSeriesMismatchError: If time variables have different lengths
+        """
         lengths_of_time = []
         variables_of_time = []
 
-        # Extend these with RegEx's as needed to look for other time dimensions in
-        # .mat files.
+        # Regex patterns for time variables in .mat files
         variables_for_time_array = [
             "TimeSerLoa_.*.PPum",
             "^heaPla.*.boiHotWat.boi.*.QWat_flow$",
@@ -166,62 +200,64 @@ class ModelicaResults(ResultsBase):
             "ETot.y",
         ]
 
-        for var in variables_for_time_array:
+        for pattern in variables_for_time_array:
             time_var = None
-            if var in self.modelica_data.varNames():
-                print("DEBUG: found variable {var}")
-                time_var = var
+            if pattern in self.modelica_data.varNames():
+                self.logger.debug(f"Found exact variable match: {pattern}")
+                time_var = pattern
             else:
-                # check if the variable is found in the varNames
-                time_vars = self.modelica_data.varNames(var)
+                # Check if pattern matches any variables using regex
+                time_vars = self.modelica_data.varNames(pattern)
                 if len(time_vars) == 0:
-                    # there is no time variables found, so just continue
                     continue
                 elif len(time_vars) > 1:
-                    # pick the first if there is more than one
+                    # Pick the first match if there are multiple
+                    time_var = time_vars[0]
+                    self.logger.debug(f"Found {len(time_vars)} matches for pattern '{pattern}', using: {time_var}")
+                else:
                     time_var = time_vars[0]
 
             if time_var:
                 (time1, _) = self.modelica_data.values(time_var)
                 lengths_of_time.append(len(time1))
                 variables_of_time.append(time_var)
-                print(f"DEBUG: found time var {time_var} of length {len(time1)}")
+                self.logger.debug(f"Time variable '{time_var}' has length {len(time1)}")
 
-        # if empty throw error
+        # Validate we found at least one time variable
         if len(variables_of_time) == 0:
-            raise Exception("No time variables found in the Modelica data.")
+            raise NoTimeVariablesError("No time variables found in the Modelica data")
 
-        # do a quick check on the collected time variables. If they are not the same lengths, then
-        # throw an error
+        # Validate all time variables have the same length
         if len(set(lengths_of_time)) != 1:
-            raise Exception(f"Time variables are not the same length: {lengths_of_time} for {variables_of_time}")
+            raise ValueError(f"Multiple time variables have different lengths: {dict(zip(variables_of_time, lengths_of_time))}")
 
+        self.logger.info(f"Found time variable of length {len(time1)}")
         return time1
 
-    def retrieve_variable_data(self, variable_name: str, len_of_time: int, default_value: float = 0) -> list:
-        """Retrieve the variable data from the .mat file. If the data doesn't exist,
-        then fill a dataframe with default 0 values.
+    def retrieve_variable_data(self, variable_name: str, len_of_time: int, default_value: float = DEFAULT_VALUE) -> list[float]:
+        """Retrieve variable data from the .mat file or return default values.
 
         Args:
-            variable_name (str): Name of the variable to retrieve
-            len_of_time (int): Length of the time variable to fill the dataframe with if not found
-            default_value (int, optional): Default value to fill the dataframe with. Defaults to 0.
+            variable_name: Name of the variable to retrieve
+            len_of_time: Expected length of the time series
+            default_value: Value to use if variable not found. Defaults to DEFAULT_VALUE.
 
         Returns:
-            list: List of the variable data
+            List of variable data values
+
+        Raises:
+            TimeSeriesMismatchError: If retrieved data length doesn't match len_of_time
         """
         if variable_name in self.modelica_data.varNames():
             (time1, data1) = self.modelica_data.values(variable_name)
-            # check that the length of time is the same in the data
+            # Validate data length matches expected time length
             if len(time1) != len_of_time:
-                raise Exception(
-                    f"Length of time variable {len(time1)} does not match the length of the data {len_of_time} for {variable_name}"
-                )
+                raise TimeSeriesMismatchError(actual_length=len(time1), expected_length=len_of_time, variable_name=variable_name)
+            self.logger.debug(f"Retrieved variable '{variable_name}' with {len(data1)} data points")
+            return list(data1)
         else:
-            print(f"DEBUG: variable {variable_name} not found, filling with default value")
-            data1 = [default_value] * len_of_time
-
-        return data1
+            self.logger.debug(f"Variable '{variable_name}' not found, filling with default value {default_value}")
+            return [default_value] * len_of_time
 
     def resample_and_convert_to_df(
         self,
@@ -478,12 +514,15 @@ class ModelicaResults(ResultsBase):
 
         # Calculate the District Loop Power - Default to zero to start with
         df_power["District Loop Energy"] = 0
-        # check if multiple columns are in a dataframe
-        if all(column in df_power.columns for column in ["TDisWatRet.port_a.m_flow", "TDisWatRet.T", "TDisWatSup.T"]):
-            # \dot{m} * c_p * \Delta T with Water at (4186 J/kg/K)
+        # Check if required columns exist for district loop calculation
+        required_columns = ["TDisWatRet.port_a.m_flow", "TDisWatRet.T", "TDisWatSup.T"]
+        if all(column in df_power.columns for column in required_columns):
+            # Energy calculation: mass_flow * specific_heat * temperature_difference
+            # \dot{m} * c_p * \Delta T
             df_power["District Loop Energy"] = (
-                df_power["TDisWatRet.port_a.m_flow"] * 4186 * abs(df_power["TDisWatRet.T"] - df_power["TDisWatSup.T"])
+                df_power["TDisWatRet.port_a.m_flow"] * WATER_SPECIFIC_HEAT * abs(df_power["TDisWatRet.T"] - df_power["TDisWatSup.T"])
             )
+            self.logger.debug("Calculated district loop energy from flow and temperature data")
 
         column_names = [
             "ETS Pump Electricity Total",
@@ -505,21 +544,25 @@ class ModelicaResults(ResultsBase):
         ]
         df_power["Total Heating Plant"] = df_power[column_names].sum(axis=1)
 
-        # df_power.to_csv(self.path / "power_original.csv")
+        # Remove duplicate timestamps and set datetime as index
         df_power = df_power.drop_duplicates(subset="datetime")
         df_power = df_power.set_index("datetime")
+        self.logger.debug(f"Created power dataframe with {len(df_power)} rows")
 
-        # upsample to 1min with filling the last. This will
-        # give us more accuracy on the energy use since it weights
-        # the power a bit more.
-        df_power_1min = df_power.resample("1min").ffill()
+        # Upsample to 1min with forward fill for better energy calculation accuracy
+        df_power_1min = df_power.resample(RESAMPLE_1MIN).ffill()
 
-        # now resample / downsample everything
-        self.min_5 = df_power_1min.resample("5min").mean()
-        self.min_15 = self.min_5.resample("15min").mean()
-        self.min_60 = self.min_15.resample("60min").mean()
+        # Resample to standard intervals
+        self.min_5 = df_power_1min.resample(RESAMPLE_5MIN).mean()
+        self.min_15 = self.min_5.resample(RESAMPLE_15MIN).mean()
+        self.min_60 = self.min_15.resample(RESAMPLE_60MIN).mean()
 
-        return True
+        self.logger.info(
+            f"Resampled data to multiple intervals: "
+            f"5min ({len(self.min_5)} rows), "
+            f"15min ({len(self.min_15)} rows), "
+            f"60min ({len(self.min_60)} rows)"
+        )
 
     def combine_with_openstudio_results(
         self,
@@ -559,6 +602,8 @@ class ModelicaResults(ResultsBase):
             "WaterSystems:Electricity Building",
             "WaterSystems:NaturalGas Building",
         ]
+        if building_ids is None:
+            raise ValueError("building_ids cannot be None")
         meter_names = [f"{meter_name} {building_id}" for building_id in building_ids for meter_name in building_meter_names]
         # add in the end use totals that are non-HVAC
         meter_names += [
@@ -658,7 +703,7 @@ class ModelicaResults(ResultsBase):
 
         # Check if the number of rows is not equal to 8760 (hourly) or 8760 * 4 (15-minute)
         if df_resampled.shape[0] != 8760 or df_resampled.shape[0] != 8760 * 4:
-            _log.warning(
+            self.logger.warning(
                 "Data length is incorrect. Expected 8760 (hourly) or 8760 * 4 (15-minute) entries. "
                 f"Actual length is {df_resampled.shape[0]}."
             )
@@ -716,6 +761,9 @@ class ModelicaResults(ResultsBase):
         lookup_egrid_subregion = egrid_subregion + "c"
 
         # multiply the hourly emissions hourly data by the min_60_with_buildings data, but first, verify that the lengths are the same.
+        if self.min_60_with_buildings is None:
+            raise ValueError("min_60_with_buildings must be initialized before calculating carbon emissions")
+
         if len(hourly_emissions_data.data) != len(self.min_60_with_buildings):
             raise Exception(
                 f"Length of emissions data {len(hourly_emissions_data.data)} does not match the length of the min_60_with_buildings data {len(self.min_60_with_buildings)}."
@@ -758,6 +806,8 @@ class ModelicaResults(ResultsBase):
     ):
         """Calculate the grid metrics for this building."""
         # recreate the grid_metrics_daily data frame in case we are overwriting it.
+        if self.min_15_with_buildings is None:
+            raise ValueError("min_15_with_buildings must be initialized before calculating grid metrics")
 
         self.min_15_with_buildings_to_process = self.min_15_with_buildings.copy()
 
@@ -818,6 +868,9 @@ class ModelicaResults(ResultsBase):
 
         # aggregate the df_daily daily data to annual metrics. For the maxes/mins, we only want the max of the max
         # and the min of the min.
+        if self.grid_metrics_daily is None:
+            raise ValueError("grid_metrics_daily must be initialized before aggregation")
+
         df_tmp = self.grid_metrics_daily.copy()
         aggs = {}
         for meter in meters:
@@ -828,6 +881,7 @@ class ModelicaResults(ResultsBase):
             aggs[f"{meter} System Ramping"] = ["max", "min", "sum", "mean"]
 
         df_tmp = df_tmp.groupby([pd.Grouper(freq="YE")]).agg(aggs)
+
         # rename the columns
         df_tmp.columns = [f"{c[0]} {c[1]}" for c in df_tmp.columns]
         # this is a strange section, the idxmax/idxmin are the indexes where the max/min values
@@ -835,10 +889,9 @@ class ModelicaResults(ResultsBase):
         for meter in meters:
             # there is only one year of data, so grab the idmax/idmin of the first element. If
             # we expand to multiple years, then this will need to be updated
-            # FIXME: this id_lookup produces Pandas FutureWarning
-            id_lookup = df_tmp[f"{meter} Max idxmax"][0]
+            id_lookup = df_tmp[f"{meter} Max idxmax"].iloc[0]
             df_tmp[f"{meter} Max idxmax"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Max Datetime"]
-            id_lookup = df_tmp[f"{meter} Min idxmin"][0]
+            id_lookup = df_tmp[f"{meter} Min idxmin"].iloc[0]
             df_tmp[f"{meter} Min idxmin"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Min Datetime"]
             # rename these two columns to remove the idxmax/idxmin nomenclature
             df_tmp = df_tmp.rename(
@@ -849,6 +902,9 @@ class ModelicaResults(ResultsBase):
             )
 
         # Add the MWh related metrics, can't sum up the 15 minute data, so we have to sum up the hourly
+        if self.min_60_with_buildings is None:
+            raise ValueError("min_60_with_buildings must be initialized for MWh calculations")
+
         df_tmp["Total Electricity"] = self.min_60_with_buildings["Total Electricity"].resample("YE").sum() / 1e6  # MWh
         df_tmp["Total Natural Gas"] = self.min_60_with_buildings["Total Natural Gas"].resample("YE").sum() / 1e6  # MWh
         df_tmp["Total Thermal Cooling Energy"] = (

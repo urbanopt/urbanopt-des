@@ -1,4 +1,8 @@
+# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
+
 # helpers to build an analysis
+# mypy: disable-error-code="union-attr,index,arg-type,return-value,attr-defined,assignment,syntax,operator"
 import copy
 import datetime
 import json
@@ -670,15 +674,16 @@ class URBANoptAnalysis:
             data["property_type"][building_id] = geojson_data.get("Property Type", "Unknown [not in GeoJSON Property Type]")
             data["building_type"][building_id] = geojson_data.get("building_type", "Unknown [not in GeoJSON building_type]")
 
-            data["total_natural_gas"][building_id] = self.urbanopt.data_annual[f"NaturalGas:Facility Building {building_id}"][0]
-            data["total_electricity"][building_id] = self.urbanopt.data_annual[f"Electricity:Facility Building {building_id}"][0]
+            data["total_natural_gas"][building_id] = float(self.urbanopt.data_annual[f"NaturalGas:Facility Building {building_id}"].iloc[0])
+            data["total_electricity"][building_id] = float(
+                self.urbanopt.data_annual[f"Electricity:Facility Building {building_id}"].iloc[0]
+            )
             data["total_energy"][building_id] = data["total_natural_gas"][building_id] + data["total_electricity"][building_id]
 
             # read the square footage out of the default_feature_report.json
-            data["gross_floor_area"][building_id] = (
-                self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"] / 10.76
-            )
-            data["gross_floor_area_ft2"][building_id] = self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"]
+            floor_area_sqft = float(self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"])
+            data["gross_floor_area"][building_id] = floor_area_sqft / 10.76
+            data["gross_floor_area_ft2"][building_id] = floor_area_sqft
 
             # calculate the EUI
             data["total_site_eui"][building_id] = (data["total_energy"][building_id] * 0.001) / data["gross_floor_area"][building_id]
@@ -1188,7 +1193,7 @@ class URBANoptAnalysis:
         Returns:
             dict: Dictionary of bad or empty results.
         """
-        bad_or_empty_results = {}
+        bad_or_empty_results: dict[str, str] = {}
         error = False
         mat_file = None
 
@@ -1240,7 +1245,7 @@ class URBANoptAnalysis:
         Returns:
             dict: Dictionary of the bad or empty results.
         """
-        bad_or_empty_results = {}
+        bad_or_empty_results: dict[str, str] = {}
         error = False
         mat_file = None
 

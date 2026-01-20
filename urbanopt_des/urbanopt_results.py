@@ -1,6 +1,11 @@
+# :copyright (c) URBANopt, Alliance for Sustainable Energy, LLC, and other contributors.
+# See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
+
+# mypy: disable-error-code="union-attr,index,arg-type,return-value,attr-defined"
+
 import json
 from pathlib import Path
-from typing import Union
+from typing import Any, Union
 
 import pandas as pd
 from modelica_builder.modelica_mos_file import ModelicaMOS
@@ -75,7 +80,7 @@ class URBANoptResults(ResultsBase):
         self.grid_metrics_daily = None
         self.grid_metrics_annual = None
 
-        self.building_characteristics = {}
+        self.building_characteristics: dict[Any, Any] = {}
 
     def calculate_grid_metrics(
         self,
@@ -153,9 +158,9 @@ class URBANoptResults(ResultsBase):
         for meter in meters:
             # there is only one year of data, so grab the idmax/idmin of the first element. If
             # we expand to multiple years, then this will need to be updated
-            id_lookup = df_tmp[f"{meter} Max idxmax"][0]
+            id_lookup = df_tmp[f"{meter} Max idxmax"].iloc[0]
             df_tmp[f"{meter} Max idxmax"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Max Datetime"]
-            id_lookup = df_tmp[f"{meter} Min idxmin"][0]
+            id_lookup = df_tmp[f"{meter} Min idxmin"].iloc[0]
             df_tmp[f"{meter} Min idxmin"] = self.grid_metrics_daily.loc[id_lookup][f"{meter} Min Datetime"]
             # rename these two columns to remove the idxmax/idxmin nomenclature
             df_tmp = df_tmp.rename(
@@ -804,11 +809,11 @@ class URBANoptResults(ResultsBase):
         # FIXME, this method needs some tests and can be cleaned up... for sure
         report_file = search_dir / "feature_reports" / filename
         if not report_file.exists():
-            filename = Path(filename)
+            filename_path = Path(filename)
             # OpenStudio puts the results in the filename without the extension
-            dirs = list(search_dir.glob(f"*_{filename.stem}"))
+            dirs = list(search_dir.glob(f"*_{filename_path.stem}"))
             if len(dirs) == 1:
-                report_file = dirs[0] / filename
+                report_file = dirs[0] / filename_path
             elif len(dirs) == 0:
                 # If we are here, then it is likely that the report is in
                 # another measure directory which we need to find. This is
