@@ -1084,14 +1084,22 @@ class URBANoptAnalysis:
                 "Natural Gas Peak Demand Date Time": ["Datetime"],
                 "Thermal Cooling": ["MWh/year"],
                 "Thermal Heating": ["MWh/year"],
-                "Peak to Valley Ratio (Max)": ["Ratio"],
-                "Peak to Valley Ratio (Min)": ["Ratio"],
-                "Peak to Valley Ratio (Mean)": ["Ratio"],
-                "Load Factor (Max)": ["Ratio"],
-                "Load Factor (Min)": ["Ratio"],
-                "Load Factor (Mean)": ["Ratio"],
-                "System Ramping (Max)": ["MW/day"],
-                "System Ramping (Sum)": ["MW/year"],
+                "Electricity Peak to Valley Ratio (Max)": ["Ratio"],
+                "Electricity Peak to Valley Ratio (Min)": ["Ratio"],
+                "Electricity Peak to Valley Ratio (Mean)": ["Ratio"],
+                "Electricity Load Factor (Max)": ["Ratio"],
+                "Electricity Load Factor (Min)": ["Ratio"],
+                "Electricity Load Factor (Mean)": ["Ratio"],
+                "Electricity System Ramping (Max)": ["MW/day"],
+                "Electricity System Ramping (Sum)": ["MW/year"],
+                "Natural Gas Peak to Valley Ratio (Max)": ["Ratio"],
+                "Natural Gas Peak to Valley Ratio (Min)": ["Ratio"],
+                "Natural Gas Peak to Valley Ratio (Mean)": ["Ratio"],
+                "Natural Gas Load Factor (Max)": ["Ratio"],
+                "Natural Gas Load Factor (Min)": ["Ratio"],
+                "Natural Gas Load Factor (Mean)": ["Ratio"],
+                "Natural Gas System Ramping (Max)": ["MW/day"],
+                "Natural Gas System Ramping (Sum)": ["MW/year"],
                 "System Ramping Cooling (Max)": ["MW/day"],
                 "System Ramping Cooling (Sum)": ["MW/year"],
                 "System Ramping Heating (Max)": ["MW/day"],
@@ -1122,14 +1130,24 @@ class URBANoptAnalysis:
                 summary_data["Thermal Cooling"].append(df_annual[year_end]["Total Thermal Cooling Energy"])
                 summary_data["Thermal Heating"].append(df_annual[year_end]["Total Thermal Heating Energy"])
 
-                summary_data["Peak to Valley Ratio (Max)"].append(df_annual[year_end]["Total Electricity PVR max"])
-                summary_data["Peak to Valley Ratio (Min)"].append(df_annual[year_end]["Total Electricity PVR min"])
-                summary_data["Peak to Valley Ratio (Mean)"].append(df_annual[year_end]["Total Electricity PVR mean"])
-                summary_data["Load Factor (Max)"].append(df_annual[year_end]["Total Electricity Load Factor max"])
-                summary_data["Load Factor (Min)"].append(df_annual[year_end]["Total Electricity Load Factor min"])
-                summary_data["Load Factor (Mean)"].append(df_annual[year_end]["Total Electricity Load Factor mean"])
-                summary_data["System Ramping (Max)"].append(df_annual[year_end]["Total Electricity System Ramping max"])
-                summary_data["System Ramping (Sum)"].append(df_annual[year_end]["Total Electricity System Ramping sum"])
+                summary_data["Electricity Peak to Valley Ratio (Max)"].append(df_annual[year_end]["Total Electricity PVR max"])
+                summary_data["Electricity Peak to Valley Ratio (Min)"].append(df_annual[year_end]["Total Electricity PVR min"])
+                summary_data["Electricity Peak to Valley Ratio (Mean)"].append(df_annual[year_end]["Total Electricity PVR mean"])
+                summary_data["Electricity Load Factor (Max)"].append(df_annual[year_end]["Total Electricity Load Factor max"])
+                summary_data["Electricity Load Factor (Min)"].append(df_annual[year_end]["Total Electricity Load Factor min"])
+                summary_data["Electricity Load Factor (Mean)"].append(df_annual[year_end]["Total Electricity Load Factor mean"])
+                summary_data["Electricity System Ramping (Max)"].append(df_annual[year_end]["Total Electricity System Ramping max"])
+                summary_data["Electricity System Ramping (Sum)"].append(df_annual[year_end]["Total Electricity System Ramping sum"])
+
+                summary_data["Natural Gas Peak to Valley Ratio (Max)"].append(df_annual[year_end]["Total Natural Gas PVR max"])
+                summary_data["Natural Gas Peak to Valley Ratio (Min)"].append(df_annual[year_end]["Total Natural Gas PVR min"])
+                summary_data["Natural Gas Peak to Valley Ratio (Mean)"].append(df_annual[year_end]["Total Natural Gas PVR mean"])
+                summary_data["Natural Gas Load Factor (Max)"].append(df_annual[year_end]["Total Natural Gas Load Factor max"])
+                summary_data["Natural Gas Load Factor (Min)"].append(df_annual[year_end]["Total Natural Gas Load Factor min"])
+                summary_data["Natural Gas Load Factor (Mean)"].append(df_annual[year_end]["Total Natural Gas Load Factor mean"])
+                summary_data["Natural Gas System Ramping (Max)"].append(df_annual[year_end]["Total Natural Gas System Ramping max"])
+                summary_data["Natural Gas System Ramping (Sum)"].append(df_annual[year_end]["Total Natural Gas System Ramping sum"])
+
                 summary_data["System Ramping Cooling (Max)"].append(df_annual[year_end]["Total Thermal Cooling Energy System Ramping max"])
                 summary_data["System Ramping Cooling (Sum)"].append(df_annual[year_end]["Total Thermal Cooling Energy System Ramping sum"])
                 summary_data["System Ramping Heating (Max)"].append(df_annual[year_end]["Total Thermal Heating Energy System Ramping max"])
