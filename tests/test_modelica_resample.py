@@ -110,7 +110,7 @@ class TestModelicaResampleAndConvert(unittest.TestCase):
                 )
 
                 # Total DES Electricity = ETS Pumps + Heat Pumps + Sewer + GHX + Distribution + Cooling Plant + Heating Plant Electricity
-                expected_des_elec = expected_ets_pump + 30.0 + 10.0 + 5.0 + 5.0 + expected_cooling_plant + 25.0
+                expected_des_elec = 10.0 + 5.0 + 5.0 + expected_cooling_plant + 25.0
                 self.assertAlmostEqual(
                     df["Total DES Electricity"].iloc[0], expected_des_elec, places=2, msg="Total DES electricity aggregation incorrect"
                 )

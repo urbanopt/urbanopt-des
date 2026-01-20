@@ -19,7 +19,10 @@ class ResultsBase:
 
     @property
     def end_use_summary_dict(self) -> list[dict[str, str]]:
-        """Return a dictionary with the end use summary data structure."""
+        """Return a dictionary with the end use summary data structure.
+
+        Note that these are total energy and does not break out electricity vs natural gas. For example,
+        the plug loads is the sum of all plugs (electric and natural gas)."""
 
         summary_columns: list[dict[str, str]] = [
             {
@@ -159,7 +162,7 @@ class ResultsBase:
     def create_summary(self) -> pd.DataFrame:
         """Create an annual end use summary by selecting key variables and values and transposing them for easy comparison.
         In the dict the following conventions are used:
-            * `name` is the name of the variable in the data frame
+            * `name` is the name of the variable in the dataframe
             * `units` is the units of the variable
             * `display_name` will be the new name of the variable in the end use summary table.
         """
