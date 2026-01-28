@@ -14,7 +14,7 @@ class GeoJsonTest(unittest.TestCase):
 
     def test_load_geojson(self):
         """Simple test to make sure we can load the geojson file"""
-        filename = self.data_dir / "nrel_campus.json"
+        filename = self.data_dir / "nlr_campus.json"
         geojson = DESGeoJSON(filename)
 
         assert "Outdoor Test Facility" in geojson.get_building_names()

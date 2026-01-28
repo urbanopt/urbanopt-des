@@ -532,7 +532,7 @@ class CalibrationReportsEnhanced < OpenStudio::Measure::ReportingMeasure
             end
           else
             fuelOilModelConsumption << '0'
-            # TODO: - test after https://github.com/NREL/OpenStudio/issues 3316 is fixed
+            # TODO: - test after https://github.com/NatLabRockies/OpenStudio/issues 3316 is fixed
             runner.registerWarning("In OpenStudio 2.7.0 Fuel Oil modeled consumption by billing period isn't properly represented.")
           end
           fuelOilModelConsumption << ','

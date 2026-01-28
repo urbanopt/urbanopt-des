@@ -11,7 +11,7 @@ gemspec
 # Specify specific gem source/location (e.g. github branch) for running bundle in this directory
 # This is needed if the version of the gem you want to use is not on rubygems
 
-# Bug in addressable to 2.8.1 and patched version has an issue https://github.com/NREL/OpenStudio/issues/4870
+# Bug in addressable to 2.8.1 and patched version has an issue https://github.com/NatLabRockies/OpenStudio/issues/4870
 gem 'addressable', '= 2.8.1'
 
 gem 'openstudio-extension', '= 0.7.1'
@@ -25,7 +25,7 @@ gem 'json_schemer', '= 2.0.0'
 gem 'urbanopt-reporting', '~> 0.9.1'
 
 group :native_ext do
-  gem 'pycall', '= 1.2.1', :github => 'NREL/pycall.rb', :ref => '5d60b274ac646cdb422a436aad98b40ef8b902b8'
+  gem 'pycall', '= 1.2.1', :github => 'NatLabRockies/pycall.rb', :ref => '5d60b274ac646cdb422a436aad98b40ef8b902b8'
   gem 'jaro_winkler', '= 1.5.4', :github => 'jmarrec/jaro_winkler', :ref => 'f1ca425fdef06603e5c65b09c5b681f805e1e297'
   gem 'sqlite3', :github => 'jmarrec/sqlite3-ruby', :ref => 'MSVC_support'
   # You need ragel available (version 6.x, eg `ragel_installer/6.10@bincrafters/stable` from conan)
