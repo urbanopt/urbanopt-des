@@ -79,7 +79,7 @@ if ! string_exists_in_file 'urbanopt-reporting' $NEW_GEMFILE_DIR/Gemfile; then
 fi
 
 # Pull the workflow gem from develop otherwise `require 'openstudio-workflow'` fails, supposedly
-# replace_gem_in_files $NEW_GEMFILE_DIR 'openstudio-workflow' 'NREL/openstudio-workflow-gem' '2.9.X-LTS'
+# replace_gem_in_files $NEW_GEMFILE_DIR 'openstudio-workflow' 'NatLabRockies/openstudio-workflow-gem' '2.9.X-LTS'
 
 # Show the modified Gemfile contents in the log
 cd $NEW_GEMFILE_DIR

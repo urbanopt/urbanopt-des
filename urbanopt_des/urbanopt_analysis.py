@@ -415,7 +415,7 @@ class URBANoptAnalysis:
         the self.modelica dataframes for carbon emissions for the future_year.
 
         Uses https://www.epa.gov/egrid/power-profiler#/RFCE and
-        https://github.com/NREL/openstudio-common-measures-gem/tree/develop/lib/measures/add_ems_emissions_reporting
+        https://github.com/NatLabRockies/openstudio-common-measures-gem/tree/develop/lib/measures/add_ems_emissions_reporting
 
         Args:
             egrid_subregion (str): EPA's 4-letter identifier for the emissions subregion.
