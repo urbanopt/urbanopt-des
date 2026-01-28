@@ -14,6 +14,9 @@ updates:
       prefix: "deps"
     labels:
       - "dependabot"
+    ignore:
+      - dependency-name: "geopandas"
+        # Keep geopandas <1.0 to maintain Shapely <2.0 compatibility with nrel-disco
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
