@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'openstudio-gems'
   spec.version       = '3.7.0'
   spec.authors       = ['Nicholas Long', 'Dan Macumber', 'Katherine Fleming']
-  spec.email         = ['nicholas.long@nrel.gov', 'daniel.macumber@nrel.gov', 'katherine.fleming@nrel.gov']
+  spec.email         = ['nicholas.long@nlr.gov', 'daniel.macumber@nlr.gov', 'katherine.fleming@nlr.gov']
 
   spec.summary       = 'Build openstudio-gems for OpenStudio CLI and coordinate dependencies for OpenStudio Extension Gems'
   spec.description   = 'Build openstudio-gems for OpenStudio CLI and coordinate dependencies for OpenStudio Extension Gems'
