@@ -26,6 +26,7 @@
 - deps: bump mypy from 1.18.2 to 1.19.0 in the dev-deps group by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/49
 - ci: bump the actions-deps group with 2 updates by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/56
 - deps: bump cyclopts from 3.24.0 to 4.5.1 in the prod-deps group across 1 directory by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/65
+- Bump version, update GMT dependency, and run pre-commit by @nllong in https://github.com/urbanopt/urbanopt-des/pull/67
 
 ### Maintenance 🧹
 
