@@ -5,7 +5,6 @@ import json
 import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 from buildingspy.io.outputfile import Reader
@@ -40,7 +39,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
     that can be compared with OpenStudio/URBANopt results.
     """
 
-    def __init__(self, mat_filename: Path, output_path: Optional[Path] = None) -> None:
+    def __init__(self, mat_filename: Path, output_path: Path | None = None) -> None:
         """Initialize ModelicaResults with a Modelica .mat file.
 
         Args:
@@ -83,18 +82,18 @@ class ModelicaResults(ResultsBase, LoggingMixin):
         self.display_name = self.path.name
 
         # Time-series data at different resolutions
-        self.min_5: Optional[pd.DataFrame] = None
-        self.min_15: Optional[pd.DataFrame] = None
-        self.min_15_with_buildings: Optional[pd.DataFrame] = None
-        self.min_60: Optional[pd.DataFrame] = None
-        self.min_60_with_buildings: Optional[pd.DataFrame] = None
+        self.min_5: pd.DataFrame | None = None
+        self.min_15: pd.DataFrame | None = None
+        self.min_15_with_buildings: pd.DataFrame | None = None
+        self.min_60: pd.DataFrame | None = None
+        self.min_60_with_buildings: pd.DataFrame | None = None
 
         # Aggregated data
-        self.monthly: Optional[pd.DataFrame] = None
-        self.data_annual: Optional[pd.DataFrame] = None
-        self.end_use_summary: Optional[pd.DataFrame] = None
-        self.grid_metrics_daily: Optional[pd.DataFrame] = None
-        self.grid_metrics_annual: Optional[pd.DataFrame] = None
+        self.monthly: pd.DataFrame | None = None
+        self.data_annual: pd.DataFrame | None = None
+        self.end_use_summary: pd.DataFrame | None = None
+        self.grid_metrics_daily: pd.DataFrame | None = None
+        self.grid_metrics_annual: pd.DataFrame | None = None
 
     def save_variables(self, path_to_save: Path | None = None) -> dict:
         """Save the names of the Modelica variables, including the descriptions and units (if available).

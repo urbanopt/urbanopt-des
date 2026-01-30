@@ -6,7 +6,6 @@
 
 import datetime
 from pathlib import Path
-from typing import Union
 
 import pandas as pd
 
@@ -16,7 +15,7 @@ class HourlyEmissionsData:
         self,
         egrid_subregion: str,
         future_year: int,
-        analysis_year: Union[int, None] = None,
+        analysis_year: int | None = None,
         emissions_type: str = "marginal",
         with_td_losses: bool = True,
     ):
