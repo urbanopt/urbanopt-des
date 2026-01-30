@@ -12,10 +12,11 @@ geopandas = "<1.0"
 # Below 1.0 keeps Shapely <2.0, to avoid conflicts with nrel-disco's requirements for Shapely (via pydss)
 # Comes from uo-sdk using both this and nrel-disco
 cyclopts = "^4.5.1"
+
 # release mode
-# geojson-modelica-translator = "^0.12.0"
+geojson-modelica-translator = "^0.13.0"
 # pre-release mode, use github
-geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
+# geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
 # dev mode
 # geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
 
