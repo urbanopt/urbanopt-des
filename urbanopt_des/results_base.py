@@ -1,7 +1,6 @@
 # :copyright (c) URBANopt, Alliance for Energy Innovation, LLC, and other contributors.
 # See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
 
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -9,9 +8,9 @@ import pandas as pd
 
 class ResultsBase:
     # Attributes that subclasses must provide
-    display_name: Optional[str]
-    data_annual: Optional[pd.DataFrame]
-    end_use_summary: Optional[pd.DataFrame]
+    display_name: str | None
+    data_annual: pd.DataFrame | None
+    end_use_summary: pd.DataFrame | None
 
     def __init__(self) -> None:
         """Base class for processing results. This is used for the Modelica and OpenStudio results to create

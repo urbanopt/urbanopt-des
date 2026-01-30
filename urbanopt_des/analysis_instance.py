@@ -2,7 +2,7 @@
 # See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
 
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 
 class AnalysisInstance:
@@ -72,7 +72,7 @@ class AnalysisInstance:
 
         return result
 
-    def save_analysis_name_to_file(self, filename: Path, override_name: Union[None, str] = None) -> None:
+    def save_analysis_name_to_file(self, filename: Path, override_name: None | str = None) -> None:
         """Save off the analysis name to a file that can be used for
         later reference and post processing. Right now this is a simple file
         but ideally the instance of the analysis that is written should be the same

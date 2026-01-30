@@ -5,7 +5,7 @@
 
 import json
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import pandas as pd
 from modelica_builder.modelica_mos_file import ModelicaMOS
@@ -796,7 +796,7 @@ class URBANoptResults(ResultsBase):
             index_label="time",
         )
 
-    def _search_for_file_in_reports(self, search_dir: Path, filename: str, measure_name: Union[str, None] = None) -> Path:
+    def _search_for_file_in_reports(self, search_dir: Path, filename: str, measure_name: str | None = None) -> Path:
         """Search for a report file in a directory and return the path, if exists.
 
         If the filename has more than one period, e.g., .tar.gz, then this will not work

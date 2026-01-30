@@ -3,8 +3,6 @@
 
 """Custom exceptions for the urbanopt-des package."""
 
-from typing import Optional
-
 
 class URBANoptDESError(Exception):
     """Base exception for all urbanopt-des errors."""
@@ -25,7 +23,7 @@ class ModelicaDataError(URBANoptDESError):
 class TimeSeriesMismatchError(ModelicaDataError):
     """Raised when time series lengths don't match expected values."""
 
-    def __init__(self, actual_length: int, expected_length: int, variable_name: Optional[str] = None):
+    def __init__(self, actual_length: int, expected_length: int, variable_name: str | None = None):
         self.actual_length = actual_length
         self.expected_length = expected_length
         self.variable_name = variable_name
@@ -64,7 +62,7 @@ class DataValidationError(URBANoptDESError):
 class MissingColumnsError(DataValidationError):
     """Raised when required columns are missing from a DataFrame."""
 
-    def __init__(self, missing_columns: list[str], dataframe_name: Optional[str] = None):
+    def __init__(self, missing_columns: list[str], dataframe_name: str | None = None):
         self.missing_columns = missing_columns
         self.dataframe_name = dataframe_name
 
@@ -77,7 +75,7 @@ class MissingColumnsError(DataValidationError):
 class InvalidLengthError(DataValidationError):
     """Raised when data has an invalid length."""
 
-    def __init__(self, actual_length: int, expected_length: int, data_name: Optional[str] = None):
+    def __init__(self, actual_length: int, expected_length: int, data_name: str | None = None):
         self.actual_length = actual_length
         self.expected_length = expected_length
         self.data_name = data_name
@@ -95,7 +93,7 @@ class ConfigurationError(URBANoptDESError):
 class ResultsNotProcessedError(URBANoptDESError):
     """Raised when attempting to access results before processing."""
 
-    def __init__(self, operation: Optional[str] = None):
+    def __init__(self, operation: str | None = None):
         message = "Results have not been processed yet"
         if operation:
             message = f"Cannot perform '{operation}': {message.lower()}"
