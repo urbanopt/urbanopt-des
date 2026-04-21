@@ -35,7 +35,12 @@ class UOCliWrapper:
         # self.uo_version = "0.11.1"
         # self.uo_version = "0.13.0"
         # self.uo_version = "0.14.0"
-        self.uo_version = "1.0.1"
+        # self.uo_version = "1.0.1"
+        self.uo_version = "1.1.0"
+        # Versions 1.1 does not work. There have been changes to the 
+        #   default measures (e.g., model articulation multistory key, default reporting).
+        #   There also seems to be an issue with the weather file setting.
+        # Version 1.2 does not work on Mac as the openstudio.bundle is built incorrectly for ARM.
 
         # if windows, then the path is different
         if os.name == "nt":
@@ -193,30 +198,39 @@ class UOCliWrapper:
         with open(self.working_dir / self.uo_project / "runner.conf", "w") as f:
             json.dump(data, f, indent=2)
 
-    def replace_weather_file_in_mapper(self, mapper_file, weather_file_name, climate_zone):
-        """Replace the weather file in the mapper file with the given weather file name"""
-        mapper_filepath = self.working_dir / self.uo_project / "mappers" / mapper_file
-        if not mapper_filepath.exists():
-            raise Exception(f"Mapper file {mapper_filepath} does not exist")
+    def replace_weather_file_in_mapper(self, weather_file_name, climate_zone):
+        """Replace the weather file in all mapper files in the hardcoded mappers directory.
+        
+        Args:
+            weather_file_name (str): The name of the weather file without extension
+            climate_zone (str): The climate zone to set
+        """
+        mappers_dir = self.working_dir / self.uo_project / "mappers"
+        if not mappers_dir.exists():
+            raise Exception(f"Mappers directory {mappers_dir} does not exist")
 
-        # verify that the weather_file exists in the weather path
-        if not (self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.epw").exists():
+        # Verify that the weather_file exists in the weather path
+        weather_dir = self.working_dir / self.uo_project / "weather"
+        if not (weather_dir / f"{weather_file_name}.epw").exists():
             raise Exception(f"Weather file {weather_file_name}.epw does not exist in the weather path")
-        if not (self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.ddy").exists():
+        if not (weather_dir / f"{weather_file_name}.ddy").exists():
             raise Exception(f"Weather file {weather_file_name}.ddy does not exist in the weather path")
-        if not (self.working_dir / self.uo_project / "weather" / f"{weather_file_name}.stat").exists():
+        if not (weather_dir / f"{weather_file_name}.stat").exists():
             raise Exception(f"Weather file {weather_file_name}.stat does not exist in the weather path")
 
-        with open(mapper_filepath) as f:
-            data = json.load(f)
+        # Update all mapper files in the mappers directory
+        for mapper_filepath in mappers_dir.glob("*.json"):
+            with open(mapper_filepath) as f:
+                data = json.load(f)
+            
             # find the step that has "ChangeBuildingLocation"
-            for step in data["steps"]:
-                if step["measure_dir_name"] == "ChangeBuildingLocation":
+            for step in data.get("steps", []):
+                if step.get("measure_dir_name") == "ChangeBuildingLocation":
                     step["arguments"]["weather_file_name"] = f"{weather_file_name}.epw"
                     step["arguments"]["climate_zone"] = climate_zone
 
-        with open(mapper_filepath, "w") as f:
-            json.dump(data, f, indent=2)
+            with open(mapper_filepath, "w") as f:
+                json.dump(data, f, indent=2)
 
     def enable_measures_in_mapper(self, mapper_file, measure_names):
         """Simple string replacement method to enable measures"""
@@ -233,3 +247,39 @@ class UOCliWrapper:
             dest = self.working_dir / self.uo_project / "weather" / file
             # print(f"copying weather {src / file} to {dest}")
             shutil.copy2(src / file, dest)
+
+    def fix_dependencies_20260420(self, workflow_file):
+        """Fix compatibility issues with URBANopt version after 4/20/2026
+        after some dependency update happened. This broke all the old versions of URBANopt. 
+                
+        Changes made:
+        - Rename 'story_multiplier' to 'story_multiplier_method' in the workflow
+        - Remove all 'check_*' keys from the generic_qaqc measure arguments
+        
+        Args:
+            workflow_file (str): The name of the workflow file to fix (e.g., 'base_workflow.osw')
+        """
+        workflow_filepath = self.working_dir / self.uo_project / 'mappers' / workflow_file
+        if not workflow_filepath.exists():
+            raise Exception(f"Workflow file {workflow_filepath} does not exist")
+        
+        with open(workflow_filepath) as f:
+            data = json.load(f)
+        
+        # Process all steps in the workflow
+        for step in data.get("steps", []):
+            arguments = step.get("arguments", {})
+            
+            # Change story_multiplier to story_multiplier_method
+            if "story_multiplier" in arguments:
+                arguments["story_multiplier_method"] = arguments.pop("story_multiplier")
+            
+            # Remove all check_* keys from generic_qaqc measure
+            if step.get("measure_dir_name") == "generic_qaqc":
+                keys_to_remove = [key for key in arguments.keys() if key.startswith("check_")]
+                for key in keys_to_remove:
+                    del arguments[key]
+        
+        # Write the updated workflow file
+        with open(workflow_filepath, "w") as f:
+            json.dump(data, f, indent=2)
