@@ -37,7 +37,7 @@ class UOCliWrapper:
         # self.uo_version = "0.14.0"
         # self.uo_version = "1.0.1"
         self.uo_version = "1.1.0"
-        # Versions 1.1 does not work. There have been changes to the 
+        # Versions 1.1 does not work. There have been changes to the
         #   default measures (e.g., model articulation multistory key, default reporting).
         #   There also seems to be an issue with the weather file setting.
         # Version 1.2 does not work on Mac as the openstudio.bundle is built incorrectly for ARM.
@@ -198,9 +198,9 @@ class UOCliWrapper:
         with open(self.working_dir / self.uo_project / "runner.conf", "w") as f:
             json.dump(data, f, indent=2)
 
-    def replace_weather_file_in_mapper(self, weather_file_name, climate_zone):
-        """Replace the weather file in all mapper files in the hardcoded mappers directory.
-        
+    def replace_weather_file_in_feature_and_mapper_file(self, weather_file_name, climate_zone):
+        """Replace weather settings in mapper workflows and feature files.
+
         Args:
             weather_file_name (str): The name of the weather file without extension
             climate_zone (str): The climate zone to set
@@ -219,18 +219,49 @@ class UOCliWrapper:
             raise Exception(f"Weather file {weather_file_name}.stat does not exist in the weather path")
 
         # Update all mapper files in the mappers directory
-        for mapper_filepath in mappers_dir.glob("*.json"):
+        for mapper_filepath in mappers_dir.glob("*.osw"):
             with open(mapper_filepath) as f:
                 data = json.load(f)
-            
+
             # find the step that has "ChangeBuildingLocation"
             for step in data.get("steps", []):
                 if step.get("measure_dir_name") == "ChangeBuildingLocation":
                     step["arguments"]["weather_file_name"] = f"{weather_file_name}.epw"
-                    step["arguments"]["climate_zone"] = climate_zone
+                    step["arguments"]["climate_zone"] = f"ASHRAE 169-2013-{climate_zone}"
 
             with open(mapper_filepath, "w") as f:
                 json.dump(data, f, indent=2)
+
+        # Update feature files in the project root
+        project_dir = self.working_dir / self.uo_project
+        feature_files = list(project_dir.glob("*.json")) + list(project_dir.glob("*.geojson"))
+        updated_feature_file = False
+
+        for feature_filepath in feature_files:
+            with open(feature_filepath) as f:
+                feature_data = json.load(f)
+
+            # Skip non-feature JSON files
+            if feature_data.get("type") != "FeatureCollection" or "project" not in feature_data:
+                continue
+
+            feature_data["project"]["weather_filename"] = f"{weather_file_name}.epw"
+            feature_data["project"]["climate_zone"] = climate_zone
+
+            # Keep Site Origin properties in sync when present
+            for feature in feature_data.get("features", []):
+                properties = feature.get("properties", {})
+                if properties.get("type") == "Site Origin":
+                    properties["weather_filename"] = f"{weather_file_name}.epw"
+                    properties["climate_zone"] = climate_zone
+
+            with open(feature_filepath, "w") as f:
+                json.dump(feature_data, f, indent=2)
+
+            updated_feature_file = True
+
+        if not updated_feature_file:
+            raise Exception(f"No feature file found in {project_dir} to update weather settings")
 
     def enable_measures_in_mapper(self, mapper_file, measure_names):
         """Simple string replacement method to enable measures"""
@@ -250,36 +281,36 @@ class UOCliWrapper:
 
     def fix_dependencies_20260420(self, workflow_file):
         """Fix compatibility issues with URBANopt version after 4/20/2026
-        after some dependency update happened. This broke all the old versions of URBANopt. 
-                
+        after some dependency update happened. This broke all the old versions of URBANopt.
+
         Changes made:
         - Rename 'story_multiplier' to 'story_multiplier_method' in the workflow
         - Remove all 'check_*' keys from the generic_qaqc measure arguments
-        
+
         Args:
             workflow_file (str): The name of the workflow file to fix (e.g., 'base_workflow.osw')
         """
-        workflow_filepath = self.working_dir / self.uo_project / 'mappers' / workflow_file
+        workflow_filepath = self.working_dir / self.uo_project / "mappers" / workflow_file
         if not workflow_filepath.exists():
             raise Exception(f"Workflow file {workflow_filepath} does not exist")
-        
+
         with open(workflow_filepath) as f:
             data = json.load(f)
-        
+
         # Process all steps in the workflow
         for step in data.get("steps", []):
             arguments = step.get("arguments", {})
-            
+
             # Change story_multiplier to story_multiplier_method
             if "story_multiplier" in arguments:
                 arguments["story_multiplier_method"] = arguments.pop("story_multiplier")
-            
+
             # Remove all check_* keys from generic_qaqc measure
             if step.get("measure_dir_name") == "generic_qaqc":
-                keys_to_remove = [key for key in arguments.keys() if key.startswith("check_")]
+                keys_to_remove = [key for key in arguments if key.startswith("check_")]
                 for key in keys_to_remove:
                     del arguments[key]
-        
+
         # Write the updated workflow file
         with open(workflow_filepath, "w") as f:
             json.dump(data, f, indent=2)
