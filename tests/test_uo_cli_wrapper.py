@@ -323,6 +323,62 @@ class TestUOCliWrapper(unittest.TestCase):
         assert runner_conf_data_after["num_parallel"] == 16
         assert runner_conf_data_after["max_iterations"] == 10
 
+    def test_des_params_command(self):
+        """Test des_params executes uo des_params command."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+        wrapper.des_params(
+            "ten1/baseline_scenario.csv",
+            "ten1/class_project_ten_coincident.json",
+            "ten1/sys_param.json",
+        )
+
+        with open(wrapper.log_file) as f:
+            log_contents = f.read()
+
+        assert (
+            "Running command: uo des_params --scenario ten1/baseline_scenario.csv "
+            "--feature ten1/class_project_ten_coincident.json --sys-param ten1/sys_param.json"
+        ) in log_contents
+
+    def test_des_create_command(self):
+        """Test des_create executes uo des_create command."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+        wrapper.des_create(
+            "ten1/sys_param.json",
+            "ten1/class_project_ten_coincident.json",
+            des_name="ten1/modelica_project",
+        )
+
+        with open(wrapper.log_file) as f:
+            log_contents = f.read()
+
+        assert (
+            "Running command: uo des_create --sys-param ten1/sys_param.json "
+            "--feature ten1/class_project_ten_coincident.json --des_name ten1/modelica_project"
+        ) in log_contents
+
+    def test_des_run_command(self):
+        """Test des_run executes uo des_run command."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+        wrapper.des_run("ten1/modelica_project")
+
+        with open(wrapper.log_file) as f:
+            log_contents = f.read()
+
+        assert "Running command: uo des_run --model ten1/modelica_project" in log_contents
+
     def test_wrapper_initialization(self):
         """Test UOCliWrapper initialization."""
         # Create a test project structure
