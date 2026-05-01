@@ -48,7 +48,7 @@ class UOCliWrapper:
 
         # if windows, then the path is different
         if os.name == "nt":
-            self.uo_directory = f"C:/URBANopt-cli-{self.uo_version}"  # ***replaced path name based on how it autoinstalls for windows
+            self.uo_directory = f"C:/URBANopt-cli-{self.uo_version}"  # ***replaced path name based on how it auto installs for windows
         else:
             self.uo_directory = f"/Applications/URBANoptCLI_{self.uo_version}"
 
@@ -100,7 +100,7 @@ class UOCliWrapper:
                 new_env["RUBYLIB"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 new_env["RUBY_DLL_PATH"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 # For REopt
-                if os.name != "nt":
+                if os.name != "nt":  # noqa: SIM102
                     # for some reason, this doesn't work on windows, need to test, this should not cause
                     # an issue to simple set
                     if os.environ.get("GEM_DEVELOPER_KEY"):
@@ -186,7 +186,7 @@ class UOCliWrapper:
         final_run_command = f"uo des_params --scenario {scenario_path} --feature {feature_path} --sys-param {sys_param_path}"
         # print the current path
         print(f"Running command: {final_run_command}")
-        
+
         self._run_command(final_run_command)
 
     def des_create(self, sys_param_path, feature_path, des_name=None, overwrite=False):
