@@ -587,6 +587,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
         # NOT included here because those loads are provided by the district energy system (DES)
         # in the Modelica simulation. The ETS (Energy Transfer Station) handles the heating/cooling
         # interface between the building and the district system.
+        
         building_meter_names = [
             # by building end use and fuel type
             "InteriorLights:Electricity Building",
@@ -601,6 +602,8 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             # a `bug` that needs to be confirmed.
             "WaterSystems:Electricity Building",
             "WaterSystems:NaturalGas Building",
+            # TODO: Amy look into this section too. I think we need to add
+            # HVACSystems:Fans Building "n" and HVACSystems:Pumps Building "n" back in here
         ]
         if building_ids is None:
             raise ValueError("building_ids cannot be None")

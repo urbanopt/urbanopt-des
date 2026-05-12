@@ -528,6 +528,8 @@ class URBANoptAnalysis:
                 "Total Building Interior Equipment Electricity",
                 "Total Building Exterior Equipment Electricity",
                 "Total Building Water Systems Electricity",
+                "Total Building Pumps Electricity",
+                "Total Building Fans Electricity",
             ]
             # Note: Only include natural gas columns that exist in the dataframe
             # Some columns like Exterior Equipment Natural Gas may not exist if buildings don't use them
