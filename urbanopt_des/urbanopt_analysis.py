@@ -587,6 +587,7 @@ class URBANoptAnalysis:
                         temp_df[key] = temp_df[available_columns].sum(axis=1)
                     else:
                         # If no columns are available, set to zero
+                        print(f"key {key} not found")
                         temp_df[key] = 0
 
     def create_rollups(self) -> None:
