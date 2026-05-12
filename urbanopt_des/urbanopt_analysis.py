@@ -528,6 +528,7 @@ class URBANoptAnalysis:
                 "Total Building Interior Equipment Electricity",
                 "Total Building Exterior Equipment Electricity",
                 "Total Building Water Systems Electricity",
+                # TODO: Amy confirm that these two columns exist and should be aggregated here.
                 "Total Building Pumps Electricity",
                 "Total Building Fans Electricity",
             ]
