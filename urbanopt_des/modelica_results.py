@@ -596,8 +596,8 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             "ExteriorEquipment:Electricity Building",
             "InteriorEquipment:NaturalGas Building",
             "ExteriorEquipment:NaturalGas Building",
-            "Pumps:Electricity", 
-            "Fans:Electricity", 
+            "Pumps:Electricity Building", 
+            "Fans:Electricity Building", 
             # WaterSystems are being passed for now
             # as they are not necessarily being met
             # by the Modelica simulation. This is
