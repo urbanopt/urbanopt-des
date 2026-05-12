@@ -618,6 +618,8 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             "Total Building Exterior Equipment Electricity",
             "Total Building Interior Equipment Natural Gas",
             "Total Building Exterior Equipment Natural Gas",
+            "Total Building Pumps Electricity", ##AA added
+            "Total Building Fans Electricity",  ##AA added
             "Total Building Interior Equipment",
             "Total Building Water Systems Electricity",
             "Total Building Water Systems Natural Gas",
