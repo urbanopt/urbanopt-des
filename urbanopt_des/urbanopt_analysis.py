@@ -528,6 +528,9 @@ class URBANoptAnalysis:
                 "Total Building Interior Equipment Electricity",
                 "Total Building Exterior Equipment Electricity",
                 "Total Building Water Systems Electricity",
+                # Include the buiding pumps and fans since DES doesn't account for them.
+                "Total Building Pumps Electricity",
+                "Total Building Fans Electricity",
             ]
             # Note: Only include natural gas columns that exist in the dataframe
             # Some columns like Exterior Equipment Natural Gas may not exist if buildings don't use them
@@ -584,6 +587,7 @@ class URBANoptAnalysis:
                         temp_df[key] = temp_df[available_columns].sum(axis=1)
                     else:
                         # If no columns are available, set to zero
+                        print(f"key {key} not found")
                         temp_df[key] = 0
 
     def create_rollups(self) -> None:

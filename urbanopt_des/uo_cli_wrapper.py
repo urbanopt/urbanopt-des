@@ -40,11 +40,11 @@ class UOCliWrapper:
         # self.uo_version = "0.13.0"
         # self.uo_version = "0.14.0"
         # self.uo_version = "1.0.1"
-        self.uo_version = "1.1.0"
-        # Versions 1.1 does not work. There have been changes to the
-        #   default measures (e.g., model articulation multistory key, default reporting).
-        #   There also seems to be an issue with the weather file setting.
-        # Version 1.2 does not work on Mac as the openstudio.bundle is built incorrectly for ARM.
+        self.uo_version = "1.2.0"
+        # UO Version 1.2 for Mac had a new installer on 4/28/2026 that fixed a load error.
+
+        # TODO: Add method to update UO dependencies (measures, geojson, etc.)
+        # uo update --existing-project-folder diverse_pre --new-project-directory diverse
 
         # if windows, then the path is different
         if os.name == "nt":
