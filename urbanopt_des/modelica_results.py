@@ -587,7 +587,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
         # NOT included here because those loads are provided by the district energy system (DES)
         # in the Modelica simulation. The ETS (Energy Transfer Station) handles the heating/cooling
         # interface between the building and the district system.
-        
+
         building_meter_names = [
             # by building end use and fuel type
             "InteriorLights:Electricity Building",
@@ -596,8 +596,8 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             "ExteriorEquipment:Electricity Building",
             "InteriorEquipment:NaturalGas Building",
             "ExteriorEquipment:NaturalGas Building",
-            "Pumps:Electricity Building", 
-            "Fans:Electricity Building", 
+            "Pumps:Electricity Building",
+            "Fans:Electricity Building",
             # WaterSystems are being passed for now
             # as they are not necessarily being met
             # by the Modelica simulation. This is
@@ -618,7 +618,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             "Total Building Exterior Equipment Electricity",
             "Total Building Interior Equipment Natural Gas",
             "Total Building Exterior Equipment Natural Gas",
-            "Total Building Pumps Electricity", ##AA added
+            "Total Building Pumps Electricity",  ##AA added
             "Total Building Fans Electricity",  ##AA added
             "Total Building Interior Equipment",
             "Total Building Water Systems Electricity",
