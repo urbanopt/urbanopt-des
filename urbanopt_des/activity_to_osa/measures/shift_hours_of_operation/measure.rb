@@ -55,8 +55,6 @@ class ShiftHoursOfOperation < OpenStudio::Measure::ModelMeasure
     hoo_dur_weekday.setUnits('Hours')
     args << hoo_dur_weekday
 
-    # TODO: - could include every day of the week
-
     # delta hoo_start for saturdays
     hoo_start_saturday = OpenStudio::Measure::OSArgument.makeDoubleArgument('hoo_start_saturday', true)
     hoo_start_saturday.setDisplayName('Shift the saturday start of hours of operation.')
@@ -88,8 +86,6 @@ class ShiftHoursOfOperation < OpenStudio::Measure::ModelMeasure
     hoo_dur_sunday.setDefaultValue(0.0)
     hoo_dur_sunday.setUnits('Hours')
     args << hoo_dur_sunday
-
-    # TODO: - could include start and end days to have delta or absolute values applied to. (maybe decimal between 1.0 and 13.0 month where 3.50 would be March 15th)
 
     # make an argument for delta_values
     delta_values = OpenStudio::Measure::OSArgument.makeBoolArgument('delta_values', true)
@@ -131,7 +127,6 @@ class ShiftHoursOfOperation < OpenStudio::Measure::ModelMeasure
     target_hoo_from_model.setDefaultValue(false)
     args << target_hoo_from_model
 
-    # TODO: - add argument for step frequency, which is hours per step (should be fractional 1 or less generally).
     # For now it defaults to simulation timestep
 
     return args
@@ -465,7 +460,6 @@ class ShiftHoursOfOperation < OpenStudio::Measure::ModelMeasure
     runner.registerInfo('Altering hours of operation schedules for sunday profiles')
     sunday = process_hoo(used_hoo_sch_sets, model, runner, args, ['sun'], args['hoo_start_sunday'], args['hoo_dur_sunday'])
 
-    # TODO: - need to address this error when manipulating schedules
     # [openstudio.standards.ScheduleRuleset] <1> Pre-interpolated processed hash for Large Office Bldg Equip Default Schedule has one or more out of order conflicts: [[3.5, 0.8], [4.5, 0.6], [5.0, 0.6], [7.0, 0.5], [9.0, 0.4], [6.0, 0.4], [10.0, 0.9], [16.5, 0.9], [17.5, 0.8], [18.5, 0.9], [21.5, 0.9]]. Method will stop because Error on Out of Order was set to true.
     # model_build_parametric_schedules
     parametric_schedules = standard.model_apply_parametric_schedules(model, ramp_frequency: nil, infer_hoo_for_non_assigned_objects: true, error_on_out_of_order: true)
@@ -481,11 +475,6 @@ class ShiftHoursOfOperation < OpenStudio::Measure::ModelMeasure
 
     # get log messages (if debug in setup is true this will fail for error)
     OsLib_HelperMethods.log_msgs
-
-    # TODO: - adding hours of operation to a schedule that doesn't have them to start with, like a sunday, can be problematic
-    # todo - start of day may not be reliable and there may not be formula inputs to show what occupied behavior is
-    # todo - in a situation like that it could be good to get formula from day that was non-zero to start with like weekday or saturday.
-    # todo - maybe standards can do something like this when making the formulas in the first place.
 
     return true
   end

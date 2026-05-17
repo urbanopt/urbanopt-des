@@ -27,18 +27,14 @@ pytest = "~=9.0"
 pytest-cov = "~7.1"
 buildingspy = "^5.2.0"
 
-[build-system]
-requires = ["poetry-core>=2.0.1"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.poetry.scripts]
 des-output = "urbanopt_des.cli:app"
 
 [tool.mypy]
 # Exclude directories and files that need type fixing
 exclude = [
-    "urbanopt_des/measures/",
-    "urbanopt_des/activity_to_osa/",
+	"urbanopt_des/measures/",
+	"urbanopt_des/activity_to_osa/",
 ]
 ignore_missing_imports = true
 # Start with permissive settings - can be tightened incrementally
@@ -48,3 +44,12 @@ warn_return_any = false
 warn_unused_ignores = true
 # Don't require complete type coverage yet
 check_untyped_defs = false
+
+[tool.pytest.ini_options]
+filterwarnings = [
+	"ignore:The 'shapely.geos' module is deprecated.*:DeprecationWarning:geopandas._compat",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.1"]
+build-backend = "poetry.core.masonry.api"
