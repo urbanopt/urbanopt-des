@@ -38,8 +38,8 @@ class ShiftHoursOfOperationTest < Minitest::Test
     args_hash['hoo_dur_weekday'] = 4.5
     args_hash['hoo_start_saturday'] = -2.0
     args_hash['hoo_dur_saturday'] = -1.0
-    args_hash['hoo_dur_sunday'] = 1 # TODO: - isn't going to have any impact on formulas the way it is setup now
-    args_hash['hoo_start_sunday'] = 3 # todo - isn't going to have any impact on formulas the way it is setup now
+    args_hash['hoo_dur_sunday'] = 1
+    args_hash['hoo_start_sunday'] = 3
     # args_hash['fraction_of_daily_occ_range'] = 0.5
     # using defaults values from measure.rb for other arguments
 
