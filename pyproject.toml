@@ -8,10 +8,12 @@ packages = [{ include = "urbanopt_des", from = "." }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
+cyclopts = "^4.11.0"
+
+# Keep geopandas below 1.0 to keep Shapely <2.0, to avoid conflicts
+# with nrel-disco's requirements (via pydss)
+# Originates from uo-sdk using both this and nrel-disco
 geopandas = "<1.0"
-# Below 1.0 keeps Shapely <2.0, to avoid conflicts with nrel-disco's requirements for Shapely (via pydss)
-# Comes from uo-sdk using both this and nrel-disco
-cyclopts = "^4.10.2"
 
 # release mode
 geojson-modelica-translator = "^0.13.0"
