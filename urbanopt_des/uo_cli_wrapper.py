@@ -41,8 +41,7 @@ class UOCliWrapper:
         # self.uo_version = "0.14.0"
         # self.uo_version = "1.0.1"
         self.uo_version = "1.2.0"
-        # Version 1.2 does not work on Mac as the openstudio.bundle is built incorrectly for ARM.
-        #   Supposedly there is a new installer to test.
+        # UO Version 1.2 for Mac had a new installer on 4/28/2026 that fixed a load error.
 
         # TODO: Add method to update UO dependencies (measures, geojson, etc.)
         # uo update --existing-project-folder diverse_pre --new-project-directory diverse
