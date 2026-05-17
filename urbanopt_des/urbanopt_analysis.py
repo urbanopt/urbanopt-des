@@ -528,7 +528,7 @@ class URBANoptAnalysis:
                 "Total Building Interior Equipment Electricity",
                 "Total Building Exterior Equipment Electricity",
                 "Total Building Water Systems Electricity",
-                # TODO: Amy confirm that these two columns exist and should be aggregated here.
+                # Include the buiding pumps and fans since DES doesn't account for them.
                 "Total Building Pumps Electricity",
                 "Total Building Fans Electricity",
             ]

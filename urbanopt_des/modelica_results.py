@@ -601,11 +601,9 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             # WaterSystems are being passed for now
             # as they are not necessarily being met
             # by the Modelica simulation. This is
-            # a `bug` that needs to be confirmed.
+            # a `bug` that needs to be fixed.
             "WaterSystems:Electricity Building",
             "WaterSystems:NaturalGas Building",
-            # TODO: Amy look into this section too. I think we need to add
-            # HVACSystems:Fans Building "n" and HVACSystems:Pumps Building "n" back in here
         ]
         if building_ids is None:
             raise ValueError("building_ids cannot be None")
