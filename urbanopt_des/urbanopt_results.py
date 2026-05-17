@@ -100,14 +100,6 @@ class URBANoptResults(ResultsBase):
         # recreate the grid_metrics_daily data frame in case we are overwriting it.
         self.grid_metrics_daily = None
 
-        # skip n-days at the beginning of the grid metrics, due to
-        # warm up times that have yet to be resolved.
-        self.data_15min_to_process = self.data_15min.copy()
-        n_days = 2
-        skip_time = n_days * 96
-        self.data_15min_to_process = self.data_15min_to_process.iloc[skip_time:]
-        # # END NEED TO FIX
-
         for meter in meters:
             df_tmp = self.data_15min_to_process.copy()
             df_tmp = df_tmp.groupby([pd.Grouper(freq="1d")])[meter].agg(["max", "idxmax", "min", "idxmin", "mean", "sum"])
@@ -430,6 +422,9 @@ class URBANoptResults(ResultsBase):
             ) in self.get_urbanopt_feature_report_columns().items():
                 if feature_column.get("skip_renaming", False):
                     continue
+                # Skip columns that don't exist in this feature report
+                if column_name not in feature_report.columns:
+                    continue
                 # set the new column name to include the building number
                 new_column_name = f"{feature_column['name']} Building {building_id}"
                 feature_report[new_column_name] = feature_report[column_name] * feature_column["conversion"]
@@ -478,7 +473,11 @@ class URBANoptResults(ResultsBase):
 
         for building_id in building_names:
             print(f"Processing building time series loads for {building_id}")
-            load_report = self.get_urbanopt_export_building_loads(self.path / "run" / f"{self.scenario_name}" / f"{building_id}")
+            try:
+                load_report = self.get_urbanopt_export_building_loads(self.path / "run" / f"{self.scenario_name}" / f"{building_id}")
+            except Exception as e:
+                print(f"ERROR: Could not process building loads for {building_id}: {e}")
+                continue
 
             # update the column names to include the building id
             for column in load_report.columns:
@@ -501,6 +500,11 @@ class URBANoptResults(ResultsBase):
             else:
                 # remove the datetime from the second data frame
                 self.data_loads = pd.concat([self.data_loads, load_report], axis=1, join="inner")
+
+        # Check if any load results were successfully processed
+        if self.data_loads is None:
+            print("ERROR: No building loads could be processed")
+            return
 
         # aggregate the data to create totals
         self.data_loads["TotalCoolingSensibleLoad"] = self.data_loads.filter(like="TotalCoolingSensibleLoad").sum(axis=1)
