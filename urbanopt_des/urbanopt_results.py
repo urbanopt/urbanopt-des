@@ -101,7 +101,7 @@ class URBANoptResults(ResultsBase):
         self.grid_metrics_daily = None
 
         for meter in meters:
-            df_tmp = self.data_15min_to_process.copy()
+            df_tmp = self.data_15min.copy()
             df_tmp = df_tmp.groupby([pd.Grouper(freq="1d")])[meter].agg(["max", "idxmax", "min", "idxmin", "mean", "sum"])
 
             # update the column names and save back into the results data frame
@@ -121,7 +121,7 @@ class URBANoptResults(ResultsBase):
             df_tmp[f"{meter} Load Factor"] = df_tmp[f"{meter} Mean"] / df_tmp[f"{meter} Max"]
 
             # add in the system ramping, which has to be calculated from the original data frame
-            df_tmp2 = self.data_15min_to_process.copy()
+            df_tmp2 = self.data_15min.copy()
             df_tmp2[f"{meter} System Ramping"] = df_tmp2[meter].diff().abs().fillna(0)
             df_tmp2 = df_tmp2.groupby([pd.Grouper(freq="1d")])[f"{meter} System Ramping"].agg(["sum"]) / 1e6
             df_tmp2.columns = [f"{meter} System Ramping"]
@@ -178,7 +178,7 @@ class URBANoptResults(ResultsBase):
         ]
         for meter in meters:
             peaks = []
-            df_to_proc = self.data_15min_to_process.copy()
+            df_to_proc = self.data_15min.copy()
             if "Cooling" in meter:
                 # values are negative, so ascending is actually descending
                 df_to_proc = df_to_proc.sort_values(by=meter, ascending=True)

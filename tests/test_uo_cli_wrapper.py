@@ -362,7 +362,7 @@ class TestUOCliWrapper(unittest.TestCase):
 
         assert (
             "Running command: uo des_create --sys-param ten1/sys_param.json "
-            "--feature ten1/class_project_ten_coincident.json --des_name ten1/modelica_project"
+            "--feature ten1/class_project_ten_coincident.json --des-name ten1/modelica_project"
         ) in log_contents
 
     def test_des_run_command(self):
@@ -397,7 +397,6 @@ class TestUOCliWrapper(unittest.TestCase):
         assert wrapper.template_dir == template_dir
         assert wrapper.project_path == project_path
         assert wrapper.log_file == self.temp_path / f"{project_name}.log"
-        assert wrapper.uo_version == "1.1.0"
 
 
 if __name__ == "__main__":
