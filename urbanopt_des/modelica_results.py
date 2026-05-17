@@ -822,28 +822,6 @@ class ModelicaResults(ResultsBase, LoggingMixin):
 
         self.min_15_with_buildings_to_process = self.min_15_with_buildings.copy()
 
-        # skip n-days at the beginning of the grid metrics, due to
-        # warm up times that have yet to be resolved.
-        n_days = 2
-        skip_time = n_days * 96
-        self.min_15_with_buildings_to_process = self.min_15_with_buildings_to_process.iloc[skip_time:]
-        # # END NEED TO FIX
-
-        # # THIS IS HARD CODED -- NEED TO FIX!
-        # # Start with the latest in the year...
-
-        # # remove 2017-02-06 -- 2017-02-07 from the data, as it is a warm up period
-        # # convert 2/6 to hours
-        # skip_time = 96 * (31)
-        # # remove skip_time to skip_time + 96
-        # print(f"Removing {skip_time} to {skip_time + 96} from the data")
-        # # remove rows 96*31 to 96*38
-        # self.min_15_with_buildings_to_process = self.min_15_with_buildings_to_process.drop(
-        #     self.min_15_with_buildings_to_process.index[range(skip_time, skip_time + 168)]
-        # )
-
-        # END NEED TO FIX
-
         self.grid_metrics_daily = None
         for meter in meters:
             df_tmp = self.min_15_with_buildings_to_process.copy()
@@ -892,6 +870,11 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             aggs[f"{meter} System Ramping"] = ["max", "min", "sum", "mean"]
 
         df_tmp = df_tmp.groupby([pd.Grouper(freq="YE")]).agg(aggs)
+        if df_tmp.empty:
+            # Fallback for partial-year or sparse runs where YE grouping yields no rows.
+            df_tmp = self.grid_metrics_daily.groupby([pd.Grouper(freq="Y")]).agg(aggs)
+        if df_tmp.empty:
+            raise ValueError("Unable to calculate annual grid metrics: no data after daily/annual aggregation")
 
         # rename the columns
         df_tmp.columns = [f"{c[0]} {c[1]}" for c in df_tmp.columns]
