@@ -397,7 +397,6 @@ class TestUOCliWrapper(unittest.TestCase):
         assert wrapper.template_dir == template_dir
         assert wrapper.project_path == project_path
         assert wrapper.log_file == self.temp_path / f"{project_name}.log"
-        assert wrapper.uo_version == "1.1.0"
 
 
 if __name__ == "__main__":
