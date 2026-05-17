@@ -97,7 +97,6 @@ class RValueOfInsulationForConstructionPercentageChange < OpenStudio::Measure::M
     runner.registerInitialCondition("The Initial R-value of #{construction.name} is #{initial_r_value_ip} (ft^2*h*R/Btu).")
     runner.registerValue('initial_r_value_ip', initial_r_value_ip.to_f, 'ft^2*h*R/Btu')
 
-    # TODO: - find and test insulation
     construction_layers = construction.layers
     max_thermal_resistance_material = construction_layers[0]
     max_thermal_resistance_material_index = 0
