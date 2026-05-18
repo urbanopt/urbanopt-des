@@ -379,6 +379,30 @@ class TestUOCliWrapper(unittest.TestCase):
 
         assert "Running command: uo des_run --model ten1/modelica_project" in log_contents
 
+    def test_update_project_files(self):
+        """Test update_project_files executes uo update and returns a new UOCliWrapper."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+        new_project_name = "diverse"
+        new_wrapper = wrapper.update_project_files(new_project_name)
+
+        # Check the log for the correct command
+        with open(wrapper.log_file) as f:
+            log_contents = f.read()
+
+        assert (
+            f"Running command: uo update --existing-project-folder {project_name} --new-project-directory {new_project_name}"
+        ) in log_contents
+
+        # Check that the returned object is a UOCliWrapper for the new project
+        assert isinstance(new_wrapper, UOCliWrapper)
+        assert new_wrapper.uo_project == new_project_name
+        assert new_wrapper.working_dir == self.temp_path
+        assert new_wrapper.template_dir == Path(__file__).parent
+
     def test_wrapper_initialization(self):
         """Test UOCliWrapper initialization."""
         # Create a test project structure

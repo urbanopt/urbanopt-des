@@ -43,9 +43,6 @@ class UOCliWrapper:
         self.uo_version = "1.2.0"
         # UO Version 1.2 for Mac had a new installer on 4/28/2026 that fixed a load error.
 
-        # TODO: Add method to update UO dependencies (measures, geojson, etc.)
-        # uo update --existing-project-folder diverse_pre --new-project-directory diverse
-
         # if windows, then the path is different
         if os.name == "nt":
             self.uo_directory = f"C:/URBANopt-cli-{self.uo_version}"  # ***replaced path name based on how it auto installs for windows
@@ -153,6 +150,23 @@ class UOCliWrapper:
 
     def run(self, feature_file, scenario_name):
         self._run_command(f"uo run -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
+
+    def update_project_files(self, new_project_name):
+        """Run uo update command to create a new project and return a new UOCliWrapper for the new project.
+
+        uo update --existing-project-folder <existing_project_folder> --new-project-directory <new_project_directory>
+
+        Args:
+            new_project_name (str): New project folder to write updated content to.
+
+        Returns:
+            UOCliWrapper: A new wrapper instance for the updated project directory.
+        """
+        final_run_command = f"uo update --existing-project-folder {self.uo_project} --new-project-directory {new_project_name}"
+        print(f"Running command: {final_run_command}")
+        self._run_command(final_run_command)
+        # Return a new UOCliWrapper for the new project directory
+        return UOCliWrapper(self.working_dir, new_project_name, self.template_dir)
 
     def _build_des_optional_args(self, **kwargs):
         """Build optional CLI args for DES-related commands.
