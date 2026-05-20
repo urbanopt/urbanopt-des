@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -43,11 +44,13 @@ class UOCliWrapper:
         self.uo_version = "1.2.0"
         # UO Version 1.2 for Mac had a new installer on 4/28/2026 that fixed a load error.
 
-        # if windows, then the path is different
-        if os.name == "nt":
-            self.uo_directory = f"C:/URBANopt-cli-{self.uo_version}"  # ***replaced path name based on how it auto installs for windows
-        else:
+        # Select the path based on the platform
+        if sys.platform == "win32":
+            self.uo_directory = f"C:/URBANopt-cli-{self.uo_version}"
+        elif sys.platform == "darwin":
             self.uo_directory = f"/Applications/URBANoptCLI_{self.uo_version}"
+        else:  # linux and other unix
+            self.uo_directory = f"/usr/local/urbanopt-cli-{self.uo_version}"
 
         if auto_initialize_python:
             self._bootstrap_python_if_needed()
