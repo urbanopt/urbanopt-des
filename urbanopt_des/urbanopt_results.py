@@ -764,9 +764,9 @@ class URBANoptResults(ResultsBase):
         # time column is seconds from the start of the year, as integers
         tmp_dataframe["time"] = (tmp_dataframe.index - tmp_dataframe.index[0]).total_seconds()
         # the last timestamp is weird as it will be negative. Take the second to last value and add 3600
-        tmp_dataframe["time"].iloc[-1] = tmp_dataframe["time"].iloc[-2] + 3600
+        tmp_dataframe.loc[tmp_dataframe.index[-1], "time"] = tmp_dataframe.loc[tmp_dataframe.index[-2], "time"] + 3600
         # the first value of the hot water must be zero, else there will be an error
-        tmp_dataframe["TotalWaterHeating"].iloc[0] = 0
+        tmp_dataframe.loc[tmp_dataframe.index[0], "TotalWaterHeating"] = 0
 
         # coerce time into int
         tmp_dataframe["time"] = tmp_dataframe["time"].astype(int)
