@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -43,14 +44,13 @@ class UOCliWrapper:
         self.uo_version = "1.2.0"
         # UO Version 1.2 for Mac had a new installer on 4/28/2026 that fixed a load error.
 
-        # TODO: Add method to update UO dependencies (measures, geojson, etc.)
-        # uo update --existing-project-folder diverse_pre --new-project-directory diverse
-
-        # if windows, then the path is different
-        if os.name == "nt":
-            self.uo_directory = f"C:/URBANopt-cli-{self.uo_version}"  # ***replaced path name based on how it auto installs for windows
-        else:
+        # Select the path based on the platform
+        if sys.platform == "win32":
+            self.uo_directory = f"C:/URBANopt-cli-{self.uo_version}"
+        elif sys.platform == "darwin":
             self.uo_directory = f"/Applications/URBANoptCLI_{self.uo_version}"
+        else:  # linux and other unix
+            self.uo_directory = f"/usr/local/urbanopt-cli-{self.uo_version}"
 
         if auto_initialize_python:
             self._bootstrap_python_if_needed()
@@ -153,6 +153,23 @@ class UOCliWrapper:
 
     def run(self, feature_file, scenario_name):
         self._run_command(f"uo run -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
+
+    def update_project_files(self, new_project_name):
+        """Run uo update command to create a new project and return a new UOCliWrapper for the new project.
+
+        uo update --existing-project-folder <existing_project_folder> --new-project-directory <new_project_directory>
+
+        Args:
+            new_project_name (str): New project folder to write updated content to.
+
+        Returns:
+            UOCliWrapper: A new wrapper instance for the updated project directory.
+        """
+        final_run_command = f"uo update --existing-project-folder {self.uo_project} --new-project-directory {new_project_name}"
+        print(f"Running command: {final_run_command}")
+        self._run_command(final_run_command)
+        # Return a new UOCliWrapper for the new project directory
+        return UOCliWrapper(self.working_dir, new_project_name, self.template_dir)
 
     def _build_des_optional_args(self, **kwargs):
         """Build optional CLI args for DES-related commands.
@@ -383,39 +400,3 @@ class UOCliWrapper:
             dest = self.working_dir / self.uo_project / "weather" / file
             # print(f"copying weather {src / file} to {dest}")
             shutil.copy2(src / file, dest)
-
-    def fix_dependencies_20260420(self, workflow_file):
-        """Fix compatibility issues with URBANopt version after 4/20/2026
-        after some dependency update happened. This broke all the old versions of URBANopt.
-
-        Changes made:
-        - Rename 'story_multiplier' to 'story_multiplier_method' in the workflow
-        - Remove all 'check_*' keys from the generic_qaqc measure arguments
-
-        Args:
-            workflow_file (str): The name of the workflow file to fix (e.g., 'base_workflow.osw')
-        """
-        workflow_filepath = self.working_dir / self.uo_project / "mappers" / workflow_file
-        if not workflow_filepath.exists():
-            raise Exception(f"Workflow file {workflow_filepath} does not exist")
-
-        with open(workflow_filepath) as f:
-            data = json.load(f)
-
-        # Process all steps in the workflow
-        for step in data.get("steps", []):
-            arguments = step.get("arguments", {})
-
-            # Change story_multiplier to story_multiplier_method
-            if "story_multiplier" in arguments:
-                arguments["story_multiplier_method"] = arguments.pop("story_multiplier")
-
-            # Remove all check_* keys from generic_qaqc measure
-            if step.get("measure_dir_name") == "generic_qaqc":
-                keys_to_remove = [key for key in arguments if key.startswith("check_")]
-                for key in keys_to_remove:
-                    del arguments[key]
-
-        # Write the updated workflow file
-        with open(workflow_filepath, "w") as f:
-            json.dump(data, f, indent=2)
