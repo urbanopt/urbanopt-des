@@ -7,6 +7,7 @@ import copy
 import datetime
 import json
 import math
+import warnings
 from pathlib import Path
 
 import pandas as pd
@@ -1384,7 +1385,7 @@ class URBANoptAnalysis:
     def resolve_uo_project_paths(
         cls,
         input_path: Path,
-        scenario_name: str = None,
+        scenario_name: str | None = None,
         geojson_glob: str = "class_project*.json",
     ) -> dict:
         """Resolve a flexible "input path" into a normalized set of URBANopt paths.
@@ -1405,7 +1406,7 @@ class URBANoptAnalysis:
                 ignored.
             geojson_glob (str): Glob (relative to ``uo_project_dir``) to use when
                 auto-discovering the project's feature GeoJSON. Defaults to
-                ``"class_project*.json"`` to match the ESBE class projects. If
+                ``"class_project*.json"`` to match the URBANopt class projects. If
                 no match is found the glob falls back to ``*.json`` so a
                 custom-named feature file is still picked up.
 
@@ -1438,10 +1439,7 @@ class URBANoptAnalysis:
             run_dir = uo_project_dir / "run"
             scenario_name = input_path.name
         else:
-            raise ValueError(
-                "Input path must be a URBANopt project dir (contains run/) "
-                "or a scenario dir under run/."
-            )
+            raise ValueError("Input path must be a URBANopt project dir (contains run/) or a scenario dir under run/.")
 
         if not run_dir.exists():
             raise FileNotFoundError(f"Run directory not found: {run_dir}")
@@ -1484,11 +1482,11 @@ class URBANoptAnalysis:
     def bootstrap_from_uo_results(
         cls,
         input_path: Path,
-        scenario_name: str = None,
+        scenario_name: str | None = None,
         year_of_data: int = 2017,
         display_name: str = "Non-Connected",
         skip_missing_load_exports: bool = True,
-        analysis_dir: Path = None,
+        analysis_dir: Path | None = None,
     ) -> tuple:
         """Create a ready-to-use :class:`URBANoptAnalysis` from a URBANopt scenario.
 
@@ -1522,7 +1520,6 @@ class URBANoptAnalysis:
             :meth:`resolve_uo_project_paths`. Keeping the paths around lets
             callers write plots and summary CSVs without re-deriving them.
         """
-        import warnings
 
         paths = cls.resolve_uo_project_paths(input_path, scenario_name=scenario_name)
 

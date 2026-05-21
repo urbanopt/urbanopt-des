@@ -289,12 +289,8 @@ class TestEnableMeasuresInMapper(unittest.TestCase):
     """Cover the empty-stub-now-implemented enable_measures_in_mapper method."""
 
     # Canonical line emitted by the URBANopt CLI mapper templates.
-    SKIP_TRUE = (
-        "OpenStudio::Extension.set_measure_argument(osw, '{measure}', '__SKIP__', true)"
-    )
-    SKIP_FALSE = (
-        "OpenStudio::Extension.set_measure_argument(osw, '{measure}', '__SKIP__', false)"
-    )
+    SKIP_TRUE = "OpenStudio::Extension.set_measure_argument(osw, '{measure}', '__SKIP__', true)"
+    SKIP_FALSE = "OpenStudio::Extension.set_measure_argument(osw, '{measure}', '__SKIP__', false)"
 
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
@@ -335,9 +331,7 @@ class TestEnableMeasuresInMapper(unittest.TestCase):
         """Measures that aren't in the file should be silently skipped."""
         self._write_mapper("ClassProject.rb", ["MeasureA"])
 
-        changed = self.wrapper.enable_measures_in_mapper(
-            "ClassProject.rb", ["MeasureA", "MeasureMissing"]
-        )
+        changed = self.wrapper.enable_measures_in_mapper("ClassProject.rb", ["MeasureA", "MeasureMissing"])
 
         assert changed == ["MeasureA"]
 
@@ -496,12 +490,8 @@ class TestBootstrapProject(unittest.TestCase):
         # Steps below should run on the *new* wrapper returned by update.
         new_wrapper.set_number_parallel.assert_called_once_with(4)
         new_wrapper.copy_over_weather.assert_called_once_with()
-        new_wrapper.replace_weather_file_in_feature_and_mapper_file.assert_called_once_with(
-            "USA_FL_MacDill.AFB.747880_TMY3", "1A"
-        )
-        new_wrapper.copy_template_mappers.assert_called_once_with(
-            ["Baseline.rb", "base_workflow.osw"]
-        )
+        new_wrapper.replace_weather_file_in_feature_and_mapper_file.assert_called_once_with("USA_FL_MacDill.AFB.747880_TMY3", "1A")
+        new_wrapper.copy_template_mappers.assert_called_once_with(["Baseline.rb", "base_workflow.osw"])
 
         assert result is new_wrapper
 

@@ -486,7 +486,7 @@ class UOCliWrapper:
     ):
         """Run the common "set up a new URBANopt project" sequence.
 
-        This wraps the boilerplate that recurs throughout the ESBE analysis
+        This wraps the boilerplate that recurs throughout analysis
         notebooks: create an example project of a given kind (coincident or
         diverse), create scenarios from its feature file, run ``uo update`` to
         produce a renamed project copy, optionally bump parallelism, copy the
@@ -524,9 +524,7 @@ class UOCliWrapper:
         elif project_type == "diverse":
             self.create_example_diverse_project()
         else:
-            raise ValueError(
-                f"project_type must be 'coincident' or 'diverse', got {project_type!r}"
-            )
+            raise ValueError(f"project_type must be 'coincident' or 'diverse', got {project_type!r}")
 
         self.create_scenarios(feature_file)
 

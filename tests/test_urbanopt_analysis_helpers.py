@@ -86,9 +86,7 @@ class TestResolveUOProjectPaths(unittest.TestCase):
 
     def test_project_dir_falls_back_to_first_scenario(self):
         """When baseline_scenario doesn't exist, pick the first alphabetic dir."""
-        project_dir = self._make_project(
-            scenarios=("zeta_scenario", "alpha_scenario", "mu_scenario")
-        )
+        project_dir = self._make_project(scenarios=("zeta_scenario", "alpha_scenario", "mu_scenario"))
 
         result = URBANoptAnalysis.resolve_uo_project_paths(project_dir)
 
@@ -109,9 +107,7 @@ class TestResolveUOProjectPaths(unittest.TestCase):
         """An explicit scenario_name takes precedence over auto-discovery."""
         project_dir = self._make_project(scenarios=("baseline_scenario", "custom_scenario"))
 
-        result = URBANoptAnalysis.resolve_uo_project_paths(
-            project_dir, scenario_name="custom_scenario"
-        )
+        result = URBANoptAnalysis.resolve_uo_project_paths(project_dir, scenario_name="custom_scenario")
 
         assert result["scenario_name"] == "custom_scenario"
 
@@ -127,17 +123,13 @@ class TestResolveUOProjectPaths(unittest.TestCase):
         """Caller can override the geojson glob entirely."""
         project_dir = self._make_project(geojson_name="weird_name.geojson")
         # Default glob looks for `class_project*.json`; ours is .geojson.
-        result = URBANoptAnalysis.resolve_uo_project_paths(
-            project_dir, geojson_glob="*.geojson"
-        )
+        result = URBANoptAnalysis.resolve_uo_project_paths(project_dir, geojson_glob="*.geojson")
 
         assert result["geojson_path"] == project_dir / "weird_name.geojson"
 
     def test_missing_input_path_raises(self):
         with pytest.raises(FileNotFoundError, match="Input path does not exist"):
-            URBANoptAnalysis.resolve_uo_project_paths(
-                self.temp_path / "definitely_not_there"
-            )
+            URBANoptAnalysis.resolve_uo_project_paths(self.temp_path / "definitely_not_there")
 
     def test_path_neither_project_nor_scenario_raises(self):
         """A plain directory without run/ and not under run/ is rejected."""
@@ -200,18 +192,14 @@ class TestBootstrapFromUoResults(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if not (FIXTURE_PROJECT_DIR / "run" / FIXTURE_SCENARIO_NAME).exists():
-            raise unittest.SkipTest(
-                "three_building_5G fixture is not present; skipping tests."
-            )
+            raise unittest.SkipTest("three_building_5G fixture is not present; skipping tests.")
 
     def setUp(self):
         # Surgical cleanup: only remove the URBANopt-generated CSVs that
         # save_dataframes will rewrite. Anything else under output/ (e.g.
         # ``building_metrics_annual.csv`` written by post-process notebooks)
         # is preserved.
-        scenario_output = (
-            FIXTURE_PROJECT_DIR / "run" / FIXTURE_SCENARIO_NAME / "output"
-        )
+        scenario_output = FIXTURE_PROJECT_DIR / "run" / FIXTURE_SCENARIO_NAME / "output"
         if scenario_output.is_dir():
             for pattern in ("loads_*.csv", "power_*.csv"):
                 for path in scenario_output.glob(pattern):
@@ -220,17 +208,17 @@ class TestBootstrapFromUoResults(unittest.TestCase):
 
     def _bootstrap(self, **overrides):
         """Run ``bootstrap_from_uo_results`` against the fixture project."""
-        kwargs = dict(
-            input_path=FIXTURE_PROJECT_DIR,
-            scenario_name=FIXTURE_SCENARIO_NAME,
-            year_of_data=2017,
-        )
+        kwargs = {
+            "input_path": FIXTURE_PROJECT_DIR,
+            "scenario_name": FIXTURE_SCENARIO_NAME,
+            "year_of_data": 2017,
+        }
         kwargs.update(overrides)
         return URBANoptAnalysis.bootstrap_from_uo_results(**kwargs)
 
     def test_returns_real_analysis_and_results(self):
         """Smoke test: real URBANoptAnalysis with a real URBANoptResults attached."""
-        uo_analysis, paths = self._bootstrap()
+        uo_analysis, _paths = self._bootstrap()
 
         assert isinstance(uo_analysis, URBANoptAnalysis)
         assert isinstance(uo_analysis.urbanopt, URBANoptResults)
@@ -269,9 +257,7 @@ class TestBootstrapFromUoResults(unittest.TestCase):
         """``bootstrap_from_uo_results`` calls ``save_dataframes`` — verify the
         expected URBANopt CSVs land in the scenario output directory."""
         # setUp guarantees these files are absent before bootstrap runs.
-        scenario_output = (
-            FIXTURE_PROJECT_DIR / "run" / FIXTURE_SCENARIO_NAME / "output"
-        )
+        scenario_output = FIXTURE_PROJECT_DIR / "run" / FIXTURE_SCENARIO_NAME / "output"
 
         self._bootstrap()
 
@@ -287,14 +273,16 @@ class TestBootstrapFromUoResults(unittest.TestCase):
     def test_skip_missing_load_exports_emits_warning(self):
         """Patch only ``URBANoptResults.process_load_results`` so it raises;
         the rest of the pipeline still uses the real instance."""
-        with mock.patch.object(
-            URBANoptResults,
-            "process_load_results",
-            side_effect=RuntimeError("load file missing"),
+        with (
+            mock.patch.object(
+                URBANoptResults,
+                "process_load_results",
+                side_effect=RuntimeError("load file missing"),
+            ),
+            warnings.catch_warnings(record=True) as caught,
         ):
-            with warnings.catch_warnings(record=True) as caught:
-                warnings.simplefilter("always")
-                uo_analysis, _ = self._bootstrap(skip_missing_load_exports=True)
+            warnings.simplefilter("always")
+            uo_analysis, _ = self._bootstrap(skip_missing_load_exports=True)
 
         msgs = [str(w.message) for w in caught]
         assert any("Skipping missing building load exports" in m for m in msgs)
@@ -306,13 +294,15 @@ class TestBootstrapFromUoResults(unittest.TestCase):
 
     def test_skip_missing_load_exports_false_propagates(self):
         """With ``skip_missing_load_exports=False`` the exception bubbles up."""
-        with mock.patch.object(
-            URBANoptResults,
-            "process_load_results",
-            side_effect=RuntimeError("load file missing"),
+        with (
+            mock.patch.object(
+                URBANoptResults,
+                "process_load_results",
+                side_effect=RuntimeError("load file missing"),
+            ),
+            pytest.raises(RuntimeError, match="load file missing"),
         ):
-            with pytest.raises(RuntimeError, match="load file missing"):
-                self._bootstrap(skip_missing_load_exports=False)
+            self._bootstrap(skip_missing_load_exports=False)
 
     def test_explicit_analysis_dir_override(self):
         """``analysis_dir`` argument should be honored instead of the default."""
