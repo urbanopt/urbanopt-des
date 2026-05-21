@@ -25,9 +25,14 @@ class UrbanoptResultsIntegrationTest(unittest.TestCase):
     def setUp(self):
         self.data_dir = Path(__file__).parent / "data" / "three_building_5G"
 
-        # if the three"building_test output directory exists then delete it
-        if (self.data_dir / "three_building_test" / "output").exists():
-            shutil.rmtree(self.data_dir / "three_building_test" / "output")
+        # if the scenario output directory exists then delete it
+        if (self.data_dir / "three_building_test" / "run" / "baseline" / "output").exists():
+            shutil.rmtree(self.data_dir / "three_building_test" / "run" / "baseline" / "output")
+
+        # clean up any generated output directories in the modelica scenario folders
+        for output_dir in (self.data_dir / "three_building_test_des_agg").rglob("output"):
+            if output_dir.is_dir():
+                shutil.rmtree(output_dir)
 
         # delete the modelica_variables.json in any subfolder
         for path in (self.data_dir / "three_building_test_des_agg").rglob("modelica_variables.json"):
@@ -73,10 +78,11 @@ class UrbanoptResultsIntegrationTest(unittest.TestCase):
         uo_analysis.urbanopt.create_aggregations(uo_analysis.geojson.get_building_ids())
 
         uo_analysis.urbanopt.save_dataframes()  # save the URBANopt dataframes
-        self.assertTrue((self.data_dir / "three_building_test" / "output" / "loads_15min.csv").exists())
-        self.assertTrue((self.data_dir / "three_building_test" / "output" / "loads_60min.csv").exists())
-        self.assertTrue((self.data_dir / "three_building_test" / "output" / "power_15min.csv").exists())
-        self.assertTrue((self.data_dir / "three_building_test" / "output" / "power_60min.csv").exists())
+        scenario_out = self.data_dir / "three_building_test" / "run" / "baseline" / "output"
+        self.assertTrue((scenario_out / "loads_15min.csv").exists())
+        self.assertTrue((scenario_out / "loads_60min.csv").exists())
+        self.assertTrue((scenario_out / "power_15min.csv").exists())
+        self.assertTrue((scenario_out / "power_60min.csv").exists())
         uo_analysis.urbanopt.display_name = "Non-Connected"
 
         # add the analysis from the results search -- should only be one in this case
@@ -90,9 +96,9 @@ class UrbanoptResultsIntegrationTest(unittest.TestCase):
         # get the names of the modelica results
         modelica_key = next(iter(uo_analysis.modelica.keys()))
         self.assertTrue(modelica_key is not None)
-        # check if the variables were saved
-        results_path = self.data_dir / "three_building_test_des_agg" / "five_g_controlled_flow" / modelica_key
-        self.assertTrue((results_path / "modelica_variables.json").exists())
+        # check if the variables were saved (now in scenario_dir/output/)
+        modelica_scenario_out = self.data_dir / "three_building_test_des_agg" / "five_g_controlled_flow" / "output"
+        self.assertTrue((modelica_scenario_out / "modelica_variables.json").exists())
 
         # this test has an aggregation of the modelica results, so one building which lives in a
         # different geojson file (in the agg directory).
@@ -142,10 +148,11 @@ class UrbanoptResultsIntegrationTest(unittest.TestCase):
         buildings_df = uo_analysis.create_building_level_results()
         buildings_df.to_csv(uo_analysis.urbanopt.scenario_output_path / "building_metrics_annual.csv", index=True)
 
-        # The power_60min_with_buildings should exist in the same directory as
-        # the .mat file
+        # The power_60min_with_buildings should exist in the scenario output directory
         mat_path = modelica_results[modelica_key]["mat_path"]
-        power_60min_with_buildings = mat_path.parent / "power_60min_with_buildings.csv"
+        # OpenModelica: mat is in <scenario_dir>/<name>_results/, so scenario_dir is one level up
+        modelica_scenario_dir = mat_path.parent.parent if mat_path.parent.name.endswith("_results") else mat_path.parent
+        power_60min_with_buildings = modelica_scenario_dir / "output" / "power_60min_with_buildings.csv"
         self.assertTrue(power_60min_with_buildings.exists())
 
         # open the power_60min_with_buildings.csv file and check some of the columns

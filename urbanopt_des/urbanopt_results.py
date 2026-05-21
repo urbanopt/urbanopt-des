@@ -210,33 +210,33 @@ class URBANoptResults(ResultsBase):
         return self.grid_metrics_annual
 
     def save_dataframes(self) -> None:
-        """Save the data and data_15min dataframes to the outputs directory."""
-        self.data.to_csv(self.output_path / "power_60min.csv")
-        self.data_15min.to_csv(self.output_path / "power_15min.csv")
+        """Save the data and data_15min dataframes to the scenario output directory."""
+        self.data.to_csv(self.scenario_output_path / "power_60min.csv")
+        self.data_15min.to_csv(self.scenario_output_path / "power_15min.csv")
         if self.data_monthly is not None:
-            self.data_monthly.to_csv(self.output_path / "power_monthly.csv")
+            self.data_monthly.to_csv(self.scenario_output_path / "power_monthly.csv")
 
         if self.data_annual is not None:
-            self.data_annual.to_csv(self.output_path / "power_annual.csv")
+            self.data_annual.to_csv(self.scenario_output_path / "power_annual.csv")
 
         # loads
         if self.data_loads is not None:
-            self.data_loads.to_csv(self.output_path / "loads_60min.csv")
+            self.data_loads.to_csv(self.scenario_output_path / "loads_60min.csv")
 
         if self.data_loads_15min is not None:
-            self.data_loads_15min.to_csv(self.output_path / "loads_15min.csv")
+            self.data_loads_15min.to_csv(self.scenario_output_path / "loads_15min.csv")
 
         if self.data_loads_monthly is not None:
-            self.data_loads_monthly.to_csv(self.output_path / "loads_monthly.csv")
+            self.data_loads_monthly.to_csv(self.scenario_output_path / "loads_monthly.csv")
 
         if self.data_loads_annual is not None:
-            self.data_loads_annual.to_csv(self.output_path / "loads_annual.csv")
+            self.data_loads_annual.to_csv(self.scenario_output_path / "loads_annual.csv")
 
         if self.grid_metrics_daily is not None:
-            self.grid_metrics_daily.to_csv(self.output_path / "grid_metrics_daily.csv")
+            self.grid_metrics_daily.to_csv(self.scenario_output_path / "grid_metrics_daily.csv")
 
         if self.grid_metrics_annual is not None:
-            self.grid_metrics_annual.to_csv(self.output_path / "grid_metrics_annual.csv")
+            self.grid_metrics_annual.to_csv(self.scenario_output_path / "grid_metrics_annual.csv")
 
     def create_aggregations(self, building_names: list[str]) -> None:
         """Aggregate the results from all the buildings together to get the totals
