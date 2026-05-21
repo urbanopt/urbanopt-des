@@ -74,12 +74,24 @@ class ModelicaResults(ResultsBase, LoggingMixin):
         else:
             raise FileTypeError(f"Unsupported file type '{mat_filename.suffix}'. Expected '{MAT_FILE_EXTENSION}' or '{ZIP_FILE_EXTENSION}'")
 
+        # Determine the scenario directory:
+        # - Dymola: .mat file sits directly in the scenario dir
+        # - OpenModelica: .mat file sits in a <name>_results/ subdir one level below the scenario dir
+        if self.mat_filename.parent.name.endswith("_results"):
+            scenario_dir = self.mat_filename.parent.parent
+        else:
+            scenario_dir = self.mat_filename.parent
+
         # Output directory for post-processed results
-        self.path = output_path if output_path else self.mat_filename.parent
+        if output_path:
+            self.path = output_path
+        else:
+            self.path = scenario_dir / "output"
+            self.path.mkdir(parents=True, exist_ok=True)
         self.logger.debug(f"Output directory: {self.path}")
 
-        # Display name for this analysis
-        self.display_name = self.path.name
+        # Display name defaults to the scenario directory name
+        self.display_name = scenario_dir.name
 
         # Time-series data at different resolutions
         self.min_5: pd.DataFrame | None = None
