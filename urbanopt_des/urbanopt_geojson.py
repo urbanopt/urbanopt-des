@@ -14,10 +14,15 @@ class DESGeoJSON(UrbanOptGeoJson):
     def __init__(self, filename: Path, building_ids=None, skip_validation=False):
         super().__init__(filename, building_ids, skip_validation)
 
-    def create_aggregated_representation(self, building_names: list[str]) -> None:
+    def create_aggregated_representation(self, building_names: list[str]) -> dict:
         """Go through the GeoJSON file and if it is of type Building, then aggregate the characteristics.
 
-        #TODO: This is a work in progress and can more easily be accomplished with GeoPandas."""
+        Args:
+            building_names (list[str]): List of building names to aggregate.
+
+        Returns:
+            dict: Aggregated representation of the buildings.
+        """
 
         # pull out the project data, because it will need to be stitched into
         # the geojson file at the end
@@ -37,29 +42,34 @@ class DESGeoJSON(UrbanOptGeoJson):
         # add a new field to "enable/disable"
         gdf["enabled"] = True
         if len(building_names) == 1 and building_names[0] == "all":
+            # Only aggregate columns that are actually present in the GeoDataFrame
+            # so the dissolve does not fail on sparse GeoJSON feature files.
+            candidate_aggfunc = {
+                # "Footprint Area (m2)": "sum",
+                # "Footprint Area (ft2)": "sum",
+                "footprint_area": "sum",
+                "height": "mean",
+                "floor_area": "sum",
+                # "Gross Floor Area": "sum",
+                "gross_floor_area_m2": "sum",
+                "gross_floor_area_ft2": "sum",
+                # "Building Levels": "mean",
+                "number_of_stories": "mean",
+                "number_of_stories_above_ground": "mean",
+                "attic_type": "first",
+                "foundation_type": "first",
+                "number_of_bedrooms": "mean",
+                "number_of_residential_units": "mean",
+                "enabled": "first",
+                "id": "first",
+                "building_type": "first",
+            }
+            aggfunc = {k: v for k, v in candidate_aggfunc.items() if k in gdf.columns}
+
             # dissolve
             gdf_2 = gdf.dissolve(
                 by="type",
-                aggfunc={
-                    "footprint_area": "sum",
-                    # "Footprint Area (m2)": "sum",
-                    # "Footprint Area (ft2)": "sum",
-                    "height": "mean",
-                    "floor_area": "sum",
-                    # "Gross Floor Area": "sum",
-                    "gross_floor_area_m2": "sum",
-                    "gross_floor_area_ft2": "sum",
-                    "number_of_stories": "mean",
-                    "number_of_stories_above_ground": "mean",
-                    # "Building Levels": "mean",
-                    "attic_type": "first",
-                    "foundation_type": "first",
-                    "number_of_bedrooms": "mean",
-                    "number_of_residential_units": "mean",
-                    "enabled": "first",
-                    "id": "first",
-                    "building_type": "first",
-                },
+                aggfunc=aggfunc,
             )
 
             # splat the total_bounds into a box (total_bounds returns minx, miny, maxx, maxy)
