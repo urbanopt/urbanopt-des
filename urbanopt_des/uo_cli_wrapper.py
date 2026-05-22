@@ -386,7 +386,47 @@ class UOCliWrapper:
             raise Exception(f"No feature file found in {project_dir} to update weather settings")
 
     def enable_measures_in_mapper(self, mapper_file, measure_names):
-        """Simple string replacement method to enable measures"""
+        """Flip ``__SKIP__`` from ``true`` to ``false`` for the named measures.
+
+        Each entry in ``measure_names`` is matched against the canonical
+        ``OpenStudio::Extension.set_measure_argument(osw, '<measure>', '__SKIP__', true)``
+        line emitted by the URBANopt CLI mapper templates. When the line is
+        found, the value is replaced with ``false`` so the measure runs.
+
+        Args:
+            mapper_file (str or Path): The mapper file name (e.g. ``ClassProject.rb``)
+                or a path relative to ``project_path / "mappers"``. Absolute paths
+                are accepted and used as-is.
+            measure_names (list[str]): List of measure class names to enable.
+
+        Returns:
+            list[str]: The measures that were actually toggled in this file
+            (entries that were not found are silently skipped — the caller can
+            compare against ``measure_names`` to detect typos).
+
+        Raises:
+            FileNotFoundError: When the resolved mapper file does not exist.
+        """
+        mapper_path = Path(mapper_file)
+        if not mapper_path.is_absolute():
+            mapper_path = self.project_path / "mappers" / mapper_path
+
+        if not mapper_path.exists():
+            raise FileNotFoundError(f"Mapper file not found: {mapper_path}")
+
+        text = mapper_path.read_text(encoding="utf-8")
+
+        changed_measures = []
+        for measure in measure_names:
+            old = f"OpenStudio::Extension.set_measure_argument(osw, '{measure}', '__SKIP__', true)"
+            new = f"OpenStudio::Extension.set_measure_argument(osw, '{measure}', '__SKIP__', false)"
+            if old in text:
+                text = text.replace(old, new)
+                changed_measures.append(measure)
+
+        mapper_path.write_text(text, encoding="utf-8")
+        print(f"Enabled measures in {mapper_path.name}: {changed_measures}")
+        return changed_measures
 
     def copy_over_weather(self):
         """Copy over the weather file from the example project"""
@@ -400,3 +440,106 @@ class UOCliWrapper:
             dest = self.working_dir / self.uo_project / "weather" / file
             # print(f"copying weather {src / file} to {dest}")
             shutil.copy2(src / file, dest)
+
+    def copy_template_mappers(self, mapper_filenames):
+        """Copy one or more files from ``template_dir/mappers`` to the project's mappers dir.
+
+        Useful for patching in updated ``Baseline.rb``, ``base_workflow.osw``, or
+        other template overrides after a project has been created by the URBANopt
+        CLI. Files are overwritten if they already exist.
+
+        Args:
+            mapper_filenames (str or list[str]): Single filename or list of filenames
+                relative to ``template_dir / "mappers"``.
+
+        Returns:
+            list[Path]: The destination paths of the files that were copied.
+
+        Raises:
+            FileNotFoundError: When a source file does not exist in the template
+                mappers directory.
+        """
+        if isinstance(mapper_filenames, (str, Path)):
+            mapper_filenames = [mapper_filenames]
+
+        dest_mappers_dir = self.project_path / "mappers"
+        dest_mappers_dir.mkdir(parents=True, exist_ok=True)
+
+        copied = []
+        for name in mapper_filenames:
+            src = self.template_dir / "mappers" / name
+            if not src.exists():
+                raise FileNotFoundError(f"Template mapper not found: {src}")
+            dest = dest_mappers_dir / Path(name).name
+            shutil.copy2(src, dest)
+            copied.append(dest)
+        return copied
+
+    def bootstrap_project(
+        self,
+        feature_file,
+        new_project_name,
+        project_type="coincident",
+        num_parallel=None,
+        weather=None,
+        mappers_to_copy=None,
+    ):
+        """Run the common "set up a new URBANopt project" sequence.
+
+        This wraps the boilerplate that recurs throughout analysis
+        notebooks: create an example project of a given kind (coincident or
+        diverse), create scenarios from its feature file, run ``uo update`` to
+        produce a renamed project copy, optionally bump parallelism, copy the
+        weather files in, optionally override the weather location, and
+        optionally drop in template mapper overrides.
+
+        Args:
+            feature_file (str): The feature/GeoJSON file name (e.g.
+                ``"class_project_coincident.json"``) used by
+                :meth:`create_scenarios`.
+            new_project_name (str): Target project folder name passed to
+                :meth:`update_project_files` (e.g. ``"coincident"`` or ``"diverse"``).
+                The returned wrapper points at this new directory.
+            project_type (str): ``"coincident"`` (default) or ``"diverse"``.
+                Selects between :meth:`create_example_coincident_project` and
+                :meth:`create_example_diverse_project`.
+            num_parallel (int or None): If provided, passed to
+                :meth:`set_number_parallel`. ``None`` skips the call.
+            weather (tuple[str, str] or None): ``(epw_name, climate_zone)`` to
+                pass to :meth:`replace_weather_file_in_feature_and_mapper_file`.
+                ``None`` leaves the default project weather in place.
+            mappers_to_copy (list[str] or None): Optional list of mapper
+                filenames in ``template_dir/mappers`` to copy on top of the
+                generated project (e.g. ``["Baseline.rb", "base_workflow.osw"]``).
+
+        Returns:
+            UOCliWrapper: A wrapper pointing at ``new_project_name`` that is
+            ready to ``run`` / ``process_scenario``.
+
+        Raises:
+            ValueError: If ``project_type`` is not ``"coincident"`` or ``"diverse"``.
+        """
+        if project_type == "coincident":
+            self.create_example_coincident_project()
+        elif project_type == "diverse":
+            self.create_example_diverse_project()
+        else:
+            raise ValueError(f"project_type must be 'coincident' or 'diverse', got {project_type!r}")
+
+        self.create_scenarios(feature_file)
+
+        new_wrapper = self.update_project_files(new_project_name)
+
+        if num_parallel is not None:
+            new_wrapper.set_number_parallel(num_parallel)
+
+        new_wrapper.copy_over_weather()
+
+        if weather is not None:
+            epw_name, climate_zone = weather
+            new_wrapper.replace_weather_file_in_feature_and_mapper_file(epw_name, climate_zone)
+
+        if mappers_to_copy:
+            new_wrapper.copy_template_mappers(mappers_to_copy)
+
+        return new_wrapper
