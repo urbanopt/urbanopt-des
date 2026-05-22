@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -282,6 +283,263 @@ class TestUOCliWrapper(unittest.TestCase):
         assert wrapper.template_dir == template_dir
         assert wrapper.project_path == project_path
         assert wrapper.log_file == self.temp_path / f"{project_name}.log"
+
+
+class TestEnableMeasuresInMapper(unittest.TestCase):
+    """Cover the empty-stub-now-implemented enable_measures_in_mapper method."""
+
+    # Canonical line emitted by the URBANopt CLI mapper templates.
+    SKIP_TRUE = "OpenStudio::Extension.set_measure_argument(osw, '{measure}', '__SKIP__', true)"
+    SKIP_FALSE = "OpenStudio::Extension.set_measure_argument(osw, '{measure}', '__SKIP__', false)"
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_path = Path(self.temp_dir)
+        self.project_name = "test_project"
+        self.project_path = self.temp_path / self.project_name
+        (self.project_path / "mappers").mkdir(parents=True)
+        self.template_dir = Path(__file__).parent
+        self.wrapper = UOCliWrapper(self.temp_path, self.project_name, self.template_dir)
+
+    def tearDown(self):
+        if self.temp_path.exists():
+            shutil.rmtree(self.temp_path)
+
+    def _write_mapper(self, name: str, measures_skipped: list) -> Path:
+        """Drop a Ruby-ish mapper file at project_path/mappers/<name>."""
+        lines = ["# Test mapper file"]
+        for measure in measures_skipped:
+            lines.append(self.SKIP_TRUE.format(measure=measure))
+        path = self.project_path / "mappers" / name
+        path.write_text("\n".join(lines), encoding="utf-8")
+        return path
+
+    def test_flips_skip_true_to_false(self):
+        """When a measure's __SKIP__ is true, it should be flipped to false."""
+        measures = ["MeasureA", "MeasureB"]
+        mapper_path = self._write_mapper("ClassProject.rb", measures)
+
+        changed = self.wrapper.enable_measures_in_mapper("ClassProject.rb", measures)
+
+        text = mapper_path.read_text(encoding="utf-8")
+        assert sorted(changed) == sorted(measures)
+        for measure in measures:
+            assert self.SKIP_FALSE.format(measure=measure) in text
+            assert self.SKIP_TRUE.format(measure=measure) not in text
+
+    def test_skips_measures_not_present(self):
+        """Measures that aren't in the file should be silently skipped."""
+        self._write_mapper("ClassProject.rb", ["MeasureA"])
+
+        changed = self.wrapper.enable_measures_in_mapper("ClassProject.rb", ["MeasureA", "MeasureMissing"])
+
+        assert changed == ["MeasureA"]
+
+    def test_accepts_absolute_path(self):
+        """An absolute path argument should be used as-is, not joined to project_path."""
+        # Put the mapper somewhere outside the project_path/mappers tree.
+        alt_dir = self.temp_path / "alt_mappers"
+        alt_dir.mkdir()
+        mapper_path = alt_dir / "Other.rb"
+        mapper_path.write_text(self.SKIP_TRUE.format(measure="MeasureA"), encoding="utf-8")
+
+        changed = self.wrapper.enable_measures_in_mapper(mapper_path, ["MeasureA"])
+
+        assert changed == ["MeasureA"]
+        assert self.SKIP_FALSE.format(measure="MeasureA") in mapper_path.read_text()
+
+    def test_raises_when_mapper_missing(self):
+        """A clear FileNotFoundError beats a cryptic IOError."""
+        with pytest.raises(FileNotFoundError):
+            self.wrapper.enable_measures_in_mapper("DoesNotExist.rb", ["MeasureA"])
+
+    def test_empty_measure_list_no_changes(self):
+        """No measures means no work and no error."""
+        mapper_path = self._write_mapper("ClassProject.rb", ["MeasureA"])
+        before = mapper_path.read_text(encoding="utf-8")
+
+        changed = self.wrapper.enable_measures_in_mapper("ClassProject.rb", [])
+
+        assert changed == []
+        assert mapper_path.read_text(encoding="utf-8") == before
+
+
+class TestCopyTemplateMappers(unittest.TestCase):
+    """Exercise copy_template_mappers for both single-string and list inputs."""
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_path = Path(self.temp_dir)
+        self.template_dir = self.temp_path / "template"
+        (self.template_dir / "mappers").mkdir(parents=True)
+        self.project_name = "test_project"
+        (self.temp_path / self.project_name).mkdir()
+        self.wrapper = UOCliWrapper(self.temp_path, self.project_name, self.template_dir)
+
+    def tearDown(self):
+        if self.temp_path.exists():
+            shutil.rmtree(self.temp_path)
+
+    def _seed_template_mapper(self, name: str, contents: str) -> Path:
+        path = self.template_dir / "mappers" / name
+        path.write_text(contents, encoding="utf-8")
+        return path
+
+    def test_copies_single_string_name(self):
+        """A bare string is accepted just like a one-element list."""
+        self._seed_template_mapper("Baseline.rb", "# baseline contents")
+
+        copied = self.wrapper.copy_template_mappers("Baseline.rb")
+
+        assert len(copied) == 1
+        dest = self.wrapper.project_path / "mappers" / "Baseline.rb"
+        assert copied[0] == dest
+        assert dest.read_text(encoding="utf-8") == "# baseline contents"
+
+    def test_copies_list_of_names(self):
+        """Multiple files in one call land in the project's mappers directory."""
+        self._seed_template_mapper("Baseline.rb", "# baseline")
+        self._seed_template_mapper("base_workflow.osw", '{"steps": []}')
+
+        copied = self.wrapper.copy_template_mappers(["Baseline.rb", "base_workflow.osw"])
+
+        dest_dir = self.wrapper.project_path / "mappers"
+        assert {p.name for p in copied} == {"Baseline.rb", "base_workflow.osw"}
+        assert (dest_dir / "Baseline.rb").exists()
+        assert (dest_dir / "base_workflow.osw").exists()
+
+    def test_overwrites_existing_destination(self):
+        """If a file already exists in mappers/, it should be replaced."""
+        self._seed_template_mapper("Baseline.rb", "# NEW contents")
+        dest_dir = self.wrapper.project_path / "mappers"
+        dest_dir.mkdir()
+        existing = dest_dir / "Baseline.rb"
+        existing.write_text("# OLD contents", encoding="utf-8")
+
+        self.wrapper.copy_template_mappers("Baseline.rb")
+
+        assert existing.read_text(encoding="utf-8") == "# NEW contents"
+
+    def test_creates_mappers_dir_if_missing(self):
+        """``project_path / "mappers"`` should be created on demand."""
+        self._seed_template_mapper("Baseline.rb", "# baseline")
+        # No mappers/ directory under the project.
+        assert not (self.wrapper.project_path / "mappers").exists()
+
+        self.wrapper.copy_template_mappers("Baseline.rb")
+
+        assert (self.wrapper.project_path / "mappers" / "Baseline.rb").exists()
+
+    def test_raises_when_template_missing(self):
+        """A clear FileNotFoundError when a source file isn't in the template dir."""
+        with pytest.raises(FileNotFoundError):
+            self.wrapper.copy_template_mappers("does_not_exist.rb")
+
+
+class TestBootstrapProject(unittest.TestCase):
+    """Verify bootstrap_project orchestrates the right sequence of calls.
+
+    The underlying ``uo`` commands shell out, so we patch the methods that
+    invoke them and assert on the call sequence + arguments. This keeps the
+    test self-contained — no URBANopt CLI required.
+    """
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_path = Path(self.temp_dir)
+        self.template_dir = Path(__file__).parent
+        self.wrapper = UOCliWrapper(self.temp_path, "pre_project", self.template_dir)
+
+    def tearDown(self):
+        if self.temp_path.exists():
+            shutil.rmtree(self.temp_path)
+
+    def _patched_wrapper(self):
+        """Build a child wrapper whose post-update methods are all mocked."""
+        new_wrapper = UOCliWrapper(self.temp_path, "coincident", self.template_dir)
+        new_wrapper.set_number_parallel = mock.MagicMock()
+        new_wrapper.copy_over_weather = mock.MagicMock()
+        new_wrapper.replace_weather_file_in_feature_and_mapper_file = mock.MagicMock()
+        new_wrapper.copy_template_mappers = mock.MagicMock()
+        return new_wrapper
+
+    def test_coincident_full_flow_invokes_each_step(self):
+        new_wrapper = self._patched_wrapper()
+
+        with (
+            mock.patch.object(self.wrapper, "create_example_coincident_project") as create_ex,
+            mock.patch.object(self.wrapper, "create_example_diverse_project") as create_div,
+            mock.patch.object(self.wrapper, "create_scenarios") as create_scen,
+            mock.patch.object(self.wrapper, "update_project_files", return_value=new_wrapper) as update,
+        ):
+            result = self.wrapper.bootstrap_project(
+                feature_file="class_project_coincident.json",
+                new_project_name="coincident",
+                project_type="coincident",
+                num_parallel=4,
+                weather=("USA_FL_MacDill.AFB.747880_TMY3", "1A"),
+                mappers_to_copy=["Baseline.rb", "base_workflow.osw"],
+            )
+
+        # Coincident path uses the coincident example creator only.
+        create_ex.assert_called_once_with()
+        create_div.assert_not_called()
+        create_scen.assert_called_once_with("class_project_coincident.json")
+        update.assert_called_once_with("coincident")
+
+        # Steps below should run on the *new* wrapper returned by update.
+        new_wrapper.set_number_parallel.assert_called_once_with(4)
+        new_wrapper.copy_over_weather.assert_called_once_with()
+        new_wrapper.replace_weather_file_in_feature_and_mapper_file.assert_called_once_with("USA_FL_MacDill.AFB.747880_TMY3", "1A")
+        new_wrapper.copy_template_mappers.assert_called_once_with(["Baseline.rb", "base_workflow.osw"])
+
+        assert result is new_wrapper
+
+    def test_diverse_project_type(self):
+        new_wrapper = self._patched_wrapper()
+
+        with (
+            mock.patch.object(self.wrapper, "create_example_coincident_project") as create_ex,
+            mock.patch.object(self.wrapper, "create_example_diverse_project") as create_div,
+            mock.patch.object(self.wrapper, "create_scenarios"),
+            mock.patch.object(self.wrapper, "update_project_files", return_value=new_wrapper),
+        ):
+            self.wrapper.bootstrap_project(
+                feature_file="class_project_diverse.json",
+                new_project_name="diverse",
+                project_type="diverse",
+            )
+
+        create_ex.assert_not_called()
+        create_div.assert_called_once_with()
+
+    def test_skips_optional_steps_when_omitted(self):
+        """num_parallel=None, weather=None, mappers_to_copy=None each skip their step."""
+        new_wrapper = self._patched_wrapper()
+
+        with (
+            mock.patch.object(self.wrapper, "create_example_coincident_project"),
+            mock.patch.object(self.wrapper, "create_scenarios"),
+            mock.patch.object(self.wrapper, "update_project_files", return_value=new_wrapper),
+        ):
+            self.wrapper.bootstrap_project(
+                feature_file="feature.json",
+                new_project_name="coincident",
+            )
+
+        # copy_over_weather is unconditional; the other three are conditional.
+        new_wrapper.copy_over_weather.assert_called_once_with()
+        new_wrapper.set_number_parallel.assert_not_called()
+        new_wrapper.replace_weather_file_in_feature_and_mapper_file.assert_not_called()
+        new_wrapper.copy_template_mappers.assert_not_called()
+
+    def test_invalid_project_type_raises(self):
+        with pytest.raises(ValueError, match="project_type must be"):
+            self.wrapper.bootstrap_project(
+                feature_file="feature.json",
+                new_project_name="coincident",
+                project_type="some_other_thing",
+            )
 
 
 if __name__ == "__main__":

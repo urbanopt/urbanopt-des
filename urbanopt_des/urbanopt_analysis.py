@@ -7,6 +7,7 @@ import copy
 import datetime
 import json
 import math
+import warnings
 from pathlib import Path
 
 import pandas as pd
@@ -1379,3 +1380,171 @@ class URBANoptAnalysis:
             }
 
         return results, bad_or_empty_results
+
+    @classmethod
+    def resolve_uo_project_paths(
+        cls,
+        input_path: Path,
+        scenario_name: str | None = None,
+        geojson_glob: str = "class_project*.json",
+    ) -> dict:
+        """Resolve a flexible "input path" into a normalized set of URBANopt paths.
+
+        Notebooks routinely take either a URBANopt project directory
+        (which contains a ``run/`` subfolder) **or** a scenario directory
+        directly under ``run/`` and need to recover the full set of associated
+        paths from that single input. This helper centralizes that logic.
+
+        Args:
+            input_path (Path): Either a URBANopt project directory (contains
+                ``run/``) or a scenario directory immediately under ``run/``.
+                Symlinks are resolved.
+            scenario_name (str or None): Optional explicit scenario name. When
+                ``None``, picks ``baseline_scenario`` if it exists, otherwise the
+                first alphabetically sorted directory under ``run/``. When
+                ``input_path`` is itself a scenario directory, this argument is
+                ignored.
+            geojson_glob (str): Glob (relative to ``uo_project_dir``) to use when
+                auto-discovering the project's feature GeoJSON. Defaults to
+                ``"class_project*.json"`` to match the URBANopt class projects. If
+                no match is found the glob falls back to ``*.json`` so a
+                custom-named feature file is still picked up.
+
+        Returns:
+            dict: A dictionary with the resolved paths and scenario name:
+
+                * ``uo_project_dir`` (Path): The URBANopt project directory.
+                * ``run_dir`` (Path): ``uo_project_dir / "run"``.
+                * ``scenario_name`` (str): The resolved scenario name.
+                * ``scenario_results_dir`` (Path): ``run_dir / scenario_name``.
+                * ``geojson_path`` (Path): The auto-discovered feature GeoJSON.
+                * ``results_summary_dir`` (Path): Scenario-level summary directory
+                  (``scenario_results_dir / "_results_summary"``). Created on
+                  return so plots can be written to it directly.
+
+        Raises:
+            FileNotFoundError: When required paths or files cannot be found.
+            ValueError: When ``input_path`` is neither a project directory nor a
+                scenario directory under ``run/``.
+        """
+        input_path = Path(input_path).expanduser().resolve()
+        if not input_path.exists():
+            raise FileNotFoundError(f"Input path does not exist: {input_path}")
+
+        if (input_path / "run").exists():
+            uo_project_dir = input_path
+            run_dir = uo_project_dir / "run"
+        elif input_path.parent.name == "run":
+            uo_project_dir = input_path.parent.parent
+            run_dir = uo_project_dir / "run"
+            scenario_name = input_path.name
+        else:
+            raise ValueError("Input path must be a URBANopt project dir (contains run/) or a scenario dir under run/.")
+
+        if not run_dir.exists():
+            raise FileNotFoundError(f"Run directory not found: {run_dir}")
+
+        if scenario_name is None:
+            if (run_dir / "baseline_scenario").exists():
+                scenario_name = "baseline_scenario"
+            else:
+                scenario_dirs = sorted(p for p in run_dir.iterdir() if p.is_dir())
+                if not scenario_dirs:
+                    raise FileNotFoundError(f"No scenario directories found in: {run_dir}")
+                scenario_name = scenario_dirs[0].name
+
+        scenario_results_dir = run_dir / scenario_name
+        if not scenario_results_dir.exists():
+            raise FileNotFoundError(f"Scenario directory not found: {scenario_results_dir}")
+
+        # Auto-discover a project geojson in the project directory.
+        geojson_candidates = sorted(uo_project_dir.glob(geojson_glob))
+        if not geojson_candidates:
+            geojson_candidates = sorted(uo_project_dir.glob("*.json"))
+        if not geojson_candidates:
+            raise FileNotFoundError(f"No project GeoJSON found in: {uo_project_dir}")
+
+        geojson_path = geojson_candidates[0]
+
+        results_summary_dir = scenario_results_dir / "_results_summary"
+        results_summary_dir.mkdir(parents=True, exist_ok=True)
+
+        return {
+            "uo_project_dir": uo_project_dir,
+            "run_dir": run_dir,
+            "scenario_name": scenario_name,
+            "scenario_results_dir": scenario_results_dir,
+            "geojson_path": geojson_path,
+            "results_summary_dir": results_summary_dir,
+        }
+
+    @classmethod
+    def bootstrap_from_uo_results(
+        cls,
+        input_path: Path,
+        scenario_name: str | None = None,
+        year_of_data: int = 2017,
+        display_name: str = "Non-Connected",
+        skip_missing_load_exports: bool = True,
+        analysis_dir: Path | None = None,
+    ) -> tuple:
+        """Create a ready-to-use :class:`URBANoptAnalysis` from a URBANopt scenario.
+
+        This bundles the path-resolution step (:meth:`resolve_uo_project_paths`)
+        with the post-process bootstrap that recurs at the top of every
+        notebook: instantiate the analysis, attach URBANopt results, process
+        building load exports (tolerating missing exports), create aggregations,
+        save dataframes, and set a default display name.
+
+        Args:
+            input_path (Path): Either a URBANopt project directory or a scenario
+                directory under ``run/``. Forwarded to
+                :meth:`resolve_uo_project_paths`.
+            scenario_name (str or None): Optional explicit scenario name.
+            year_of_data (int): Year of the simulated data (used for time index
+                construction). Defaults to ``2017``.
+            display_name (str): Display name to assign to ``uo_analysis.urbanopt``.
+                Defaults to ``"Non-Connected"``.
+            skip_missing_load_exports (bool): If True (default), catch missing
+                building load export errors from
+                :meth:`URBANoptResults.process_load_results` and emit a
+                ``warnings.warn`` rather than raising — letting downstream
+                aggregation continue with whatever building data is present.
+            analysis_dir (Path or None): Override for the analysis directory
+                passed to ``URBANoptAnalysis.__init__``. Defaults to the
+                resolved ``uo_project_dir``.
+
+        Returns:
+            tuple[URBANoptAnalysis, dict]: ``(uo_analysis, paths)`` where
+            ``paths`` is the dictionary returned by
+            :meth:`resolve_uo_project_paths`. Keeping the paths around lets
+            callers write plots and summary CSVs without re-deriving them.
+        """
+
+        paths = cls.resolve_uo_project_paths(input_path, scenario_name=scenario_name)
+
+        uo_analysis = cls(
+            paths["geojson_path"],
+            analysis_dir if analysis_dir is not None else paths["uo_project_dir"],
+            year_of_data,
+        )
+        uo_analysis.add_urbanopt_results(paths["uo_project_dir"], paths["scenario_name"])
+
+        building_ids = uo_analysis.geojson.get_building_ids()
+
+        if skip_missing_load_exports:
+            try:
+                uo_analysis.urbanopt.process_load_results(building_ids)
+            except Exception as exc:
+                warnings.warn(
+                    f"Skipping missing building load exports for now: {exc}",
+                    RuntimeWarning,
+                )
+        else:
+            uo_analysis.urbanopt.process_load_results(building_ids)
+
+        uo_analysis.urbanopt.create_aggregations(building_ids)
+        uo_analysis.urbanopt.save_dataframes()
+        uo_analysis.urbanopt.display_name = display_name
+
+        return uo_analysis, paths
