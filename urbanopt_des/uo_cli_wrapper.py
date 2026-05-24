@@ -490,8 +490,8 @@ class UOCliWrapper:
         notebooks: create an example project of a given kind (coincident or
         diverse), create scenarios from its feature file, run ``uo update`` to
         produce a renamed project copy, optionally bump parallelism, copy the
-        weather files in, optionally override the weather location, and
-        optionally drop in template mapper overrides.
+        weather files in, optionally drop in template mapper overrides, and
+        optionally override the weather location.
 
         Args:
             feature_file (str): The feature/GeoJSON file name (e.g.
@@ -535,11 +535,11 @@ class UOCliWrapper:
 
         new_wrapper.copy_over_weather()
 
+        if mappers_to_copy:
+            new_wrapper.copy_template_mappers(mappers_to_copy)
+
         if weather is not None:
             epw_name, climate_zone = weather
             new_wrapper.replace_weather_file_in_feature_and_mapper_file(epw_name, climate_zone)
-
-        if mappers_to_copy:
-            new_wrapper.copy_template_mappers(mappers_to_copy)
 
         return new_wrapper
