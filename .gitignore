@@ -10,6 +10,7 @@
 __pychache__/
 
 node_modules
+dist
 
 # config files
 data/templates/uo_base/.bundle
