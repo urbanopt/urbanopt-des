@@ -175,6 +175,47 @@ class UrbanoptResultsIntegrationTest(unittest.TestCase):
         uo_analysis.save_dataframes(["grid_summary", "end_use_summary"])
 
         buildings_df = uo_analysis.create_building_level_results()
+        stories_row = buildings_df[buildings_df["Metric"] == "Number of Stories"]
+        self.assertEqual(len(stories_row), 1)
+        self.assertEqual(stories_row["11"].iloc[0], 2)
+        self.assertEqual(stories_row["14"].iloc[0], 1)
+        self.assertEqual(stories_row["26"].iloc[0], 5)
+
+        metrics_in_order = buildings_df["Metric"].to_list()
+        units_in_order = buildings_df["Unit"].to_list()
+        stories_idx = next(i for i, (m, u) in enumerate(zip(metrics_in_order, units_in_order)) if m == "Number of Stories" and u == "count")
+        self.assertEqual(metrics_in_order[stories_idx + 1], "Footprint Area")
+        self.assertEqual(units_in_order[stories_idx + 1], "m2")
+        self.assertEqual(metrics_in_order[stories_idx + 2], "Footprint Area")
+        self.assertEqual(units_in_order[stories_idx + 2], "ft2")
+        self.assertEqual(metrics_in_order[stories_idx + 3], "Footprint Perimeter")
+        self.assertEqual(units_in_order[stories_idx + 3], "m")
+        self.assertEqual(metrics_in_order[stories_idx + 4], "Footprint Perimeter")
+        self.assertEqual(units_in_order[stories_idx + 4], "ft")
+
+        footprint_area_row = buildings_df[(buildings_df["Metric"] == "Footprint Area") & (buildings_df["Unit"] == "m2")]
+        self.assertEqual(len(footprint_area_row), 1)
+        self.assertGreater(float(footprint_area_row["11"].iloc[0]), 0)
+
+        footprint_area_row_ft2 = buildings_df[(buildings_df["Metric"] == "Footprint Area") & (buildings_df["Unit"] == "ft2")]
+        self.assertEqual(len(footprint_area_row_ft2), 1)
+        self.assertAlmostEqual(
+            float(footprint_area_row_ft2["11"].iloc[0]),
+            float(footprint_area_row["11"].iloc[0]) * 10.76,
+            places=3,
+        )
+
+        footprint_perimeter_row = buildings_df[(buildings_df["Metric"] == "Footprint Perimeter") & (buildings_df["Unit"] == "m")]
+        self.assertEqual(len(footprint_perimeter_row), 1)
+
+        footprint_perimeter_row_ft = buildings_df[(buildings_df["Metric"] == "Footprint Perimeter") & (buildings_df["Unit"] == "ft")]
+        self.assertEqual(len(footprint_perimeter_row_ft), 1)
+        self.assertAlmostEqual(
+            float(footprint_perimeter_row_ft["11"].iloc[0]),
+            float(footprint_perimeter_row["11"].iloc[0]) * 3.28084,
+            places=3,
+        )
+
         buildings_df.to_csv(uo_analysis.urbanopt.scenario_output_path / "building_metrics_annual.csv", index=True)
 
         # The power_60min_with_buildings should exist in the scenario output directory
