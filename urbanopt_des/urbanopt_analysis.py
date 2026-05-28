@@ -644,6 +644,26 @@ class URBANoptAnalysis:
                 "Metric": "Building Type",
                 "Unit": "",
             },
+            "number_of_stories": {
+                "Metric": "Number of Stories",
+                "Unit": "count",
+            },
+            "footprint_area_m2": {
+                "Metric": "Footprint Area",
+                "Unit": "m2",
+            },
+            "footprint_area_ft2": {
+                "Metric": "Footprint Area",
+                "Unit": "ft2",
+            },
+            "footprint_perimeter_m": {
+                "Metric": "Footprint Perimeter",
+                "Unit": "m",
+            },
+            "footprint_perimeter_ft": {
+                "Metric": "Footprint Perimeter",
+                "Unit": "ft",
+            },
             "total_natural_gas": {
                 "Metric": "Total Natural Gas",
                 "Unit": "Wh",
@@ -679,6 +699,19 @@ class URBANoptAnalysis:
             # assume property type is in "Property Type" and that the modeling type is in "building_type"
             data["property_type"][building_id] = geojson_data.get("Property Type", "Unknown [not in GeoJSON Property Type]")
             data["building_type"][building_id] = geojson_data.get("building_type", "Unknown [not in GeoJSON building_type]")
+            data["number_of_stories"][building_id] = geojson_data.get(
+                "number_of_stories",
+                geojson_data.get(
+                    "number_of_stories_above_ground",
+                    geojson_data.get(
+                        "Number of Stories",
+                        geojson_data.get(
+                            "Number of Stories Above Grade",
+                            "Unknown [not in GeoJSON number_of_stories]",
+                        ),
+                    ),
+                ),
+            )
 
             data["total_natural_gas"][building_id] = float(self.urbanopt.data_annual[f"NaturalGas:Facility Building {building_id}"].iloc[0])
             data["total_electricity"][building_id] = float(
@@ -690,6 +723,51 @@ class URBANoptAnalysis:
             floor_area_sqft = float(self.urbanopt.building_characteristics[building_id]["program"]["floor_area_sqft"])
             data["gross_floor_area"][building_id] = floor_area_sqft / 10.76
             data["gross_floor_area_ft2"][building_id] = floor_area_sqft
+
+            # Prefer explicit SI keys; otherwise convert legacy IP values to SI.
+            footprint_area_m2 = geojson_data.get("Footprint Area (m2)", geojson_data.get("footprint_area_m2"))
+            footprint_area_ft2 = None
+            if footprint_area_m2 is None:
+                footprint_area_ft2 = geojson_data.get(
+                    "Footprint Area (ft2)",
+                    geojson_data.get(
+                        "footprint_area_ft2",
+                        geojson_data.get("Footprint Area", geojson_data.get("footprint_area")),
+                    ),
+                )
+            if footprint_area_m2 is not None:
+                footprint_area_m2 = float(footprint_area_m2)
+                footprint_area_ft2 = footprint_area_m2 * 10.76
+            elif footprint_area_ft2 is not None:
+                footprint_area_ft2 = float(footprint_area_ft2)
+                footprint_area_m2 = footprint_area_ft2 / 10.76
+            else:
+                footprint_area_m2 = 0.0
+                footprint_area_ft2 = 0.0
+            data["footprint_area_m2"][building_id] = footprint_area_m2
+            data["footprint_area_ft2"][building_id] = footprint_area_ft2
+
+            footprint_perimeter_m = geojson_data.get("Footprint Perimeter (m)", geojson_data.get("footprint_perimeter_m"))
+            footprint_perimeter_ft = None
+            if footprint_perimeter_m is None:
+                footprint_perimeter_ft = geojson_data.get(
+                    "Footprint Perimeter (ft)",
+                    geojson_data.get(
+                        "footprint_perimeter_ft",
+                        geojson_data.get("Footprint Perimeter", geojson_data.get("footprint_perimeter")),
+                    ),
+                )
+            if footprint_perimeter_m is not None:
+                footprint_perimeter_m = float(footprint_perimeter_m)
+                footprint_perimeter_ft = footprint_perimeter_m * 3.28084
+            elif footprint_perimeter_ft is not None:
+                footprint_perimeter_ft = float(footprint_perimeter_ft)
+                footprint_perimeter_m = footprint_perimeter_ft / 3.28084
+            else:
+                footprint_perimeter_m = 0.0
+                footprint_perimeter_ft = 0.0
+            data["footprint_perimeter_m"][building_id] = footprint_perimeter_m
+            data["footprint_perimeter_ft"][building_id] = footprint_perimeter_ft
 
             # calculate the EUI
             data["total_site_eui"][building_id] = (data["total_energy"][building_id] * 0.001) / data["gross_floor_area"][building_id]
