@@ -143,16 +143,63 @@ class UOCliWrapper:
         else:
             print(f"Project {self.uo_project} already exists, skipping creation")
 
+    def _project_scoped_path(self, file_path):
+        """Return a CLI-ready path scoped to project when possible.
+
+        Relative paths are interpreted as inside ``self.uo_project``.
+        Absolute paths are passed through unchanged.
+        """
+        path_obj = Path(file_path)
+        if path_obj.is_absolute():
+            return str(path_obj)
+
+        return f"{self.uo_project}/{path_obj.as_posix()}"
+
     def create_scenarios(self, feature_file):
         """Create a scenario file for each mapper file"""
-        self._run_command(f"uo create -s {self.uo_project}/{feature_file}")
+        scoped_feature_path = self._project_scoped_path(feature_file)
+        self._run_command(f"uo create -s {scoped_feature_path}")
+
+    def install_python(self):
+        """Run uo install_python."""
+        self._run_command("uo install_python")
+
+    def create_project_at_path(self, project_path, create_flags=None):
+        """Run uo create -p for an explicit project path.
+
+        Args:
+            project_path (str or Path): Path to the project directory to create.
+            create_flags (list[str] or None): Optional extra flags to append.
+                This can be used for installed-version-specific options such as
+                mixed residential/commercial project generation.
+        """
+        optional_flags = ""
+        if create_flags:
+            optional_flags = f" {' '.join(create_flags)}"
+        self._run_command(f"uo create -p {project_path}{optional_flags}")
+        cpu_count = os.cpu_count() or 1
+        self.set_number_parallel(max(1, cpu_count - 2), project_path=project_path)
+
+    def create_scenarios_at_path(self, geojson_path):
+        """Run uo create -s for an explicit GeoJSON path."""
+        self.create_scenarios(geojson_path)
+
+    def run_at_path(self, feature_path, scenario_path):
+        """Run uo run with explicit feature/scenario paths."""
+        self.run(feature_path, scenario_path)
+
+    def process_scenario_at_path(self, feature_path, scenario_path):
+        """Run uo process -d with explicit feature/scenario paths."""
+        self.process_scenario(feature_path, scenario_path)
 
     def create_reopt_scenario(self, feature_file, baseline_scenario):
         """Create a scenario file for REopt assumptions based on the baseline scenario"""
         self._run_command(f"uo create -f {self.uo_project}/{feature_file} -r {self.uo_project}/{baseline_scenario}")
 
     def run(self, feature_file, scenario_name):
-        self._run_command(f"uo run -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
+        scoped_feature_path = self._project_scoped_path(feature_file)
+        scoped_scenario_path = self._project_scoped_path(scenario_name)
+        self._run_command(f"uo run -f {scoped_feature_path} -s {scoped_scenario_path}")
 
     def update_project_files(self, new_project_name):
         """Run uo update command to create a new project and return a new UOCliWrapper for the new project.
@@ -192,15 +239,19 @@ class UOCliWrapper:
 
         return f" {' '.join(args)}"
 
-    def des_params(self, scenario_path, feature_path, sys_param_path):
+    def des_params(self, scenario_path, feature_path, sys_param_path, district_type=None):
         """Run uo des_params command.
 
         args:
             scenario_path (str): Path to scenario CSV.
             feature_path (str): Path to feature JSON.
             sys_param_path (str): Path/name for the system-parameter JSON file.
+            district_type (str): Optional district type, e.g. "5G".
         """
-        final_run_command = f"uo des_params --scenario {scenario_path} --feature {feature_path} --sys-param {sys_param_path}"
+        optional_args = self._build_des_optional_args(district_type=district_type)
+        final_run_command = (
+            f"uo des_params --scenario {scenario_path} --feature {feature_path} --sys-param {sys_param_path}{optional_args}"
+        )
         # print the current path
         print(f"Running command: {final_run_command}")
 
@@ -278,6 +329,50 @@ class UOCliWrapper:
             raise Exception("feature_path is required for des_create")
         self.des_create(sys_param_path, feature_path, des_name=des_name, overwrite=overwrite)
 
+    def des_create_from_sys_params(self, sys_param_path, des_name):
+        """Run uo des_create with only sys-param and des-name.
+
+        Some URBANopt CLI versions support this form without --feature.
+        """
+        final_run_command = f"uo des_create --sys-param {sys_param_path} --des-name {des_name}"
+        print(f"Running command: {final_run_command}")
+        self._run_command(final_run_command)
+
+    def from_scratch_workflow(
+        self,
+        project_path,
+        geojson_path,
+        feature_path,
+        scenario_path,
+        sys_param_path,
+        des_name,
+        district_type="5G",
+        create_flags=None,
+    ):
+        """Execute a from-scratch URBANopt command sequence.
+
+        The sequence is:
+            uo create -p
+            uo create -s
+            uo run
+            uo process -d
+            uo install_python
+            uo des_params
+            uo des_create
+        """
+        self.create_project_at_path(project_path, create_flags=create_flags)
+        self.create_scenarios_at_path(geojson_path)
+        self.run_at_path(feature_path, scenario_path)
+        self.process_scenario_at_path(feature_path, scenario_path)
+        self.install_python()
+        self.des_params(
+            scenario_path=scenario_path,
+            feature_path=feature_path,
+            sys_param_path=sys_param_path,
+            district_type=district_type,
+        )
+        self.des_create_from_sys_params(sys_param_path=sys_param_path, des_name=des_name)
+
     def info(self):
         print(f"Template path: {self.template_dir}")
         print(f"Working dir: {self.working_dir}")
@@ -287,7 +382,9 @@ class UOCliWrapper:
 
     def process_scenario(self, feature_file, scenario_name):
         # -d is for the default settings and needs to be used (most of the time)
-        self._run_command(f"uo process -d -f {self.uo_project}/{feature_file} -s {self.uo_project}/{scenario_name}")
+        scoped_feature_path = self._project_scoped_path(feature_file)
+        scoped_scenario_path = self._project_scoped_path(scenario_name)
+        self._run_command(f"uo process -d -f {scoped_feature_path} -s {scoped_scenario_path}")
 
     def process_reopt_scenario(self, feature_file, scenario_name, individual_features=False):
         # In UO, the -r flag is used for the aggregated load analysis, whereas
@@ -311,13 +408,20 @@ class UOCliWrapper:
                 self.working_dir / self.uo_project / "visualization" / "scenarioData.js",
             )
 
-    def set_number_parallel(self, num):
-        data = None
-        with open(self.working_dir / self.uo_project / "runner.conf") as f:
+    def set_number_parallel(self, num, project_path=None):
+        if project_path is None:
+            runner_conf_path = self.working_dir / self.uo_project / "runner.conf"
+        else:
+            runner_conf_path = Path(project_path) / "runner.conf"
+
+        if not runner_conf_path.exists():
+            return
+
+        with open(runner_conf_path) as f:
             data = json.load(f)
             data["num_parallel"] = num
 
-        with open(self.working_dir / self.uo_project / "runner.conf", "w") as f:
+        with open(runner_conf_path, "w") as f:
             json.dump(data, f, indent=2)
 
     def replace_weather_file_in_feature_and_mapper_file(self, weather_file_name, climate_zone):

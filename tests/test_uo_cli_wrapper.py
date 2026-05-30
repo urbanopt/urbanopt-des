@@ -185,6 +185,53 @@ class TestUOCliWrapper(unittest.TestCase):
         assert runner_conf_data_after["num_parallel"] == 16
         assert runner_conf_data_after["max_iterations"] == 10
 
+    def test_create_project_at_path_sets_runnerconf_to_n_minus_2(self):
+        """Test create_project_at_path updates runner.conf to CPU count minus two."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        runner_conf_path = project_path / "runner.conf"
+        with open(runner_conf_path, "w") as f:
+            json.dump({"num_parallel": 1, "other_setting": "value"}, f)
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+
+        with mock.patch("urbanopt_des.uo_cli_wrapper.os.cpu_count", return_value=10):
+            with mock.patch.object(wrapper, "_run_command") as run_cmd:
+                wrapper.create_project_at_path(project_path=project_path)
+
+        run_cmd.assert_called_once_with(f"uo create -p {project_path}")
+
+        with open(runner_conf_path) as f:
+            runner_conf_data_after = json.load(f)
+
+        assert runner_conf_data_after["num_parallel"] == 8
+        assert runner_conf_data_after["other_setting"] == "value"
+
+    def test_create_project_at_path_runnerconf_minimum_one(self):
+        """Test create_project_at_path never sets num_parallel below one."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        runner_conf_path = project_path / "runner.conf"
+        with open(runner_conf_path, "w") as f:
+            json.dump({"num_parallel": 4}, f)
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+
+        with mock.patch("urbanopt_des.uo_cli_wrapper.os.cpu_count", return_value=2):
+            with mock.patch.object(wrapper, "_run_command") as run_cmd:
+                wrapper.create_project_at_path(project_path=project_path)
+
+        run_cmd.assert_called_once_with(f"uo create -p {project_path}")
+
+        with open(runner_conf_path) as f:
+            runner_conf_data_after = json.load(f)
+
+        assert runner_conf_data_after["num_parallel"] == 1
+
     def test_des_params_command(self):
         """Test des_params executes uo des_params command."""
         project_name = "test_project"

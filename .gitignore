@@ -11,6 +11,7 @@ __pychache__/
 
 node_modules
 dist
+tests/output
 
 # config files
 data/templates/uo_base/.bundle
