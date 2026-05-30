@@ -66,10 +66,7 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
             f"uo run -f {feature_path} -s {scenario_path}",
             f"uo process -d -f {feature_path} -s {scenario_path}",
             "uo install_python",
-            (
-                f"uo des_params --scenario {scenario_path} --feature {feature_path} "
-                f"--sys-param {sys_param_path} --district-type 5G"
-            ),
+            (f"uo des_params --scenario {scenario_path} --feature {feature_path} --sys-param {sys_param_path} --district-type 5G"),
             f"uo des_create --sys-param {sys_param_path} --feature {feature_path} --des-name {des_name}",
         ]
 
@@ -134,7 +131,7 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
             handoff = json.load(f)
 
         temp_path = Path(handoff["temp_path"])
-        project_path = Path(handoff["project_path"])
+        Path(handoff["project_path"])
         feature_path = Path(handoff["feature_path"])
         scenario_path = Path(handoff["scenario_path"])
         sys_param_path = Path(handoff["sys_param_path"])

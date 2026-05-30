@@ -249,9 +249,7 @@ class UOCliWrapper:
             district_type (str): Optional district type, e.g. "5G".
         """
         optional_args = self._build_des_optional_args(district_type=district_type)
-        final_run_command = (
-            f"uo des_params --scenario {scenario_path} --feature {feature_path} --sys-param {sys_param_path}{optional_args}"
-        )
+        final_run_command = f"uo des_params --scenario {scenario_path} --feature {feature_path} --sys-param {sys_param_path}{optional_args}"
         # print the current path
         print(f"Running command: {final_run_command}")
 

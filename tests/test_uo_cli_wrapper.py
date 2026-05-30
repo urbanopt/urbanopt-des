@@ -197,9 +197,11 @@ class TestUOCliWrapper(unittest.TestCase):
 
         wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
 
-        with mock.patch("urbanopt_des.uo_cli_wrapper.os.cpu_count", return_value=10):
-            with mock.patch.object(wrapper, "_run_command") as run_cmd:
-                wrapper.create_project_at_path(project_path=project_path)
+        with (
+            mock.patch("urbanopt_des.uo_cli_wrapper.os.cpu_count", return_value=10),
+            mock.patch.object(wrapper, "_run_command") as run_cmd,
+        ):
+            wrapper.create_project_at_path(project_path=project_path)
 
         run_cmd.assert_called_once_with(f"uo create -p {project_path}")
 
@@ -221,9 +223,11 @@ class TestUOCliWrapper(unittest.TestCase):
 
         wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
 
-        with mock.patch("urbanopt_des.uo_cli_wrapper.os.cpu_count", return_value=2):
-            with mock.patch.object(wrapper, "_run_command") as run_cmd:
-                wrapper.create_project_at_path(project_path=project_path)
+        with (
+            mock.patch("urbanopt_des.uo_cli_wrapper.os.cpu_count", return_value=2),
+            mock.patch.object(wrapper, "_run_command") as run_cmd,
+        ):
+            wrapper.create_project_at_path(project_path=project_path)
 
         run_cmd.assert_called_once_with(f"uo create -p {project_path}")
 
