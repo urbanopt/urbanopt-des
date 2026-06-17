@@ -99,6 +99,12 @@ class UOCliWrapper:
                 )
                 new_env["RUBYLIB"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 new_env["RUBY_DLL_PATH"] = f"{self.uo_directory}/OpenStudio/Ruby"
+                workspace_root = Path(__file__).resolve().parents[2]
+                translator_source = workspace_root.parent / "geojson-modelica-translator"
+                if translator_source.exists():
+                    new_env["PYTHONPATH"] = (
+                        f"{translator_source}:{new_env['PYTHONPATH']}" if new_env.get("PYTHONPATH") else str(translator_source)
+                    )
                 # For REopt
                 if os.name != "nt":  # noqa: SIM102
                     # for some reason, this doesn't work on windows, need to test, this should not cause
