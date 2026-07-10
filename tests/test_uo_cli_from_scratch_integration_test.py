@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 import shutil
 import unittest
 from pathlib import Path
@@ -20,6 +21,9 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
     pruned_feature_ids = {"10", "12"}
     expected_simulated_feature_ids = {str(i) for i in range(1, 14)} - pruned_feature_ids
     des_building_limit = 3
+    # there are 11 building (after removing the two slow ones), use the below for a complete test, which will
+    # be very slow.
+    # des_building_limit = 11
 
     output_root = Path(__file__).parent / "output" / "from_scratch_workflow"
     shared_workspace = output_root / "shared_workspace"
@@ -274,9 +278,11 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
         fifth_generation = sys_params["district_system"]["fifth_generation"]
         building_flow_sum = sum(building["fifth_gen_ets_parameters"]["ets_pump_flow_rate"] for building in sys_params["buildings"])
         assert all(building["fifth_gen_ets_parameters"]["ets_pump_flow_rate"] > 0.0005 for building in sys_params["buildings"])
+        assert fifth_generation["no_central_plant"]["distribution_temperature"] == 18.3
         assert fifth_generation["central_pump_parameters"]["pump_flow_rate"] == round(building_flow_sum, 6)
         assert fifth_generation["horizontal_piping_parameters"]["hydraulic_diameter"] > 0.089
 
+        # for testing remove the GMT_MAX_BUILDINGS limit if set in the environment, but restore it after the test to avoid impacting other tests
         prev_max_buildings = os.environ.get("GMT_MAX_BUILDINGS")
         os.environ["GMT_MAX_BUILDINGS"] = str(self.des_building_limit)
         try:
@@ -310,8 +316,11 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
         district_model = des_name / "Districts" / "DistrictEnergySystem.mo"
         with open(district_model) as f:
             district_model_text = f.read()
-        num_limited_buildings = district_model_text.count("Begin Model Instance for TimeSerLoa_B")
-        assert num_limited_buildings == self.des_building_limit, "Expected exactly 3 TimeSeries building instances in district model"
+        limited_building_ids = re.findall(r"Begin Model Instance for (TimeSerLoa_B[^\n]+)", district_model_text)
+        num_limited_buildings = len(limited_building_ids)
+        assert num_limited_buildings == self.des_building_limit, (
+            f"Expected exactly {self.des_building_limit} TimeSeries building instances in district model"
+        )
         assert "connect(dis_" in district_model_text, "Expected no-plant district network connections"
         assert "TNoPlant_" in district_model_text, "Expected no-plant loop temperature source"
         assert "heaNoPlant_" in district_model_text, "Expected no-plant heating source component"
@@ -321,8 +330,8 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
         assert f"conPum.TMix[1:{num_limited_buildings}]" in district_model_text, (
             "Expected conPum TMix connection for no-plant 5G loop; missing link causes under-determined DES model"
         )
-        for building_index in range(1, num_limited_buildings + 1):
-            assert f"connect(TimeSerLoa_B{building_index}.QCoo_flow, conPum.QCoo_flow[{building_index}])" in district_model_text, (
+        for building_index, building_id in enumerate(limited_building_ids, start=1):
+            assert f"connect({building_id}.QCoo_flow, conPum.QCoo_flow[{building_index}])" in district_model_text, (
                 "Expected conPum QCoo_flow connection for no-plant 5G loop; missing link causes under-determined DES model"
             )
 
