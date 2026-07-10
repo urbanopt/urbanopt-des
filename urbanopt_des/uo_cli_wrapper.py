@@ -100,7 +100,7 @@ class UOCliWrapper:
                 new_env["RUBYLIB"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 new_env["RUBY_DLL_PATH"] = f"{self.uo_directory}/OpenStudio/Ruby"
                 workspace_root = Path(__file__).resolve().parents[2]
-                translator_source = workspace_root.parent / "geojson-modelica-translator"
+                translator_source = workspace_root / "geojson-modelica-translator"
                 if translator_source.exists():
                     new_env["PYTHONPATH"] = (
                         f"{translator_source}:{new_env['PYTHONPATH']}" if new_env.get("PYTHONPATH") else str(translator_source)
@@ -245,7 +245,7 @@ class UOCliWrapper:
 
         return f" {' '.join(args)}"
 
-    def des_params(self, scenario_path, feature_path, sys_param_path, district_type=None):
+    def des_params(self, scenario_path, feature_path, sys_param_path, district_type=None, overwrite=False):
         """Run uo des_params command.
 
         args:
@@ -253,9 +253,12 @@ class UOCliWrapper:
             feature_path (str): Path to feature JSON.
             sys_param_path (str): Path/name for the system-parameter JSON file.
             district_type (str): Optional district type, e.g. "5G".
+            overwrite (bool): If True, regenerate the sys-param file when it exists.
         """
         optional_args = self._build_des_optional_args(district_type=district_type)
+        overwrite_flag = " --overwrite" if overwrite else ""
         final_run_command = f"uo des_params --scenario {scenario_path} --feature {feature_path} --sys-param {sys_param_path}{optional_args}"
+        final_run_command = f"{final_run_command}{overwrite_flag}"
         # print the current path
         print(f"Running command: {final_run_command}")
 

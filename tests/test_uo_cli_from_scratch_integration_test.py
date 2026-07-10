@@ -19,6 +19,7 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
     # List of IDs to remove -- they can be a bit slow, saves 10-20 minutes of runtime.
     pruned_feature_ids = {"10", "12"}
     expected_simulated_feature_ids = {str(i) for i in range(1, 14)} - pruned_feature_ids
+    des_building_limit = 3
 
     output_root = Path(__file__).parent / "output" / "from_scratch_workflow"
     shared_workspace = output_root / "shared_workspace"
@@ -165,7 +166,7 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
         )
 
     @pytest.mark.integration
-    def test_01_from_scratch_workflow_run_phase(self):
+    def test_01_from_scratch_workflow_run_uo(self):
         """Run create/create_scenarios/run/process and verify run artifacts exist."""
         wrapper = UOCliWrapper(
             self.temp_path,
@@ -237,7 +238,7 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
         )
 
     @pytest.mark.integration
-    def test_02_from_scratch_workflow_des_step(self) -> None:
+    def test_02_from_scratch_workflow_des_create_model(self) -> None:
         """Run install_python through des_create; this test requires run-phase success."""
         if not self.run_phase_artifact.exists():
             self._bootstrap_run_phase_artifact()
@@ -265,9 +266,19 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
             feature_path=feature_path,
             sys_param_path=sys_param_path,
             district_type="5G",
+            overwrite=True,
         )
+
+        with open(sys_param_path) as f:
+            sys_params = json.load(f)
+        fifth_generation = sys_params["district_system"]["fifth_generation"]
+        building_flow_sum = sum(building["fifth_gen_ets_parameters"]["ets_pump_flow_rate"] for building in sys_params["buildings"])
+        assert all(building["fifth_gen_ets_parameters"]["ets_pump_flow_rate"] > 0.0005 for building in sys_params["buildings"])
+        assert fifth_generation["central_pump_parameters"]["pump_flow_rate"] == round(building_flow_sum, 6)
+        assert fifth_generation["horizontal_piping_parameters"]["hydraulic_diameter"] > 0.089
+
         prev_max_buildings = os.environ.get("GMT_MAX_BUILDINGS")
-        os.environ["GMT_MAX_BUILDINGS"] = "3"
+        os.environ["GMT_MAX_BUILDINGS"] = str(self.des_building_limit)
         try:
             if des_name.exists():
                 shutil.rmtree(des_name)
@@ -299,20 +310,30 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
         district_model = des_name / "Districts" / "DistrictEnergySystem.mo"
         with open(district_model) as f:
             district_model_text = f.read()
-        assert district_model_text.count("Begin Model Instance for TimeSerLoa_B") == 3, (
-            "Expected exactly 3 TimeSeries building instances in district model"
-        )
-        assert "conPum.TMix[1:datDes.nBui]" in district_model_text, (
+        num_limited_buildings = district_model_text.count("Begin Model Instance for TimeSerLoa_B")
+        assert num_limited_buildings == self.des_building_limit, "Expected exactly 3 TimeSeries building instances in district model"
+        assert "connect(dis_" in district_model_text, "Expected no-plant district network connections"
+        assert "TNoPlant_" in district_model_text, "Expected no-plant loop temperature source"
+        assert "heaNoPlant_" in district_model_text, "Expected no-plant heating source component"
+        assert "cooNoPlant_" in district_model_text, "Expected no-plant cooling sink component"
+        assert "allowFlowReversalBui = true" in district_model_text, "Expected standard 5G building flow reversal"
+        assert "allowFlowReversalBui = false" not in district_model_text, "No-plant support should not disable flow reversal"
+        assert f"conPum.TMix[1:{num_limited_buildings}]" in district_model_text, (
             "Expected conPum TMix connection for no-plant 5G loop; missing link causes under-determined DES model"
         )
+        for building_index in range(1, num_limited_buildings + 1):
+            assert f"connect(TimeSerLoa_B{building_index}.QCoo_flow, conPum.QCoo_flow[{building_index}])" in district_model_text, (
+                "Expected conPum QCoo_flow connection for no-plant 5G loop; missing link causes under-determined DES model"
+            )
 
     @pytest.mark.integration
-    def test_03_from_scratch_workflow_des_run_phase(self):
-        """Run des_run after des_create; this test requires post-run phase success."""
+    def test_03_from_scratch_workflow_des_run(self):
+        """Run des_run after des_create for winter and summer windows."""
         assert self.run_phase_artifact.exists(), "Prerequisite test_01_from_scratch_workflow_run_phase must pass first"
 
         # check if docker is running
-        assert ModelicaRunner.docker_configured, "Docker is not configured or running; required for des_run command"
+        modelica_runner = ModelicaRunner()
+        assert modelica_runner.docker_configured, "Docker is not configured or running; required for des_run command"
 
         with open(self.run_phase_artifact) as f:
             handoff = json.load(f)
@@ -327,9 +348,63 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
             auto_initialize_python=False,
         )
 
-        wrapper.run_des(des_name)
+        seconds_per_day = 24 * 60 * 60
+        live_results_dir = des_name / "des_model.Districts.DistrictEnergySystem_results"
+        archived_results_root = temp_path / "des_run_archives"
+        winter_results_dir = archived_results_root / "winter_week"
+        summer_results_dir = archived_results_root / "summer_week"
+
+        if archived_results_root.exists():
+            shutil.rmtree(archived_results_root)
+        archived_results_root.mkdir(parents=True, exist_ok=True)
+
+        for archived_results_dir in (winter_results_dir, summer_results_dir):
+            if archived_results_dir.exists():
+                shutil.rmtree(archived_results_dir)
+
+        step_size_seconds = 900
+
+        # Winter target window: first week of the year.
+        winter_start = 0
+        winter_stop = 7 * seconds_per_day
+        if live_results_dir.exists():
+            shutil.rmtree(live_results_dir)
+        wrapper.run_des(des_name, start_time=winter_start, stop_time=winter_stop, step_size=step_size_seconds)
+        assert live_results_dir.exists(), f"Expected live DES results folder missing: {live_results_dir}"
+        shutil.move(live_results_dir, winter_results_dir)
+
+        # Summer target window: one week starting at day 120.
+        summer_start = 120 * seconds_per_day
+        summer_stop = summer_start + (7 * seconds_per_day)
+        if live_results_dir.exists():
+            shutil.rmtree(live_results_dir)
+        wrapper.run_des(des_name, start_time=summer_start, stop_time=summer_stop, step_size=step_size_seconds)
+        assert live_results_dir.exists(), f"Expected live DES results folder missing: {live_results_dir}"
+        shutil.move(live_results_dir, summer_results_dir)
 
         with open(wrapper.log_file) as f:
             log_contents = f.read()
 
-        assert f"Running command: uo des_run --model {des_name}" in log_contents
+        assert (
+            f"Running command: uo des_run --model {des_name} --start-time {winter_start} --stop-time {winter_stop} --step-size {step_size_seconds}"
+            in log_contents
+        )
+
+        # check that a .mat file was created
+        legacy_mat_file = des_name / "Districts" / "DistrictEnergySystem.mat"
+        winter_results_mat_file = winter_results_dir / "des_model.Districts.DistrictEnergySystem_res.mat"
+        summer_results_mat_file = summer_results_dir / "des_model.Districts.DistrictEnergySystem_res.mat"
+        assert legacy_mat_file.exists() or summer_results_mat_file.exists(), (
+            "Expected .mat file not found in either legacy or archived summer results location: "
+            f"{legacy_mat_file} or {summer_results_mat_file}"
+        )
+        assert winter_results_mat_file.exists(), f"Expected winter archived .mat file not found: {winter_results_mat_file}"
+        assert summer_results_mat_file.exists(), f"Expected summer archived .mat file not found: {summer_results_mat_file}"
+
+        winter_stdout_log = winter_results_dir / "stdout.log"
+        summer_stdout_log = summer_results_dir / "stdout.log"
+        for stdout_log in (winter_stdout_log, summer_stdout_log):
+            assert stdout_log.exists(), f"Expected stdout log missing: {stdout_log}"
+            with open(stdout_log) as f:
+                stdout_text = f.read()
+            assert "Simulation execution failed" not in stdout_text, f"DES simulation failed according to archived stdout log: {stdout_log}"
