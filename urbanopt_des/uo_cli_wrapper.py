@@ -62,6 +62,42 @@ class UOCliWrapper:
             return []
         return list(gems_dir.glob("*/example_files/python_deps/python_config.json"))
 
+    def _command_environment(self):
+        new_env = os.environ.copy()
+        # These env vars come directly from the ~/.env_uo.sh file. Update if a new version is installed. The .env_uo.sh
+        # file is created by calling /Applications/URBANoptCLI_X.Y.Z/setup-env.sh
+        ruby_base_version = "3.2.0"
+        miniconda_base_version = "24.9.2-0"
+        uo_dir_name = Path(self.uo_directory).name
+
+        new_env["GEM_HOME"] = f"{self.uo_directory}/gems/ruby/{ruby_base_version}"
+        new_env["GEM_PATH"] = f"{self.uo_directory}/gems/ruby/{ruby_base_version}"
+        new_env["UO_GEMFILE_PATH"] = f"{self.uo_directory}/gems/Gemfile"
+        new_env["UO_BUNDLE_INSTALL_PATH"] = f"{self.uo_directory}/gems"
+        new_env["PATH"] = (
+            f"{self.uo_directory}/ruby/bin:{self.uo_directory}/gems/ruby/{ruby_base_version}/bin:{self.uo_directory}/gems/ruby/{ruby_base_version}/gems/{uo_dir_name}/example_files/python_deps/Miniconda-{miniconda_base_version}/bin:{os.environ['PATH']}"
+        )
+        new_env["RUBYLIB"] = f"{self.uo_directory}/OpenStudio/Ruby"
+        new_env["RUBY_DLL_PATH"] = f"{self.uo_directory}/OpenStudio/Ruby"
+        workspace_root = Path(__file__).resolve().parents[2]
+        translator_source = workspace_root / "geojson-modelica-translator"
+        if translator_source.exists():
+            new_env["PYTHONPATH"] = (
+                f"{translator_source}:{new_env['PYTHONPATH']}" if new_env.get("PYTHONPATH") else str(translator_source)
+            )
+        # For REopt
+        if os.name != "nt":  # noqa: SIM102
+            # for some reason, this doesn't work on windows, need to test, this should not cause
+            # an issue to simple set
+            if os.environ.get("GEM_DEVELOPER_KEY"):
+                new_env["GEM_DEVELOPER_KEY"] = os.environ["GEM_DEVELOPER_KEY"]
+
+        return new_env
+
+    def uo_command_available(self):
+        """Return True when the URBANopt CLI executable is available to wrapper commands."""
+        return shutil.which("uo", path=self._command_environment()["PATH"]) is not None
+
     def _bootstrap_python_if_needed(self):
         """Attempt to initialize URBANopt python paths if they are missing.
 
@@ -71,6 +107,9 @@ class UOCliWrapper:
             return
 
         if self._python_config_files():
+            return
+
+        if not self.uo_command_available():
             return
 
         UOCliWrapper._python_bootstrap_attempted = True
@@ -83,34 +122,7 @@ class UOCliWrapper:
             os.chdir(self.working_dir)
             with open(self.log_file, "a") as log:
                 log.write(f"Running command: {command}\n")
-                new_env = os.environ.copy()
-                # These env vars come directly from the ~/.env_uo.sh file. Update if a new version is installed. The .env_uo.sh
-                # file is created by calling /Applications/URBANoptCLI_X.Y.Z/setup-env.sh
-                ruby_base_version = "3.2.0"
-                miniconda_base_version = "24.9.2-0"
-                uo_dir_name = Path(self.uo_directory).name
-
-                new_env["GEM_HOME"] = f"{self.uo_directory}/gems/ruby/{ruby_base_version}"
-                new_env["GEM_PATH"] = f"{self.uo_directory}/gems/ruby/{ruby_base_version}"
-                new_env["UO_GEMFILE_PATH"] = f"{self.uo_directory}/gems/Gemfile"
-                new_env["UO_BUNDLE_INSTALL_PATH"] = f"{self.uo_directory}/gems"
-                new_env["PATH"] = (
-                    f"{self.uo_directory}/ruby/bin:{self.uo_directory}/gems/ruby/{ruby_base_version}/bin:{self.uo_directory}/gems/ruby/{ruby_base_version}/gems/{uo_dir_name}/example_files/python_deps/Miniconda-{miniconda_base_version}/bin:{os.environ['PATH']}"
-                )
-                new_env["RUBYLIB"] = f"{self.uo_directory}/OpenStudio/Ruby"
-                new_env["RUBY_DLL_PATH"] = f"{self.uo_directory}/OpenStudio/Ruby"
-                workspace_root = Path(__file__).resolve().parents[2]
-                translator_source = workspace_root / "geojson-modelica-translator"
-                if translator_source.exists():
-                    new_env["PYTHONPATH"] = (
-                        f"{translator_source}:{new_env['PYTHONPATH']}" if new_env.get("PYTHONPATH") else str(translator_source)
-                    )
-                # For REopt
-                if os.name != "nt":  # noqa: SIM102
-                    # for some reason, this doesn't work on windows, need to test, this should not cause
-                    # an issue to simple set
-                    if os.environ.get("GEM_DEVELOPER_KEY"):
-                        new_env["GEM_DEVELOPER_KEY"] = os.environ["GEM_DEVELOPER_KEY"]
+                new_env = self._command_environment()
                 result = subprocess.run(  # noqa: S602
                     command,
                     capture_output=True,

@@ -34,6 +34,14 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
         self.temp_path = self.shared_workspace
         self.temp_path.mkdir(parents=True, exist_ok=True)
         self.template_dir = Path(__file__).parent
+        self.wrapper = UOCliWrapper(
+            self.temp_path,
+            "scratch_project",
+            self.template_dir,
+            auto_initialize_python=False,
+        )
+        if not self.wrapper.uo_command_available():
+            self.skipTest("URBANopt CLI executable 'uo' is not installed on this runner")
         self._prune_feature_ids_from_project(self.temp_path, self.pruned_feature_ids)
         print(f"Test artifacts directory: {self.temp_path}")
 
@@ -121,13 +129,6 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
 
     def _bootstrap_run_phase_artifact(self):
         """Generate run-phase handoff artifact when tests are run out of order."""
-        wrapper = UOCliWrapper(
-            self.temp_path,
-            "scratch_project",
-            self.template_dir,
-            auto_initialize_python=False,
-        )
-
         project_path, geojson_path, feature_path, scenario_path, sys_param_path, des_name = self._project_paths(self.temp_path)
 
         if self._run_phase_complete(project_path):
@@ -152,12 +153,12 @@ class TestUOCliFromScratchWorkflow(unittest.TestCase):
         if project_path.exists():
             shutil.rmtree(project_path)
 
-        wrapper.create_project_at_path(project_path=project_path)
+        self.wrapper.create_project_at_path(project_path=project_path)
         self._prune_feature_ids_from_project(self.temp_path, self.pruned_feature_ids)
-        wrapper.set_number_parallel(max(1, (os.cpu_count() or 1) - 1), project_path=project_path)
-        wrapper.create_scenarios(geojson_path)
-        wrapper.run(feature_path, scenario_path)
-        wrapper.process_scenario(feature_path, scenario_path)
+        self.wrapper.set_number_parallel(max(1, (os.cpu_count() or 1) - 1), project_path=project_path)
+        self.wrapper.create_scenarios(geojson_path)
+        self.wrapper.run(feature_path, scenario_path)
+        self.wrapper.process_scenario(feature_path, scenario_path)
 
         self._write_run_phase_artifact(
             self.temp_path,

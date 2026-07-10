@@ -257,6 +257,34 @@ class TestUOCliWrapper(unittest.TestCase):
             "--feature ten1/class_project_ten_coincident.json --sys-param ten1/sys_param.json"
         ) in log_contents
 
+    def test_uo_command_available_uses_wrapper_path(self):
+        """Test uo availability is checked against the wrapper command PATH."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+        with mock.patch("urbanopt_des.uo_cli_wrapper.shutil.which", return_value="/fake/bin/uo") as which:
+            assert wrapper.uo_command_available()
+
+        assert which.call_args.kwargs["path"] == wrapper._command_environment()["PATH"]
+
+    def test_python_bootstrap_skips_when_uo_unavailable(self):
+        """Test wrapper initialization does not shell out when uo is unavailable."""
+        previous_bootstrap_attempted = UOCliWrapper._python_bootstrap_attempted
+        UOCliWrapper._python_bootstrap_attempted = False
+        try:
+            with (
+                mock.patch.object(UOCliWrapper, "_python_config_files", return_value=[]),
+                mock.patch.object(UOCliWrapper, "uo_command_available", return_value=False),
+                mock.patch.object(UOCliWrapper, "_run_command") as run_cmd,
+            ):
+                UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent)
+
+            run_cmd.assert_not_called()
+        finally:
+            UOCliWrapper._python_bootstrap_attempted = previous_bootstrap_attempted
+
     def test_des_create_command(self):
         """Test des_create executes uo des_create command."""
         project_name = "test_project"
