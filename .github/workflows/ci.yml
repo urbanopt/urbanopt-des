@@ -38,10 +38,13 @@ jobs:
       - name: Resolve URBANopt CLI release from wrapper version
         id: urbanopt_cli
         working-directory: urbanopt-des
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           python <<'PY'
           import json
           import os
+          import time
           import urllib.error
           import urllib.request
 
@@ -52,13 +55,30 @@ jobs:
           release_tag = f"v{version}"
           release_url = f"https://api.github.com/repos/urbanopt/urbanopt-cli/releases/tags/{release_tag}"
 
-          try:
-              response = urllib.request.urlopen(release_url)
-          except urllib.error.HTTPError as exc:
-              raise SystemExit(f"Could not find URBANopt CLI release {release_tag}: {exc}") from exc
+          request = urllib.request.Request(release_url)
+          request.add_header("Accept", "application/vnd.github+json")
+          request.add_header("X-GitHub-Api-Version", "2022-11-28")
+          # Authenticate with the Actions-provided token so parallel jobs don't
+          # trip the unauthenticated GitHub API rate limit (60 requests/hour/IP).
+          token = os.environ.get("GITHUB_TOKEN")
+          if token:
+              request.add_header("Authorization", f"Bearer {token}")
 
-          with response:
-              release = json.load(response)
+          last_error = None
+          for attempt in range(3):
+              try:
+                  with urllib.request.urlopen(request) as response:
+                      release = json.load(response)
+                  break
+              except urllib.error.HTTPError as exc:
+                  last_error = exc
+                  # Retry only on transient responses (rate limiting / server errors).
+                  if exc.code in (403, 429) or exc.code >= 500:
+                      time.sleep(5 * (attempt + 1))
+                      continue
+                  raise SystemExit(f"Could not find URBANopt CLI release {release_tag}: {exc}") from exc
+          else:
+              raise SystemExit(f"Could not fetch URBANopt CLI release {release_tag} after retries: {last_error}")
 
           asset = next(
               asset
