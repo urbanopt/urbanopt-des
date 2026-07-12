@@ -53,6 +53,7 @@ markers = [
 ]
 filterwarnings = [
 	"ignore:The 'shapely.geos' module is deprecated.*:DeprecationWarning:geopandas._compat",
+	"ignore:The 'generic' unit for NumPy timedelta is deprecated.*:DeprecationWarning:pandas.core.resample",
 ]
 
 [build-system]

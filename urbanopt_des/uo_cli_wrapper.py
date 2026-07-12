@@ -18,6 +18,8 @@ class UOCliWrapper:
         . ~/.env_uo.sh
     """
 
+    DEFAULT_UO_VERSION = "1.2.0"
+
     _python_bootstrap_attempted = False
 
     def __init__(self, working_dir: Path, uo_project: str, template_dir: Path, auto_initialize_python=True):
@@ -41,8 +43,8 @@ class UOCliWrapper:
         # self.uo_version = "0.13.0"
         # self.uo_version = "0.14.0"
         # self.uo_version = "1.0.1"
-        self.uo_version = "1.2.0"
-        # UO Version 1.2 for Mac had a new installer on 4/28/2026 that fixed a load error.
+        default_uo_version = self.DEFAULT_UO_VERSION
+        self.uo_version = os.environ.get("URBANOPT_CLI_VERSION", default_uo_version).strip().removeprefix("v") or default_uo_version
 
         # Select the path based on the platform
         if sys.platform == "win32":

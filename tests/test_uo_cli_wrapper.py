@@ -2,6 +2,7 @@
 # See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
 
 import json
+import os
 import shutil
 import tempfile
 import unittest
@@ -268,6 +269,23 @@ class TestUOCliWrapper(unittest.TestCase):
             assert wrapper.uo_command_available()
 
         assert which.call_args.kwargs["path"] == wrapper._command_environment()["PATH"]
+
+    def test_uo_version_can_be_configured_from_environment(self):
+        """Test wrapper version follows the URBANOPT_CLI_VERSION environment variable."""
+        with mock.patch.dict(os.environ, {"URBANOPT_CLI_VERSION": "v1.3.0"}):
+            wrapper = UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent, auto_initialize_python=False)
+
+        assert wrapper.uo_version == "1.3.0"
+        assert "1.3.0" in wrapper.uo_directory
+
+    def test_uo_version_defaults_to_wrapper_constant(self):
+        """Test wrapper default version is exposed as the single source for CI."""
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("URBANOPT_CLI_VERSION", None)
+            wrapper = UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent, auto_initialize_python=False)
+
+        assert wrapper.uo_version == UOCliWrapper.DEFAULT_UO_VERSION
+        assert UOCliWrapper.DEFAULT_UO_VERSION in wrapper.uo_directory
 
     def test_python_bootstrap_skips_when_uo_unavailable(self):
         """Test wrapper initialization does not shell out when uo is unavailable."""

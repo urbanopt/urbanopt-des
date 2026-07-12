@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-22.04]
         python-version: ["3.10", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
@@ -35,6 +35,58 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Resolve URBANopt CLI release from wrapper version
+        id: urbanopt_cli
+        working-directory: urbanopt-des
+        run: |
+          python <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          from urbanopt_des.uo_cli_wrapper import UOCliWrapper
+
+          default_version = UOCliWrapper.DEFAULT_UO_VERSION
+          version = os.environ.get("URBANOPT_CLI_VERSION", default_version).strip().removeprefix("v") or default_version
+          release_tag = f"v{version}"
+          release_url = f"https://api.github.com/repos/urbanopt/urbanopt-cli/releases/tags/{release_tag}"
+
+          try:
+              response = urllib.request.urlopen(release_url)
+          except urllib.error.HTTPError as exc:
+              raise SystemExit(f"Could not find URBANopt CLI release {release_tag}: {exc}") from exc
+
+          with response:
+              release = json.load(response)
+
+          asset = next(
+              asset
+              for asset in release["assets"]
+              if asset["name"].endswith("Ubuntu-22.04-x86_64.deb")
+          )
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as github_output:
+              print(f"version={version}", file=github_output)
+              print(f"asset_url={asset['browser_download_url']}", file=github_output)
+          PY
+      - name: Install URBANopt CLI ${{ steps.urbanopt_cli.outputs.version }}
+        run: |
+          curl -fsSL "${{ steps.urbanopt_cli.outputs.asset_url }}" -o /tmp/urbanopt-cli.deb
+          sudo apt-get update
+          sudo apt-get install -y /tmp/urbanopt-cli.deb
+          echo "URBANOPT_CLI_VERSION=${{ steps.urbanopt_cli.outputs.version }}" >> "$GITHUB_ENV"
+          cli_root="/usr/local/urbanopt-cli-${{ steps.urbanopt_cli.outputs.version }}"
+          echo "$cli_root/ruby/bin" >> "$GITHUB_PATH"
+          echo "$cli_root/gems/ruby/3.2.0/bin" >> "$GITHUB_PATH"
+          export GEM_HOME="$cli_root/gems/ruby/3.2.0"
+          export GEM_PATH="$GEM_HOME"
+          export UO_GEMFILE_PATH="$cli_root/gems/Gemfile"
+          export UO_BUNDLE_INSTALL_PATH="$cli_root/gems"
+          export PATH="$cli_root/ruby/bin:$cli_root/gems/ruby/3.2.0/bin:$PATH"
+          export RUBYLIB="$cli_root/OpenStudio/Ruby"
+          export RUBY_DLL_PATH="$cli_root/OpenStudio/Ruby"
+          uo --version
       - name: Install Poetry
         uses: abatilo/actions-poetry@v4
         with:
