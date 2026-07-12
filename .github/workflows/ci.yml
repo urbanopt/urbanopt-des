@@ -77,6 +77,9 @@ jobs:
           sudo apt-get install -y /tmp/urbanopt-cli.deb
           echo "URBANOPT_CLI_VERSION=${{ steps.urbanopt_cli.outputs.version }}" >> "$GITHUB_ENV"
           cli_root="/usr/local/urbanopt-cli-${{ steps.urbanopt_cli.outputs.version }}"
+          # The .deb installs as root, but `uo install_python` needs to write python_config.json
+          # and the Miniconda deps under the CLI directory. Hand ownership to the runner user.
+          sudo chown -R "$(id -un):$(id -gn)" "$cli_root"
           echo "$cli_root/ruby/bin" >> "$GITHUB_PATH"
           echo "$cli_root/gems/ruby/3.2.0/bin" >> "$GITHUB_PATH"
           export GEM_HOME="$cli_root/gems/ruby/3.2.0"
