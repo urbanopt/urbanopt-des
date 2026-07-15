@@ -2,6 +2,7 @@
 # See also https://github.com/urbanopt/urbanopt-des/blob/develop/LICENSE.md
 
 import json
+import os
 import shutil
 import tempfile
 import unittest
@@ -185,6 +186,57 @@ class TestUOCliWrapper(unittest.TestCase):
         assert runner_conf_data_after["num_parallel"] == 16
         assert runner_conf_data_after["max_iterations"] == 10
 
+    def test_create_project_at_path_sets_runnerconf_to_n_minus_2(self):
+        """Test create_project_at_path updates runner.conf to CPU count minus two."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        runner_conf_path = project_path / "runner.conf"
+        with open(runner_conf_path, "w") as f:
+            json.dump({"num_parallel": 1, "other_setting": "value"}, f)
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+
+        with (
+            mock.patch("urbanopt_des.uo_cli_wrapper.os.cpu_count", return_value=10),
+            mock.patch.object(wrapper, "_run_command") as run_cmd,
+        ):
+            wrapper.create_project_at_path(project_path=project_path)
+
+        run_cmd.assert_called_once_with(f"uo create -p {project_path}")
+
+        with open(runner_conf_path) as f:
+            runner_conf_data_after = json.load(f)
+
+        assert runner_conf_data_after["num_parallel"] == 8
+        assert runner_conf_data_after["other_setting"] == "value"
+
+    def test_create_project_at_path_runnerconf_minimum_one(self):
+        """Test create_project_at_path never sets num_parallel below one."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        runner_conf_path = project_path / "runner.conf"
+        with open(runner_conf_path, "w") as f:
+            json.dump({"num_parallel": 4}, f)
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+
+        with (
+            mock.patch("urbanopt_des.uo_cli_wrapper.os.cpu_count", return_value=2),
+            mock.patch.object(wrapper, "_run_command") as run_cmd,
+        ):
+            wrapper.create_project_at_path(project_path=project_path)
+
+        run_cmd.assert_called_once_with(f"uo create -p {project_path}")
+
+        with open(runner_conf_path) as f:
+            runner_conf_data_after = json.load(f)
+
+        assert runner_conf_data_after["num_parallel"] == 1
+
     def test_des_params_command(self):
         """Test des_params executes uo des_params command."""
         project_name = "test_project"
@@ -205,6 +257,51 @@ class TestUOCliWrapper(unittest.TestCase):
             "Running command: uo des_params --scenario ten1/baseline_scenario.csv "
             "--feature ten1/class_project_ten_coincident.json --sys-param ten1/sys_param.json"
         ) in log_contents
+
+    def test_uo_command_available_uses_wrapper_path(self):
+        """Test uo availability is checked against the wrapper command PATH."""
+        project_name = "test_project"
+        project_path = self.temp_path / project_name
+        project_path.mkdir()
+
+        wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
+        with mock.patch("urbanopt_des.uo_cli_wrapper.shutil.which", return_value="/fake/bin/uo") as which:
+            assert wrapper.uo_command_available()
+
+        assert which.call_args.kwargs["path"] == wrapper._command_environment()["PATH"]
+
+    def test_uo_version_can_be_configured_from_environment(self):
+        """Test wrapper version follows the URBANOPT_CLI_VERSION environment variable."""
+        with mock.patch.dict(os.environ, {"URBANOPT_CLI_VERSION": "v1.3.0"}):
+            wrapper = UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent, auto_initialize_python=False)
+
+        assert wrapper.uo_version == "1.3.0"
+        assert "1.3.0" in wrapper.uo_directory
+
+    def test_uo_version_defaults_to_wrapper_constant(self):
+        """Test wrapper default version is exposed as the single source for CI."""
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("URBANOPT_CLI_VERSION", None)
+            wrapper = UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent, auto_initialize_python=False)
+
+        assert wrapper.uo_version == UOCliWrapper.DEFAULT_UO_VERSION
+        assert UOCliWrapper.DEFAULT_UO_VERSION in wrapper.uo_directory
+
+    def test_python_bootstrap_skips_when_uo_unavailable(self):
+        """Test wrapper initialization does not shell out when uo is unavailable."""
+        previous_bootstrap_attempted = UOCliWrapper._python_bootstrap_attempted
+        UOCliWrapper._python_bootstrap_attempted = False
+        try:
+            with (
+                mock.patch.object(UOCliWrapper, "_python_config_files", return_value=[]),
+                mock.patch.object(UOCliWrapper, "uo_command_available", return_value=False),
+                mock.patch.object(UOCliWrapper, "_run_command") as run_cmd,
+            ):
+                UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent)
+
+            run_cmd.assert_not_called()
+        finally:
+            UOCliWrapper._python_bootstrap_attempted = previous_bootstrap_attempted
 
     def test_des_create_command(self):
         """Test des_create executes uo des_create command."""
