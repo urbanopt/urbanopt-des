@@ -16,7 +16,7 @@ cyclopts = "^4.21.0"
 geopandas = "<1.0"
 
 # release mode
-# geojson-modelica-translator = "^0.14.0"
+# geojson-modelica-translator = "^0.15.0"
 # pre-release mode, use github
 # geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
 # dev mode
