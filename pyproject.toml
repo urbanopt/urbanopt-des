@@ -20,7 +20,7 @@ geojson-modelica-translator = "^0.15.0"
 # pre-release mode, use github
 # geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
 # dev mode
-# geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
+geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "~=4.6"
@@ -48,8 +48,12 @@ warn_unused_ignores = true
 check_untyped_defs = false
 
 [tool.pytest.ini_options]
+markers = [
+    "integration: marks tests that exercise end-to-end external tools and may be slow",
+]
 filterwarnings = [
 	"ignore:The 'shapely.geos' module is deprecated.*:DeprecationWarning:geopandas._compat",
+	"ignore:The 'generic' unit for NumPy timedelta is deprecated.*:DeprecationWarning:pandas.core.resample",
 ]
 
 [build-system]
