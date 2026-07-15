@@ -245,11 +245,12 @@ class TestUOCliWrapper(unittest.TestCase):
         project_path.mkdir()
 
         wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
-        wrapper.des_params(
-            "ten1/baseline_scenario.csv",
-            "ten1/class_project_ten_coincident.json",
-            "ten1/sys_param.json",
-        )
+        with mock.patch.object(wrapper, "uv_command_available", return_value=True):
+            wrapper.des_params(
+                "ten1/baseline_scenario.csv",
+                "ten1/class_project_ten_coincident.json",
+                "ten1/sys_param.json",
+            )
 
         with open(wrapper.log_file) as f:
             log_contents = f.read()
@@ -314,6 +315,7 @@ class TestUOCliWrapper(unittest.TestCase):
             stderr=b"",
         )
         with (
+            mock.patch.object(wrapper, "uv_command_available", return_value=True),
             mock.patch.object(wrapper, "_run_command", return_value=failed) as run_cmd,
             pytest.raises(RuntimeError, match="failed to install"),
         ):
@@ -330,7 +332,11 @@ class TestUOCliWrapper(unittest.TestCase):
             stdout=b"",
             stderr=b"boom",
         )
-        with mock.patch.object(wrapper, "_run_command", return_value=failed), pytest.raises(RuntimeError, match="status 1"):
+        with (
+            mock.patch.object(wrapper, "uv_command_available", return_value=True),
+            mock.patch.object(wrapper, "_run_command", return_value=failed),
+            pytest.raises(RuntimeError, match="status 1"),
+        ):
             wrapper.install_python()
 
     def test_install_python_ignores_benign_dependency_conflict_warning(self):
@@ -348,8 +354,40 @@ class TestUOCliWrapper(unittest.TestCase):
             ),
             stderr=b"",
         )
-        with mock.patch.object(wrapper, "_run_command", return_value=ok):
+        with (
+            mock.patch.object(wrapper, "uv_command_available", return_value=True),
+            mock.patch.object(wrapper, "_run_command", return_value=ok),
+        ):
             wrapper.install_python()  # should not raise
+
+    def test_install_python_raises_when_uv_missing(self):
+        """install_python fails loudly (before running) when uv is required but absent."""
+        wrapper = UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent, auto_initialize_python=False)
+        wrapper.uo_version = "1.3.0"
+        with (
+            mock.patch.object(wrapper, "uv_command_available", return_value=False),
+            mock.patch.object(wrapper, "_run_command") as run_cmd,
+            pytest.raises(RuntimeError, match="uv"),
+        ):
+            wrapper.install_python()
+
+        run_cmd.assert_not_called()
+
+    def test_uv_command_available_uses_wrapper_path(self):
+        """Test uv availability is checked against the wrapper command PATH."""
+        wrapper = UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent, auto_initialize_python=False)
+        with mock.patch("urbanopt_des.uo_cli_wrapper.shutil.which", return_value="/fake/bin/uv") as which:
+            assert wrapper.uv_command_available()
+
+        assert which.call_args.args[0] == "uv"
+        assert which.call_args.kwargs["path"] == wrapper._command_environment()["PATH"]
+
+    def test_require_uv_skips_for_older_cli(self):
+        """Older URBANopt CLI versions do not require uv, so the check is a no-op."""
+        wrapper = UOCliWrapper(self.temp_path, "test_project", Path(__file__).parent, auto_initialize_python=False)
+        wrapper.uo_version = "1.2.0"
+        with mock.patch.object(wrapper, "uv_command_available", return_value=False):
+            wrapper._require_uv()  # should not raise
 
     def test_des_create_command(self):
         """Test des_create executes uo des_create command."""
@@ -358,11 +396,12 @@ class TestUOCliWrapper(unittest.TestCase):
         project_path.mkdir()
 
         wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
-        wrapper.des_create(
-            "ten1/sys_param.json",
-            "ten1/class_project_ten_coincident.json",
-            des_name="ten1/modelica_project",
-        )
+        with mock.patch.object(wrapper, "uv_command_available", return_value=True):
+            wrapper.des_create(
+                "ten1/sys_param.json",
+                "ten1/class_project_ten_coincident.json",
+                des_name="ten1/modelica_project",
+            )
 
         with open(wrapper.log_file) as f:
             log_contents = f.read()
@@ -379,7 +418,8 @@ class TestUOCliWrapper(unittest.TestCase):
         project_path.mkdir()
 
         wrapper = UOCliWrapper(self.temp_path, project_name, Path(__file__).parent)
-        wrapper.des_run("ten1/modelica_project")
+        with mock.patch.object(wrapper, "uv_command_available", return_value=True):
+            wrapper.des_run("ten1/modelica_project")
 
         with open(wrapper.log_file) as f:
             log_contents = f.read()
