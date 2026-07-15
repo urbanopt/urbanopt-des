@@ -10,17 +10,18 @@ packages = [{ include = "urbanopt_des", from = "." }]
 python = ">=3.10,<3.14"
 cyclopts = "^4.21.0"
 
-# Keep geopandas below 1.0 to keep Shapely <2.0, to avoid conflicts
-# with nrel-disco's requirements (via pydss)
-# Originates from uo-sdk using both this and nrel-disco
-geopandas = "<1.0"
+# Note, in the past, the we had to keep geopandas below 1.0 to keep Shapely <2.0,
+# which avoided conflicts with nrel-disco's requirements (via pydss). 
+# This should have been resolved with downstream dependencies and we can now use 
+# our desired version of geopandas
+geopandas = "^1.1.4"
 
 # release mode
-# geojson-modelica-translator = "^0.15.0"
+geojson-modelica-translator = "^0.15.0"
 # pre-release mode, use github
 # geojson-modelica-translator = { git = "https://github.com/urbanopt/geojson-modelica-translator.git", branch = "develop" }
 # dev mode
-geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
+# geojson-modelica-translator = { path = "../geojson-modelica-translator", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "~=4.6"
@@ -48,12 +49,8 @@ warn_unused_ignores = true
 check_untyped_defs = false
 
 [tool.pytest.ini_options]
-markers = [
-    "integration: marks tests that exercise end-to-end external tools and may be slow",
-]
 filterwarnings = [
 	"ignore:The 'shapely.geos' module is deprecated.*:DeprecationWarning:geopandas._compat",
-	"ignore:The 'generic' unit for NumPy timedelta is deprecated.*:DeprecationWarning:pandas.core.resample",
 ]
 
 [build-system]
