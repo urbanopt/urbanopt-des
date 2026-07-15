@@ -46,8 +46,6 @@
 
 ## Version 0.2.0
 
-<!-- Release notes generated using configuration in .github/release.yml at develop -->
-
 ## What's Changed
 
 ### Improvements & Bug Fixes 🐛
