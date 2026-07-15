@@ -18,9 +18,18 @@ class UOCliWrapper:
         . ~/.env_uo.sh
     """
 
-    DEFAULT_UO_VERSION = "1.2.0"
+    DEFAULT_UO_VERSION = "1.3.0"
 
     _python_bootstrap_attempted = False
+
+    # Substrings emitted by pip (via `uo install_python`) when a dependency cannot
+    # be installed at all. `uo install_python` logs these and still exits 0, so we
+    # scan its output for them to fail loudly instead of continuing with a broken
+    # Python environment.
+    _PIP_INSTALL_FAILURE_MARKERS = (
+        "No matching distribution found",
+        "Could not find a version that satisfies the requirement",
+    )
 
     def __init__(self, working_dir: Path, uo_project: str, template_dir: Path, auto_initialize_python=True):
         """uo_project is the name of the project which is also the project folder
@@ -134,6 +143,7 @@ class UOCliWrapper:
                 log.write(result.stderr.decode("utf-8"))
                 print(result.stdout.decode("utf-8"))
                 print(result.stderr.decode("utf-8"))
+            return result
         finally:
             os.chdir(current_dir)
 
@@ -179,8 +189,34 @@ class UOCliWrapper:
         self._run_command(f"uo create -s {scoped_feature_path}")
 
     def install_python(self):
-        """Run uo install_python."""
-        self._run_command("uo install_python")
+        """Run ``uo install_python`` and fail loudly if any dependency cannot install.
+
+        ``uo install_python`` exits 0 even when individual Python package installs
+        fail: it logs the error and keeps going. That leaves the URBANopt CLI's
+        Python environment incomplete and later surfaces as confusing, seemingly
+        unrelated errors (e.g. degraded system-parameter values). Scan the command
+        output for the unambiguous pip failure markers and raise so the real cause
+        is obvious.
+
+        Raises:
+            RuntimeError: If a dependency failed to install or the command exited
+                with a non-zero status.
+        """
+        result = self._run_command("uo install_python")
+
+        output = ""
+        if result is not None:
+            output = f"{result.stdout.decode('utf-8', 'replace')}{result.stderr.decode('utf-8', 'replace')}"
+
+        failures = [marker for marker in self._PIP_INSTALL_FAILURE_MARKERS if marker in output]
+        if result is not None and result.returncode != 0:
+            failures.append(f"command exited with status {result.returncode}")
+
+        if failures:
+            raise RuntimeError(
+                "uo install_python failed to install one or more Python dependencies "
+                f"({'; '.join(failures)}). See the log at {self.log_file} for details."
+            )
 
     def create_project_at_path(self, project_path, create_flags=None):
         """Run uo create -p for an explicit project path.
