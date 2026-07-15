@@ -131,4 +131,18 @@ jobs:
         run: poetry run mypy urbanopt_des
       - name: Run pytest
         working-directory: urbanopt-des
-        run: poetry run pytest -v --cov-report term-missing --cov
+        # URBANopt CLI 1.3.0 builds DES system-parameter files in an isolated
+        # `uv tool run --from urbanopt-des==0.2.0`. urbanopt-des 0.2.0 pins
+        # geojson-modelica-translator (GMT) >=0.13.0,<0.14.0, so uv resolves GMT 0.13.0.
+        # GMT only gained 5G ETS pump-flow sizing (ets_pump_flow_rate) in 0.15.0, so the
+        # pinned toolchain leaves ets_pump_flow_rate at the 0.0005 template default and the
+        # 5G from-scratch integration tests fail. Use uv's override mechanism to force the
+        # newer GMT for the CLI's isolated tool env. This propagates through the wrapper's
+        # subprocess environment into `uo des_params`/`install_python`.
+        # TODO: remove once a URBANopt CLI release bumps its bundled urbanopt-des pin to a
+        # version that requires GMT >=0.15.0 (tracking issue in urbanopt-des).
+        env:
+          UV_OVERRIDE: ${{ github.workspace }}/uv-overrides.txt
+        run: |
+          echo "geojson-modelica-translator>=0.15.0,<0.16.0" > "$UV_OVERRIDE"
+          poetry run pytest -v --cov-report term-missing --cov
