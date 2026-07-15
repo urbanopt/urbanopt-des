@@ -140,7 +140,7 @@ jobs:
         # newer GMT for the CLI's isolated tool env. This propagates through the wrapper's
         # subprocess environment into `uo des_params`/`install_python`.
         # TODO: remove once a URBANopt CLI release bumps its bundled urbanopt-des pin to a
-        # version that requires GMT >=0.15.0 (tracking issue in urbanopt-des).
+        # version that requires GMT >=0.15.0. Tracking: urbanopt/urbanopt-des#99.
         env:
           UV_OVERRIDE: ${{ github.workspace }}/uv-overrides.txt
         run: |
