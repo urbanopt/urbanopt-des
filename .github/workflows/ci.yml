@@ -12,7 +12,7 @@ jobs:
         python-version: ["3.10", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: urbanopt-des
       - name: Check if geojson-modelica-translator needs to be checked out
@@ -26,7 +26,7 @@ jobs:
           fi
       - name: Checkout geojson-modelica-translator
         if: steps.check_gmt.outputs.needs_checkout == 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: urbanopt/geojson-modelica-translator
           ref: develop
