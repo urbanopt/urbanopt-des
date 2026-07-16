@@ -163,11 +163,12 @@ jobs:
         # TODO: remove once a URBANopt CLI release bumps its bundled urbanopt-des pin to a
         # version that requires GMT >=0.15.0. Tracking: urbanopt/urbanopt-des#99.
         env:
+          RUN_INTENSIVE_FROM_SCRATCH_TESTS: ${{ matrix.python-version == '3.13' }}
           UV_OVERRIDE: ${{ github.workspace }}/uv-overrides.txt
         run: |
           echo "geojson-modelica-translator>=0.15.0,<0.16.0" > "$UV_OVERRIDE"
           pytest_args=(-v --cov-report term-missing --cov)
-          if [ "${{ matrix.python-version }}" != "3.13" ]; then
+          if [ "$RUN_INTENSIVE_FROM_SCRATCH_TESTS" != "true" ]; then
             pytest_args+=(--ignore=tests/test_uo_cli_from_scratch_integration_test.py)
           fi
           poetry run pytest "${pytest_args[@]}"
