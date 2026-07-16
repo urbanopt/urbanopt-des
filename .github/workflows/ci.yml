@@ -166,11 +166,11 @@ jobs:
           UV_OVERRIDE: ${{ github.workspace }}/uv-overrides.txt
         run: |
           echo "geojson-modelica-translator>=0.15.0,<0.16.0" > "$UV_OVERRIDE"
-          if [ "${{ matrix.python-version }}" = "3.13" ]; then
-            poetry run pytest -v --cov-report term-missing --cov
-          else
-            poetry run pytest -v --cov-report term-missing --cov --ignore=tests/test_uo_cli_from_scratch_integration_test.py
+          pytest_args=(-v --cov-report term-missing --cov)
+          if [ "${{ matrix.python-version }}" != "3.13" ]; then
+            pytest_args+=(--ignore=tests/test_uo_cli_from_scratch_integration_test.py)
           fi
+          poetry run pytest "${pytest_args[@]}"
       - name: Save URBANopt building loads (test01) to cache
         # Persist freshly generated building loads only when there was no exact cache
         # hit and test01 wrote its run-phase handoff artifact (only written after the
