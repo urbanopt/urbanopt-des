@@ -31,49 +31,16 @@ end
 # of the measures don't have up to date measure.xml files, so they are failing
 # to convert!
 
-# read in the osw file as a JSON file, remove the step that has add_chilled_water_storage_tank,
-# then save back to a JSON file as in.updated.osw
-require 'json'
-osw = JSON.parse(File.read(osw_file))
-
-# Since this is for calibration, then remove a bunch of the measures that are for model generation,
-# we have already generated the model Note that these are the values that are in the OSW (NOT OSA)
-measures_to_remove = [
-    'add_chilled_water_storage_tank',
-    'create_bar_from_building_type_ratios',
-    'create_typical_building_from_model',
-    'blended_space_type_from_model',
-    'add_ev_load',
-    'add_ems_to_control_ev_charging',
-    'ReduceElectricEquipmentLoadsByPercentage',
-    'ReduceLightingLoadsByPercentage',
-    'PredictedMeanVote',
-    'urban_geometry_creation_zoning',
-    'create_typical_building_from_model_2',
-    'add_central_ice_storage',
-    'add_hpwh',
-    'add_packaged_ice_storage',
-]
-measures_to_remove.each do |measure|
-    osw['steps'].delete_if { |step| step['measure_dir_name'] == measure }
-end
-
-# hack, the verification of default_feature_reports fails because
-# the feature_loation argument is not in the measure.xml file. So,
-# remove the "default_feature_reports" argument of "feature_location".
-# We add it back in later
-feature_location = nil
-osw['steps'].each_with_index do |step, index|
-    if osw['steps'][index]['measure_dir_name'] == 'default_feature_reports'
-        feature_location = osw['steps'][index]['arguments'].delete('feature_location')
-    end
-end
+# Remove measures that are only needed for model generation (the seed model has already
+# been generated) or that fail OSA conversion, and extract the 'feature_location'
+# argument (re-inserted into analysis.json further down). See lib/osw_transform.rb.
+require_relative 'lib/osw_transform'
 
 osw_updated = File.join(sim_dir, 'in.updated.osw')
-File.write(osw_updated, JSON.pretty_generate(osw))
+feature_location = OswTransform.transform_osw_file(osw_file, osw_updated)
 
 # recheck the osw file existence
-osw_file = File.join(sim_dir, 'in.updated.osw')
+osw_file = osw_updated
 if not File.exists?(osw_file)
     puts "Could not find updated #{osw_file}"
     exit(1)
@@ -161,10 +128,9 @@ m = a.workflow.add_measure_from_path('calibration_reports_enhanced', 'Calibratio
 a.weather_file = File.join(sim_dir_save, weather_file_name)
 a.seed_model = File.join(sim_dir_save, 'in.osm')
 
-# add in the Gemfiles with the required depended gems. For example, the urbanopt-reporting gem is
+# add in the Gemfile with the required depended gems. For example, the urbanopt-reporting gem is
 # required to generate the same results as the UO CLI
 a.gem_files.add(File.join(File.dirname(__FILE__), 'Gemfile'))
-a.gem_files.add(File.join(File.dirname(__FILE__), 'openstudio-gems.gemspec'))
 
 # SEt some variables
 m = a.workflow.find_measure('general_calibration_measure')
@@ -244,20 +210,7 @@ a.cli_debug = ""
 a.save(analysis_json_file)
 a.save_osa_zip(analysis_zip_file)
 
-# ugh, hack. place back in the feature_location
-# analysis.json file and add the server scripts to it
-analysis_json = JSON.parse(File.read(analysis_json_file))
-analysis_json['analysis']['problem']['workflow'].each_with_index do |step, index|
-    puts("Step: #{step['name']}")
-    if step['name'] == 'default_feature_reports'
-        analysis_json['analysis']['problem']['workflow'][index]['arguments'].append({
-              "display_name": "URBANopt Feature Location",
-              "display_name_short": "URBANopt Feature Location",
-              "name": "feature_location",
-              "value_type": "string",
-              "default_value": "0",
-              "value": feature_location
-            })
-    end
-end
-File.write(analysis_json_file, JSON.pretty_generate(analysis_json))
+# ugh, hack. place back in the feature_location argument that was stripped out of the
+# OSW earlier (see extract_feature_location in lib/osw_transform.rb) into the generated
+# analysis.json file.
+OswTransform.reinsert_feature_location_file(analysis_json_file, feature_location)

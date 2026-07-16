@@ -1,0 +1,1713 @@
+{
+  "analysis": {
+    "display_name": "Building 1: rgenoud",
+    "name": "building_1:_rgenoud",
+    "output_variables": [
+      {
+        "units": "%",
+        "objective_function": true,
+        "objective_function_index": 0,
+        "objective_function_target": null,
+        "objective_function_group": 1,
+        "scaling_factor": null,
+        "visualize": true,
+        "metadata_id": null,
+        "export": true,
+        "display_name": "electricity_consumption_cvrmse",
+        "name": "calibration_reports_enhanced.electricity_consumption_cvrmse",
+        "display_name_short": "electricity_consumption_cvrmse"
+      },
+      {
+        "units": "%",
+        "objective_function": true,
+        "objective_function_index": 1,
+        "objective_function_target": null,
+        "objective_function_group": 2,
+        "scaling_factor": null,
+        "visualize": true,
+        "metadata_id": null,
+        "export": true,
+        "display_name": "electricity_consumption_nmbe",
+        "name": "calibration_reports_enhanced.electricity_consumption_nmbe",
+        "display_name_short": "electricity_consumption_nmbe"
+      },
+      {
+        "units": "kBtu/ft^2",
+        "objective_function": false,
+        "objective_function_index": null,
+        "objective_function_target": null,
+        "objective_function_group": null,
+        "scaling_factor": null,
+        "visualize": true,
+        "metadata_id": null,
+        "export": true,
+        "display_name": "total_site_eui",
+        "name": "openstudio_results.total_site_eui",
+        "display_name_short": "total_site_eui"
+      }
+    ],
+    "problem": {
+      "analysis_type": "rgenoud",
+      "algorithm": {
+        "seed": null,
+        "failed_f_value": 1000000000000000000,
+        "debug_messages": 1,
+        "popsize": 20,
+        "generations": 10,
+        "bfgs": 0,
+        "solution_tolerance": 0.0001,
+        "max_queued_jobs": 40,
+        "objective_functions": [
+          "calibration_reports_enhanced.electricity_consumption_cvrmse",
+          "calibration_reports_enhanced.electricity_consumption_nmbe"
+        ]
+      },
+      "workflow": [
+        {
+          "name": "set_run_period",
+          "display_name": "SetRunPeriod",
+          "measure_type": "ModelMeasure",
+          "measure_definition_class_name": "SetRunPeriod",
+          "measure_definition_directory": "./measures/set_run_period",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-common-measures-0.7.0/lib/measures/set_run_period",
+          "measure_definition_display_name": "SetRunPeriod",
+          "measure_definition_name": "set_run_period",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "7a84292a-3975-4ab3-9284-6edabcbe750b",
+          "measure_definition_version_uuid": "4d708dec-a3ff-4dd1-9785-7a9de5577b1b",
+          "uuid": "7a84292a-3975-4ab3-9284-6edabcbe750b",
+          "version_uuid": "4d708dec-a3ff-4dd1-9785-7a9de5577b1b",
+          "description": "Sets the run period and timestep for simulation",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            },
+            {
+              "display_name": "Timesteps per hour",
+              "display_name_short": "Timesteps per hour",
+              "name": "timesteps_per_hour",
+              "value_type": "integer",
+              "default_value": 0,
+              "value": 1
+            },
+            {
+              "display_name": "Begin date",
+              "display_name_short": "Begin date",
+              "name": "begin_date",
+              "value_type": "string",
+              "default_value": null,
+              "value": "2017-01-01"
+            },
+            {
+              "display_name": "End date",
+              "display_name_short": "End date",
+              "name": "end_date",
+              "value_type": "string",
+              "default_value": null,
+              "value": "2017-12-31"
+            }
+          ],
+          "variables": [],
+          "workflow_index": 0
+        },
+        {
+          "name": "change_building_location",
+          "display_name": "ChangeBuildingLocation",
+          "measure_type": "ModelMeasure",
+          "measure_definition_class_name": "ChangeBuildingLocation",
+          "measure_definition_directory": "./measures/ChangeBuildingLocation",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-common-measures-0.7.0/lib/measures/ChangeBuildingLocation",
+          "measure_definition_display_name": "ChangeBuildingLocation",
+          "measure_definition_name": "change_building_location",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "d4db4971-f5ba-11e3-a3ac-0800200c9a66",
+          "measure_definition_version_uuid": "946ae086-8c8e-4aa7-9d53-f482ba39d7a5",
+          "uuid": "d4db4971-f5ba-11e3-a3ac-0800200c9a66",
+          "version_uuid": "946ae086-8c8e-4aa7-9d53-f482ba39d7a5",
+          "description": "Change the building location",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "Weather File Name",
+              "display_name_short": "Weather File Name",
+              "name": "weather_file_name",
+              "value_type": "string",
+              "default_value": null,
+              "value": "VA_WASHINGTON-DC-REAGAN-AP_724050S_21.epw"
+            },
+            {
+              "display_name": "Climate Zone.",
+              "display_name_short": "Climate Zone.",
+              "name": "climate_zone",
+              "value_type": "string",
+              "default_value": "Lookup From Stat File",
+              "value": "ASHRAE 169-2013-4A"
+            },
+            {
+              "display_name": "Set Calendar Year",
+              "display_name_short": "Set Calendar Year",
+              "name": "set_year",
+              "value_type": "integer",
+              "default_value": 0,
+              "value": 0
+            },
+            {
+              "display_name": "Use Upstream Argument Values",
+              "display_name_short": "Use Upstream Argument Values",
+              "name": "use_upstream_args",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Find and replace option from existing weather file name.",
+              "display_name_short": "Find and replace option from existing weather file name.",
+              "name": "epw_gsub",
+              "value_type": "string",
+              "default_value": "Do Nothing",
+              "value": "Do Nothing"
+            }
+          ],
+          "variables": [],
+          "workflow_index": 1
+        },
+        {
+          "name": "add_ems_emissions_reporting",
+          "display_name": "Add EMS to Report Emissions",
+          "measure_type": "ModelMeasure",
+          "measure_definition_class_name": "AddEMSEmissionsReporting",
+          "measure_definition_directory": "./measures/add_ems_emissions_reporting",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-common-measures-0.7.0/lib/measures/add_ems_emissions_reporting",
+          "measure_definition_display_name": "Add EMS to Report Emissions",
+          "measure_definition_name": "add_ems_emissions_reporting",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "e8fe9153-5e70-4769-afa0-6da0045aa529",
+          "measure_definition_version_uuid": "5503bbcc-4de8-4493-8ed7-e7129da38e82",
+          "uuid": "e8fe9153-5e70-4769-afa0-6da0045aa529",
+          "version_uuid": "5503bbcc-4de8-4493-8ed7-e7129da38e82",
+          "description": "This measure reports emissions based on user-provided future and historical years as well as future, historical hourly, and historical annual subregions.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            },
+            {
+              "display_name": "Future subregion",
+              "display_name_short": "Future subregion",
+              "name": "future_subregion",
+              "value_type": "string",
+              "default_value": "RMPAc",
+              "value": "RMPAc"
+            },
+            {
+              "display_name": "Historical hourly subregion",
+              "display_name_short": "Historical hourly subregion",
+              "name": "hourly_historical_subregion",
+              "value_type": "string",
+              "default_value": "Rocky Mountains",
+              "value": "Rocky Mountains"
+            },
+            {
+              "display_name": "Historical annual subregion",
+              "display_name_short": "Historical annual subregion",
+              "name": "annual_historical_subregion",
+              "value_type": "string",
+              "default_value": "RMPA",
+              "value": "RMPA"
+            },
+            {
+              "display_name": "Future Year",
+              "display_name_short": "Future Year",
+              "name": "future_year",
+              "value_type": "string",
+              "default_value": "2020",
+              "value": 2020
+            },
+            {
+              "display_name": "Hourly Historical Year",
+              "display_name_short": "Hourly Historical Year",
+              "name": "hourly_historical_year",
+              "value_type": "string",
+              "default_value": "2019",
+              "value": 2019
+            },
+            {
+              "display_name": "Annual Historical Year",
+              "display_name_short": "Annual Historical Year",
+              "name": "annual_historical_year",
+              "value_type": "string",
+              "default_value": "2019",
+              "value": 2019
+            }
+          ],
+          "variables": [],
+          "workflow_index": 2
+        },
+        {
+          "name": "reduce_epd_by_percentage_for_peak_hours",
+          "display_name": "Reduce EPD by Percentage for Peak Hours",
+          "measure_type": "ModelMeasure",
+          "measure_definition_class_name": "ReduceEPDByPercentageForPeakHours",
+          "measure_definition_directory": "./measures/reduce_epd_by_percentage_for_peak_hours",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-geb-0.2.1/lib/measures/reduce_epd_by_percentage_for_peak_hours",
+          "measure_definition_display_name": "Reduce EPD by Percentage for Peak Hours",
+          "measure_definition_name": "reduce_epd_by_percentage_for_peak_hours",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "d8b88a6d-a5ec-4187-844f-0ac050979aab",
+          "measure_definition_version_uuid": "9fb17ece-5c39-43fd-ad78-afa49f651171",
+          "uuid": "d8b88a6d-a5ec-4187-844f-0ac050979aab",
+          "version_uuid": "9fb17ece-5c39-43fd-ad78-afa49f651171",
+          "description": "This measure reduces electric equipment loads by a user-specified percentage for a user-specified time period (usually the peak hours). The reduction can be applied to at most three periods throughout out the year specified by the user. This is applied throughout the entire building.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            },
+            {
+              "display_name": "Percentage Reduction of Electric Equipment Power (%)",
+              "display_name_short": "Percentage Reduction of Electric Equipment Power (%)",
+              "name": "epd_reduce_percent",
+              "value_type": "double",
+              "default_value": 50.0,
+              "value": 50
+            },
+            {
+              "display_name": "Start Time for the Reduction",
+              "display_name_short": "Start Time for the Reduction",
+              "name": "start_time",
+              "value_type": "string",
+              "default_value": "17:00:00",
+              "value": "17:00:00"
+            },
+            {
+              "display_name": "End Time for the Reduction",
+              "display_name_short": "End Time for the Reduction",
+              "name": "end_time",
+              "value_type": "string",
+              "default_value": "21:00:00",
+              "value": "21:00:00"
+            },
+            {
+              "display_name": "Use alternative default start and end time based on the climate zone of the model?",
+              "display_name_short": "Use alternative default start and end time based on the climate zone of the model?",
+              "name": "alt_periods",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "First start date for the Reduction",
+              "display_name_short": "First start date for the Reduction",
+              "name": "start_date1",
+              "value_type": "string",
+              "default_value": "03-01",
+              "value": "07-01"
+            },
+            {
+              "display_name": "First end date for the Reduction",
+              "display_name_short": "First end date for the Reduction",
+              "name": "end_date1",
+              "value_type": "string",
+              "default_value": "05-01",
+              "value": "08-31"
+            },
+            {
+              "display_name": "Second start date for the Reduction (optional)",
+              "display_name_short": "Second start date for the Reduction (optional)",
+              "name": "start_date2",
+              "value_type": "string",
+              "default_value": null,
+              "value": null
+            },
+            {
+              "display_name": "Second end date for the Reduction",
+              "display_name_short": "Second end date for the Reduction",
+              "name": "end_date2",
+              "value_type": "string",
+              "default_value": null,
+              "value": null
+            },
+            {
+              "display_name": "Second start date for the Reduction (optional)",
+              "display_name_short": "Second start date for the Reduction (optional)",
+              "name": "start_date3",
+              "value_type": "string",
+              "default_value": null,
+              "value": null
+            },
+            {
+              "display_name": "Second end date for the Reduction",
+              "display_name_short": "Second end date for the Reduction",
+              "name": "end_date3",
+              "value_type": "string",
+              "default_value": null,
+              "value": null
+            }
+          ],
+          "variables": [],
+          "workflow_index": 3
+        },
+        {
+          "name": "adjust_thermostat_setpoints_by_degrees_for_peak_hours",
+          "display_name": "Adjust thermostat setpoint by degrees for peak hours",
+          "measure_type": "ModelMeasure",
+          "measure_definition_class_name": "AdjustThermostatSetpointsByDegreesForPeakHours",
+          "measure_definition_directory": "./measures/AdjustThermostatSetpointsByDegreesForPeakHours",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-geb-0.2.1/lib/measures/AdjustThermostatSetpointsByDegreesForPeakHours",
+          "measure_definition_display_name": "Adjust thermostat setpoint by degrees for peak hours",
+          "measure_definition_name": "adjust_thermostat_setpoints_by_degrees_for_peak_hours",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "06ca2e04-87a2-4a83-b90a-fcc308a0b5a6",
+          "measure_definition_version_uuid": "ff156dd5-add7-46c8-9a3f-10ed96273fdd",
+          "uuid": "06ca2e04-87a2-4a83-b90a-fcc308a0b5a6",
+          "version_uuid": "ff156dd5-add7-46c8-9a3f-10ed96273fdd",
+          "description": "This measure adjusts heating and cooling setpoints by a user-specified number of degrees and a user-specified time period. This is applied throughout the entire building.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            },
+            {
+              "display_name": "Degrees Fahrenheit to Adjust Cooling Setpoint By",
+              "display_name_short": "Degrees Fahrenheit to Adjust Cooling Setpoint By",
+              "name": "cooling_adjustment",
+              "value_type": "double",
+              "default_value": 2.0,
+              "value": 2
+            },
+            {
+              "display_name": "Daily Start Time for Cooling Adjustment",
+              "display_name_short": "Daily Start Time for Cooling Adjustment",
+              "name": "cooling_daily_starttime",
+              "value_type": "string",
+              "default_value": "16:01:00",
+              "value": "16:01:00"
+            },
+            {
+              "display_name": "Daily End Time for Cooling Adjustment",
+              "display_name_short": "Daily End Time for Cooling Adjustment",
+              "name": "cooling_daily_endtime",
+              "value_type": "string",
+              "default_value": "20:00:00",
+              "value": "20:00:00"
+            },
+            {
+              "display_name": "Start Date for Cooling Adjustment",
+              "display_name_short": "Start Date for Cooling Adjustment",
+              "name": "cooling_startdate",
+              "value_type": "string",
+              "default_value": "2009-Jun-01",
+              "value": "06-01"
+            },
+            {
+              "display_name": "End Date for Cooling Adjustment",
+              "display_name_short": "End Date for Cooling Adjustment",
+              "name": "cooling_enddate",
+              "value_type": "string",
+              "default_value": "2009-Sep-30",
+              "value": "09-30"
+            },
+            {
+              "display_name": "Degrees Fahrenheit to Adjust heating Setpoint By",
+              "display_name_short": "Degrees Fahrenheit to Adjust heating Setpoint By",
+              "name": "heating_adjustment",
+              "value_type": "double",
+              "default_value": -2.0,
+              "value": 2
+            },
+            {
+              "display_name": "Start Time for Heating Adjustment",
+              "display_name_short": "Start Time for Heating Adjustment",
+              "name": "heating_daily_starttime",
+              "value_type": "string",
+              "default_value": "18:01:00",
+              "value": "16:01:00"
+            },
+            {
+              "display_name": "End Time for Heating Adjustment",
+              "display_name_short": "End Time for Heating Adjustment",
+              "name": "heating_daily_endtime",
+              "value_type": "string",
+              "default_value": "22:00:00",
+              "value": "20:00:00"
+            },
+            {
+              "display_name": "Start Date for Heating Adjustment",
+              "display_name_short": "Start Date for Heating Adjustment",
+              "name": "heating_startdate_1",
+              "value_type": "string",
+              "default_value": "2009-Jan-01",
+              "value": "01-01"
+            },
+            {
+              "display_name": "End Date for Heating Adjustment",
+              "display_name_short": "End Date for Heating Adjustment",
+              "name": "heating_enddate_1",
+              "value_type": "string",
+              "default_value": "2009-May-31",
+              "value": "05-31"
+            },
+            {
+              "display_name": "Start Date for Heating Adjustment",
+              "display_name_short": "Start Date for Heating Adjustment",
+              "name": "heating_startdate_2",
+              "value_type": "string",
+              "default_value": "2009-Oct-01",
+              "value": "10-01"
+            },
+            {
+              "display_name": "End Date for Heating Adjustment",
+              "display_name_short": "End Date for Heating Adjustment",
+              "name": "heating_enddate_2",
+              "value_type": "string",
+              "default_value": "2009-Dec-31",
+              "value": "12-31"
+            },
+            {
+              "display_name": "Alter Design Day Thermostats",
+              "display_name_short": "Alter Design Day Thermostats",
+              "name": "alter_design_days",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "Enable Climate-specific Periods Setting?",
+              "display_name_short": "Enable Climate-specific Periods Setting?",
+              "name": "auto_date",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Alternate Peak and Take Periods",
+              "display_name_short": "Alternate Peak and Take Periods",
+              "name": "alt_periods",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            }
+          ],
+          "variables": [],
+          "workflow_index": 4
+        },
+        {
+          "name": "increase_insulation_r_value_for_exterior_walls",
+          "display_name": "Increase R-value of Insulation for Exterior Walls to a Specific Value",
+          "measure_type": "ModelMeasure",
+          "measure_definition_class_name": "IncreaseInsulationRValueForExteriorWalls",
+          "measure_definition_directory": "./measures/IncreaseInsulationRValueForExteriorWalls",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-ee-0.7.0/lib/measures/IncreaseInsulationRValueForExteriorWalls",
+          "measure_definition_display_name": "Increase R-value of Insulation for Exterior Walls to a Specific Value",
+          "measure_definition_name": "increase_insulation_r_value_for_exterior_walls",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "3fdf9c39-d305-449b-a4b5-077166af5a67",
+          "measure_definition_version_uuid": "303662fc-ad6b-4ea7-814d-1de32be13b6b",
+          "uuid": "3fdf9c39-d305-449b-a4b5-077166af5a67",
+          "version_uuid": "303662fc-ad6b-4ea7-814d-1de32be13b6b",
+          "description": "Set the R-Value of exterior wall insulation to a specified value.  Higher R-Values provide better insulation, lowering heat loss and heat gain through the exterior walls. Costs for a construction can be adjusted",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            },
+            {
+              "display_name": "Insulation R-value (ft^2*h*R/Btu).",
+              "display_name_short": "Insulation R-value (ft^2*h*R/Btu).",
+              "name": "r_value",
+              "value_type": "double",
+              "default_value": 13.0,
+              "value": 10
+            },
+            {
+              "display_name": "Allow both increase and decrease in R-value to reach requested target?",
+              "display_name_short": "Allow both increase and decrease in R-value to reach requested target?",
+              "name": "allow_reduction",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "Increase in Material and Installation Costs for Construction per Area Used ($/ft^2).",
+              "display_name_short": "Increase in Material and Installation Costs for Construction per Area Used ($/ft^2).",
+              "name": "material_cost_increase_ip",
+              "value_type": "double",
+              "default_value": 0.0,
+              "value": 0.0
+            },
+            {
+              "display_name": "One Time Retrofit Cost to Add Insulation to Construction ($/ft^2).",
+              "display_name_short": "One Time Retrofit Cost to Add Insulation to Construction ($/ft^2).",
+              "name": "one_time_retrofit_cost_ip",
+              "value_type": "double",
+              "default_value": 0.0,
+              "value": 0.0
+            },
+            {
+              "display_name": "Year to Incur One Time Retrofit Cost (whole years).",
+              "display_name_short": "Year to Incur One Time Retrofit Cost (whole years).",
+              "name": "years_until_retrofit_cost",
+              "value_type": "integer",
+              "default_value": 0,
+              "value": 0
+            }
+          ],
+          "variables": [],
+          "workflow_index": 5
+        },
+        {
+          "name": "general_calibration_measure",
+          "display_name": "General Calibration Measure",
+          "measure_type": "ModelMeasure",
+          "measure_definition_class_name": "GeneralCalibrationMeasurePercentChange",
+          "measure_definition_directory": "./measures/GeneralCalibrationMeasurePercentChange",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/lib/activity_to_osa/measures/GeneralCalibrationMeasurePercentChange",
+          "measure_definition_display_name": "General Calibration Measure Percent Change",
+          "measure_definition_name": "general_calibration_measure_percent_change",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "0f583ac1-fa7e-48bc-9f80-12ed17180669",
+          "measure_definition_version_uuid": "7cbf215b-1a4f-4952-97bd-30770b745a89",
+          "uuid": "0f583ac1-fa7e-48bc-9f80-12ed17180669",
+          "version_uuid": "7cbf215b-1a4f-4952-97bd-30770b745a89",
+          "description": "This is a general purpose measure to calibrate space and space type elements with a percent change.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "Apply the Measure to a SINGLE SpaceType, ALL the SpaceTypes or NONE.",
+              "display_name_short": "Apply the Measure to a SINGLE SpaceType, ALL the SpaceTypes or NONE.",
+              "name": "space_type",
+              "value_type": "string",
+              "default_value": "{f0b412eb-06c7-48a3-931e-97d4b4f7d09b}",
+              "value": "*All SpaceTypes*"
+            },
+            {
+              "display_name": "Apply the Measure to a SINGLE Space, ALL the Spaces or NONE.",
+              "display_name_short": "Apply the Measure to a SINGLE Space, ALL the Spaces or NONE.",
+              "name": "space",
+              "value_type": "string",
+              "default_value": "{f0b412eb-06c7-48a3-931e-97d4b4f7d09b}",
+              "value": "*All Spaces*"
+            },
+            {
+              "display_name": "Percent Change in the default Luminaire Definition.",
+              "display_name_short": "Percent Change in the default Luminaire Definition.",
+              "name": "luminaire_perc_change",
+              "value_type": "double",
+              "default_value": 0.0,
+              "value": 0.0
+            },
+            {
+              "display_name": "Percent Change in the default Gas Equipment Definition.",
+              "display_name_short": "Percent Change in the default Gas Equipment Definition.",
+              "name": "GasEquipment_perc_change",
+              "value_type": "double",
+              "default_value": 0.0,
+              "value": 0.0
+            },
+            {
+              "display_name": "Percent Change in the default OtherEquipment Definition.",
+              "display_name_short": "Percent Change in the default OtherEquipment Definition.",
+              "name": "OtherEquipment_perc_change",
+              "value_type": "double",
+              "default_value": 0.0,
+              "value": 0.0
+            },
+            {
+              "display_name": "Percent Change in the default People Definition.",
+              "display_name_short": "Percent Change in the default People Definition.",
+              "name": "people_perc_change",
+              "value_type": "double",
+              "default_value": 0.0,
+              "value": 0.0
+            }
+          ],
+          "variables": [
+            {
+              "argument": {
+                "display_name": "Percent Change in the default Electric Equipment Definition.",
+                "display_name_short": "Percent Change in the default Electric Equipment Definition.",
+                "name": "ElectricEquipment_perc_change",
+                "value_type": "double",
+                "default_value": 0.0,
+                "value": 0.0
+              },
+              "display_name": "Electric Equipment Percent Change",
+              "display_name_short": "Electric Equipment Percent Change",
+              "variable_type": "variable",
+              "units": null,
+              "minimum": -40,
+              "maximum": 40,
+              "relation_to_output": null,
+              "uuid": "8f054d1b-9caa-4153-b12a-bf5790e5fcf3",
+              "version_uuid": "9fafe4fa-3563-4769-9396-a68dd151c243",
+              "variable": true,
+              "static_value": 0.0,
+              "uncertainty_description": {
+                "type": "uniform",
+                "attributes": [
+                  {
+                    "name": "lower_bounds",
+                    "value": -40
+                  },
+                  {
+                    "name": "upper_bounds",
+                    "value": 40
+                  },
+                  {
+                    "name": "modes",
+                    "value": 0
+                  },
+                  {
+                    "name": "delta_x",
+                    "value": null
+                  },
+                  {
+                    "name": "stddev",
+                    "value": null
+                  }
+                ]
+              },
+              "workflow_index": 0
+            },
+            {
+              "argument": {
+                "display_name": "Percent Change in the default Design Infiltration Outdoor Air.",
+                "display_name_short": "Percent Change in the default Design Infiltration Outdoor Air.",
+                "name": "infil_perc_change",
+                "value_type": "double",
+                "default_value": 0.0,
+                "value": 0.0
+              },
+              "display_name": "Infiltration Percent Change",
+              "display_name_short": "Infiltration Percent Change",
+              "variable_type": "variable",
+              "units": null,
+              "minimum": -40,
+              "maximum": 40,
+              "relation_to_output": null,
+              "uuid": "5f30774d-1b76-4864-bb40-d903d13c2465",
+              "version_uuid": "20e1948d-6b24-4e13-8baf-d3fa96559f9a",
+              "variable": true,
+              "static_value": 0.0,
+              "uncertainty_description": {
+                "type": "uniform",
+                "attributes": [
+                  {
+                    "name": "lower_bounds",
+                    "value": -40
+                  },
+                  {
+                    "name": "upper_bounds",
+                    "value": 40
+                  },
+                  {
+                    "name": "modes",
+                    "value": 0
+                  },
+                  {
+                    "name": "delta_x",
+                    "value": null
+                  },
+                  {
+                    "name": "stddev",
+                    "value": null
+                  }
+                ]
+              },
+              "workflow_index": 1
+            },
+            {
+              "argument": {
+                "display_name": "Percent Change in the default Design Specification Outdoor Air.",
+                "display_name_short": "Percent Change in the default Design Specification Outdoor Air.",
+                "name": "vent_perc_change",
+                "value_type": "double",
+                "default_value": 0.0,
+                "value": 0.0
+              },
+              "display_name": "Ventilation Percent Change",
+              "display_name_short": "Ventilation Percent Change",
+              "variable_type": "variable",
+              "units": null,
+              "minimum": -40,
+              "maximum": 40,
+              "relation_to_output": null,
+              "uuid": "e9521ae3-4fe5-4420-9b33-73f4fddfcc60",
+              "version_uuid": "012edc6c-3e88-4a5c-a618-12d41adf38d6",
+              "variable": true,
+              "static_value": 0.0,
+              "uncertainty_description": {
+                "type": "uniform",
+                "attributes": [
+                  {
+                    "name": "lower_bounds",
+                    "value": -40
+                  },
+                  {
+                    "name": "upper_bounds",
+                    "value": 40
+                  },
+                  {
+                    "name": "modes",
+                    "value": 0
+                  },
+                  {
+                    "name": "delta_x",
+                    "value": null
+                  },
+                  {
+                    "name": "stddev",
+                    "value": null
+                  }
+                ]
+              },
+              "workflow_index": 2
+            },
+            {
+              "argument": {
+                "display_name": "Percent Change in the default Internal Mass Definition.",
+                "display_name_short": "Percent Change in the default Internal Mass Definition.",
+                "name": "mass_perc_change",
+                "value_type": "double",
+                "default_value": 0.0,
+                "value": 0.0
+              },
+              "display_name": "Mass Percent Change",
+              "display_name_short": "Mass Percent Change",
+              "variable_type": "variable",
+              "units": null,
+              "minimum": -40,
+              "maximum": 40,
+              "relation_to_output": null,
+              "uuid": "617d4c7f-9a71-4c01-b796-8d8cf731b4e4",
+              "version_uuid": "072bbd3e-c2fa-4cba-b53b-f48ab4956de5",
+              "variable": true,
+              "static_value": 0.0,
+              "uncertainty_description": {
+                "type": "uniform",
+                "attributes": [
+                  {
+                    "name": "lower_bounds",
+                    "value": -40
+                  },
+                  {
+                    "name": "upper_bounds",
+                    "value": 40
+                  },
+                  {
+                    "name": "modes",
+                    "value": 0
+                  },
+                  {
+                    "name": "delta_x",
+                    "value": null
+                  },
+                  {
+                    "name": "stddev",
+                    "value": null
+                  }
+                ]
+              },
+              "workflow_index": 3
+            },
+            {
+              "argument": {
+                "display_name": "Percent Change in the default Lights Definition.",
+                "display_name_short": "Percent Change in the default Lights Definition.",
+                "name": "lights_perc_change",
+                "value_type": "double",
+                "default_value": 0.0,
+                "value": 0.0
+              },
+              "display_name": "Lights Percent Change",
+              "display_name_short": "Lights Percent Change",
+              "variable_type": "variable",
+              "units": null,
+              "minimum": -40,
+              "maximum": 40,
+              "relation_to_output": null,
+              "uuid": "cf6bdcfd-c84d-4394-8f99-6118c83a7c9c",
+              "version_uuid": "edd21bd4-d038-4288-b7ba-60f436cd23cb",
+              "variable": true,
+              "static_value": 0.0,
+              "uncertainty_description": {
+                "type": "uniform",
+                "attributes": [
+                  {
+                    "name": "lower_bounds",
+                    "value": -40
+                  },
+                  {
+                    "name": "upper_bounds",
+                    "value": 40
+                  },
+                  {
+                    "name": "modes",
+                    "value": 0
+                  },
+                  {
+                    "name": "delta_x",
+                    "value": null
+                  },
+                  {
+                    "name": "stddev",
+                    "value": null
+                  }
+                ]
+              },
+              "workflow_index": 4
+            }
+          ],
+          "workflow_index": 6
+        },
+        {
+          "name": "add_monthly_json_utility_data_electricity",
+          "display_name": "Add Monthly JSON Utility Data Electricity",
+          "measure_type": "ModelMeasure",
+          "measure_definition_class_name": "AddMonthlyJSONUtilityData",
+          "measure_definition_directory": "./measures/AddMonthlyJSONUtilityData",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/lib/activity_to_osa/measures/AddMonthlyJSONUtilityData",
+          "measure_definition_display_name": "Add Monthly JSON Utility Data",
+          "measure_definition_name": "add_monthly_json_utility_data",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "6da969e0-4256-49bf-9607-26504cc3d423",
+          "measure_definition_version_uuid": "abd6d2b6-799e-40b0-b2cb-6159c0e448b4",
+          "uuid": "6da969e0-4256-49bf-9607-26504cc3d423",
+          "version_uuid": "abd6d2b6-799e-40b0-b2cb-6159c0e448b4",
+          "description": "Add Monthly JSON Utility Data",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "Path to JSON Data in the Server.",
+              "display_name_short": "Path to JSON Data in the Server.",
+              "name": "json",
+              "value_type": "string",
+              "default_value": "../../../lib/calibration_data/electric.json",
+              "value": "../../../lib/calibration_data/electricity_data.json"
+            },
+            {
+              "display_name": "Variable name",
+              "display_name_short": "Variable name",
+              "name": "variable_name",
+              "value_type": "string",
+              "default_value": "Electric Bill",
+              "value": "Electric Bill"
+            },
+            {
+              "display_name": "Fuel Type",
+              "display_name_short": "Fuel Type",
+              "name": "fuel_type",
+              "value_type": "string",
+              "default_value": "Electricity",
+              "value": "Electricity"
+            },
+            {
+              "display_name": "Consumption Unit",
+              "display_name_short": "Consumption Unit",
+              "name": "consumption_unit",
+              "value_type": "string",
+              "default_value": "kWh",
+              "value": "kWh"
+            },
+            {
+              "display_name": "data key name in JSON",
+              "display_name_short": "data key name in JSON",
+              "name": "data_key_name",
+              "value_type": "string",
+              "default_value": "tot_kwh",
+              "value": "tot_kwh"
+            },
+            {
+              "display_name": "Start date",
+              "display_name_short": "Start date",
+              "name": "start_date",
+              "value_type": "string",
+              "default_value": "2013-01-1",
+              "value": "2021-01-01"
+            },
+            {
+              "display_name": "End date",
+              "display_name_short": "End date",
+              "name": "end_date",
+              "value_type": "string",
+              "default_value": "2013-12-31",
+              "value": "2021-12-31"
+            },
+            {
+              "display_name": "remove all existing Utility Bill data objects from model",
+              "display_name_short": "remove all existing Utility Bill data objects from model",
+              "name": "remove_existing_data",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            },
+            {
+              "display_name": "Set RunPeriod Object in model to use start and end dates",
+              "display_name_short": "Set RunPeriod Object in model to use start and end dates",
+              "name": "set_runperiod",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            }
+          ],
+          "variables": [],
+          "workflow_index": 7
+        },
+        {
+          "name": "export_time_series_loads_csv",
+          "display_name": "ExportTimeSeriesLoadsCSV",
+          "measure_type": "ReportingMeasure",
+          "measure_definition_class_name": "ExportTimeSeriesLoadsCSV",
+          "measure_definition_directory": "./measures/export_time_series_modelica",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/urbanopt-reporting-0.7.0/lib/measures/export_time_series_modelica",
+          "measure_definition_display_name": "ExportTimeSeriesLoadsCSV",
+          "measure_definition_name": "export_time_series_loads_csv",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "9fcf6116-c2eb-43d6-93f0-e1bdd822f768",
+          "measure_definition_version_uuid": "61d25864-a1a9-4082-974c-d04057271848",
+          "uuid": "9fcf6116-c2eb-43d6-93f0-e1bdd822f768",
+          "version_uuid": "61d25864-a1a9-4082-974c-d04057271848",
+          "description": "This measure will add the required output variables and create a CSV file with plant loop level mass flow rates and temperatures for use in a Modelica simulation. Note that this measure has certain\n\t requirements for naming of hydronic loops (discussed in the modeler description section).",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            },
+            {
+              "display_name": "Name or Partial Name of Heating Hot Water Loop, non-case-sensitive",
+              "display_name_short": "Name or Partial Name of Heating Hot Water Loop, non-case-sensitive",
+              "name": "hhw_loop_name",
+              "value_type": "string",
+              "default_value": "hot",
+              "value": "hot"
+            },
+            {
+              "display_name": "Name or Partial Name of Chilled Water Loop, non-case-sensitive",
+              "display_name_short": "Name or Partial Name of Chilled Water Loop, non-case-sensitive",
+              "name": "chw_loop_name",
+              "value_type": "string",
+              "default_value": "chilled",
+              "value": "chilled"
+            },
+            {
+              "display_name": "Number of Decimal Places to Round Mass Flow Rate",
+              "display_name_short": "Number of Decimal Places to Round Mass Flow Rate",
+              "name": "dec_places_mass_flow",
+              "value_type": "integer",
+              "default_value": 3,
+              "value": 3
+            },
+            {
+              "display_name": "Number of Decimal Places to Round Temperature",
+              "display_name_short": "Number of Decimal Places to Round Temperature",
+              "name": "dec_places_temp",
+              "value_type": "integer",
+              "default_value": 1,
+              "value": 1
+            }
+          ],
+          "variables": [],
+          "workflow_index": 8
+        },
+        {
+          "name": "export_modelica_loads",
+          "display_name": "Export Modelica Loads",
+          "measure_type": "ReportingMeasure",
+          "measure_definition_class_name": "ExportModelicaLoads",
+          "measure_definition_directory": "./measures/export_modelica_loads",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/urbanopt-reporting-0.7.0/lib/measures/export_modelica_loads",
+          "measure_definition_display_name": "Export Modelica Loads",
+          "measure_definition_name": "export_modelica_loads",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "7051db01-2e55-4223-b5b5-fee615b68dd0",
+          "measure_definition_version_uuid": "e80d1948-12bf-4a07-b8b2-cab73c6f8235",
+          "uuid": "7051db01-2e55-4223-b5b5-fee615b68dd0",
+          "version_uuid": "e80d1948-12bf-4a07-b8b2-cab73c6f8235",
+          "description": "Use the results from the EnergyPlus simulation to generate a load file for use in Modelica. This will create a MOS and a CSV file of the heating, cooling, and hot water loads.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            }
+          ],
+          "variables": [],
+          "workflow_index": 9
+        },
+        {
+          "name": "envelope_and_internal_load_breakdown",
+          "display_name": "Envelope and Internal Load Breakdown",
+          "measure_type": "ReportingMeasure",
+          "measure_definition_class_name": "EnvelopeAndInternalLoadBreakdown",
+          "measure_definition_directory": "./measures/envelope_and_internal_load_breakdown",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-common-measures-0.7.0/lib/measures/envelope_and_internal_load_breakdown",
+          "measure_definition_display_name": "Envelope and Internal Load Breakdown",
+          "measure_definition_name": "envelope_and_internal_load_breakdown",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "8f0e1fbb-8bc6-46e5-b6e4-db59177e2c02",
+          "measure_definition_version_uuid": "094a25e3-d116-401e-8cdb-ae076a79079a",
+          "uuid": "8f0e1fbb-8bc6-46e5-b6e4-db59177e2c02",
+          "version_uuid": "094a25e3-d116-401e-8cdb-ae076a79079a",
+          "description": "Report provides annual and monthly views into heat gains and losses for envelope and internal loads.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            }
+          ],
+          "variables": [],
+          "workflow_index": 10
+        },
+        {
+          "name": "generic_qaqc",
+          "display_name": "Generic QAQC",
+          "measure_type": "ReportingMeasure",
+          "measure_definition_class_name": "GenericQAQC",
+          "measure_definition_directory": "./measures/generic_qaqc",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-common-measures-0.7.0/lib/measures/generic_qaqc",
+          "measure_definition_display_name": "Generic QAQC",
+          "measure_definition_name": "generic_qaqc",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "d58d6b29-69ba-4915-b907-3c2c37ddb7c7",
+          "measure_definition_version_uuid": "c1878c3d-3aee-443e-9230-3e8e339a2764",
+          "uuid": "d58d6b29-69ba-4915-b907-3c2c37ddb7c7",
+          "version_uuid": "c1878c3d-3aee-443e-9230-3e8e339a2764",
+          "description": "This measure extracts key simulation results and performs basic model QAQC checks. Each category of checks provides a description of the source of the check. In some cases the target standards and tollerances are adjustable.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "Target ASHRAE Standard",
+              "display_name_short": "Target ASHRAE Standard",
+              "name": "template",
+              "value_type": "string",
+              "default_value": "90.1-2013",
+              "value": "90.1-2004"
+            },
+            {
+              "display_name": "EUI Reasonableness (General)",
+              "display_name_short": "EUI Reasonableness (General)",
+              "name": "check_eui_reasonableness",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "EUI Reasonableness Tolerance",
+              "display_name_short": "EUI Reasonableness Tolerance",
+              "name": "check_eui_reasonableness_tol",
+              "value_type": "double",
+              "default_value": 0.1,
+              "value": 0.25
+            },
+            {
+              "display_name": "End Use by Category (General)",
+              "display_name_short": "End Use by Category (General)",
+              "name": "check_eui_by_end_use",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "End Use by Category Tolerance",
+              "display_name_short": "End Use by Category Tolerance",
+              "name": "check_eui_by_end_use_tol",
+              "value_type": "double",
+              "default_value": 0.25,
+              "value": 0.25
+            },
+            {
+              "display_name": "Mechanical System Part Load Efficiency (General)",
+              "display_name_short": "Mechanical System Part Load Efficiency (General)",
+              "name": "check_mech_sys_part_load_eff",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Mechanical System Part Load Efficiency Tolerance",
+              "display_name_short": "Mechanical System Part Load Efficiency Tolerance",
+              "name": "check_mech_sys_part_load_eff_tol",
+              "value_type": "double",
+              "default_value": 0.05,
+              "value": 0.25
+            },
+            {
+              "display_name": "Mechanical System Capacity (General)",
+              "display_name_short": "Mechanical System Capacity (General)",
+              "name": "check_mech_sys_capacity",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": false
+            },
+            {
+              "display_name": "Simultaneous Heating and Cooling (General)",
+              "display_name_short": "Simultaneous Heating and Cooling (General)",
+              "name": "check_simultaneous_heating_and_cooling",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Simultaneous Heating and Cooling Max Tolerance",
+              "display_name_short": "Simultaneous Heating and Cooling Max Tolerance",
+              "name": "check_simultaneous_heating_and_cooling_max_tol",
+              "value_type": "double",
+              "default_value": 0.05,
+              "value": 0.25
+            },
+            {
+              "display_name": "Internal Loads (Baseline)",
+              "display_name_short": "Internal Loads (Baseline)",
+              "name": "check_internal_loads",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Internal Loads Tolerance",
+              "display_name_short": "Internal Loads Tolerance",
+              "name": "check_internal_loads_tol",
+              "value_type": "double",
+              "default_value": 0.1,
+              "value": 0.25
+            },
+            {
+              "display_name": "Schedules (Baseline)",
+              "display_name_short": "Schedules (Baseline)",
+              "name": "check_schedules",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Schedules Tolerance",
+              "display_name_short": "Schedules Tolerance",
+              "name": "check_schedules_tol",
+              "value_type": "double",
+              "default_value": 0.05,
+              "value": 0.25
+            },
+            {
+              "display_name": "Envelope R-Value (Baseline)",
+              "display_name_short": "Envelope R-Value (Baseline)",
+              "name": "check_envelope_conductance",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Envelope R-Value Tolerance",
+              "display_name_short": "Envelope R-Value Tolerance",
+              "name": "check_envelope_conductance_tol",
+              "value_type": "double",
+              "default_value": 0.1,
+              "value": 0.25
+            },
+            {
+              "display_name": "Domestic Hot Water (Baseline)",
+              "display_name_short": "Domestic Hot Water (Baseline)",
+              "name": "check_domestic_hot_water",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Domestic Hot Water Tolerance",
+              "display_name_short": "Domestic Hot Water Tolerance",
+              "name": "check_domestic_hot_water_tol",
+              "value_type": "double",
+              "default_value": 0.25,
+              "value": 0.5
+            },
+            {
+              "display_name": "Mechanical System Efficiency (Baseline)",
+              "display_name_short": "Mechanical System Efficiency (Baseline)",
+              "name": "check_mech_sys_efficiency",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Mechanical System Efficiency Tolerance",
+              "display_name_short": "Mechanical System Efficiency Tolerance",
+              "name": "check_mech_sys_efficiency_tol",
+              "value_type": "double",
+              "default_value": 0.1,
+              "value": 0.25
+            },
+            {
+              "display_name": "Baseline Mechanical System Type (Baseline)",
+              "display_name_short": "Baseline Mechanical System Type (Baseline)",
+              "name": "check_mech_sys_type",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": false
+            },
+            {
+              "display_name": "Supply and Zone Air Temperature (Baseline)",
+              "display_name_short": "Supply and Zone Air Temperature (Baseline)",
+              "name": "check_supply_air_and_thermostat_temp_difference",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Supply and Zone Air Temperature Tolerance",
+              "display_name_short": "Supply and Zone Air Temperature Tolerance",
+              "name": "check_supply_air_and_thermostat_temp_difference_tol",
+              "value_type": "double",
+              "default_value": 0.5,
+              "value": 4.0
+            },
+            {
+              "display_name": "Use Upstream Argument Values",
+              "display_name_short": "Use Upstream Argument Values",
+              "name": "use_upstream_args",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            }
+          ],
+          "variables": [],
+          "workflow_index": 11
+        },
+        {
+          "name": "default_feature_reports",
+          "display_name": "DefaultFeatureReports",
+          "measure_type": "ReportingMeasure",
+          "measure_definition_class_name": "DefaultFeatureReports",
+          "measure_definition_directory": "./measures/default_feature_reports",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/urbanopt-reporting-0.7.0/lib/measures/default_feature_reports",
+          "measure_definition_display_name": "DefaultFeatureReports",
+          "measure_definition_name": "default_feature_reports",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "9ee3135a-8070-4408-bfa1-b75fecf9dd4f",
+          "measure_definition_version_uuid": "136d51d4-9a61-48cd-b068-0e02c4094e76",
+          "uuid": "9ee3135a-8070-4408-bfa1-b75fecf9dd4f",
+          "version_uuid": "136d51d4-9a61-48cd-b068-0e02c4094e76",
+          "description": "Writes default_feature_reports.json and default_feature_reports.csv files used by URBANopt Scenario Default Post Processor",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": true
+            },
+            {
+              "display_name": "Feature unique identifier",
+              "display_name_short": "Feature unique identifier",
+              "name": "feature_id",
+              "value_type": "string",
+              "default_value": "1",
+              "value": "1"
+            },
+            {
+              "display_name": "Feature scenario specific name",
+              "display_name_short": "Feature scenario specific name",
+              "name": "feature_name",
+              "value_type": "string",
+              "default_value": "name",
+              "value": "1700 K St NW"
+            },
+            {
+              "display_name": "URBANopt Feature Type",
+              "display_name_short": "URBANopt Feature Type",
+              "name": "feature_type",
+              "value_type": "string",
+              "default_value": "Building",
+              "value": "Building"
+            },
+            {
+              "display_name": "Reporting Frequency",
+              "display_name_short": "Reporting Frequency",
+              "name": "reporting_frequency",
+              "value_type": "string",
+              "default_value": "Timestep",
+              "value": "Timestep"
+            }
+          ],
+          "variables": [],
+          "workflow_index": 12
+        },
+        {
+          "name": "openstudio_results",
+          "display_name": "OpenStudio Results",
+          "measure_type": "ReportingMeasure",
+          "measure_definition_class_name": "OpenStudioResults",
+          "measure_definition_directory": "./measures/openstudio_results",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/seed_to_uo/baseline/.bundle/install/ruby/2.7.0/gems/openstudio-common-measures-0.7.0/lib/measures/openstudio_results",
+          "measure_definition_display_name": "OpenStudio Results",
+          "measure_definition_name": "openstudio_results",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "a25386cd-60e4-46bc-8b11-c755f379d916",
+          "measure_definition_version_uuid": "6b37673b-b0d8-4ab4-8f5a-0a48f170b4e8",
+          "uuid": "a25386cd-60e4-46bc-8b11-c755f379d916",
+          "version_uuid": "6b37673b-b0d8-4ab4-8f5a-0a48f170b4e8",
+          "description": "This measure creates high level tables and charts pulling both from model inputs and EnergyPlus results. It has building level information as well as detail on space types, thermal zones, HVAC systems, envelope characteristics, and economics. Click the heading above a chart to view a table of the chart data.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "Which Unit System do you want to use?",
+              "display_name_short": "Which Unit System do you want to use?",
+              "name": "units",
+              "value_type": "string",
+              "default_value": "IP",
+              "value": "IP"
+            },
+            {
+              "display_name": "Model Summary",
+              "display_name_short": "Model Summary",
+              "name": "building_summary_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Annual Overview",
+              "display_name_short": "Annual Overview",
+              "name": "annual_overview_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Monthly Overview",
+              "display_name_short": "Monthly Overview",
+              "name": "monthly_overview_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Utility Bills/Rates",
+              "display_name_short": "Utility Bills/Rates",
+              "name": "utility_bills_rates_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Envelope Summary",
+              "display_name_short": "Envelope Summary",
+              "name": "envelope_section_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Space Type Breakdown",
+              "display_name_short": "Space Type Breakdown",
+              "name": "space_type_breakdown_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Space Type Summary",
+              "display_name_short": "Space Type Summary",
+              "name": "space_type_details_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Interior Lighting Summary",
+              "display_name_short": "Interior Lighting Summary",
+              "name": "interior_lighting_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Plug Loads Summary",
+              "display_name_short": "Plug Loads Summary",
+              "name": "plug_loads_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Exterior Lighting",
+              "display_name_short": "Exterior Lighting",
+              "name": "exterior_light_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Water Use Equipment",
+              "display_name_short": "Water Use Equipment",
+              "name": "water_use_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "HVAC Load Profiles",
+              "display_name_short": "HVAC Load Profiles",
+              "name": "hvac_load_profile",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Zone Conditions",
+              "display_name_short": "Zone Conditions",
+              "name": "zone_condition_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Zone Overview",
+              "display_name_short": "Zone Overview",
+              "name": "zone_summary_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Zone Equipment Detail",
+              "display_name_short": "Zone Equipment Detail",
+              "name": "zone_equipment_detail_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Air Loops Detail",
+              "display_name_short": "Air Loops Detail",
+              "name": "air_loops_detail_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Plant Loops Detail",
+              "display_name_short": "Plant Loops Detail",
+              "name": "plant_loops_detail_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Outdoor Air",
+              "display_name_short": "Outdoor Air",
+              "name": "outdoor_air_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Cash Flow",
+              "display_name_short": "Cash Flow",
+              "name": "cost_summary_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Site and Source Summary",
+              "display_name_short": "Site and Source Summary",
+              "name": "source_energy_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Schedule Overview",
+              "display_name_short": "Schedule Overview",
+              "name": "schedules_overview_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Measure Warnings",
+              "display_name_short": "Measure Warnings",
+              "name": "measure_warning_section",
+              "value_type": "boolean",
+              "default_value": true,
+              "value": true
+            },
+            {
+              "display_name": "Report monthly fuel and enduse breakdown to registerValue",
+              "display_name_short": "Report monthly fuel and enduse breakdown to registerValue",
+              "name": "reg_monthly_details",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            }
+          ],
+          "variables": [],
+          "workflow_index": 13
+        },
+        {
+          "name": "calibration_reports_enhanced",
+          "display_name": "Calibration Reports Enhanced",
+          "measure_type": "ReportingMeasure",
+          "measure_definition_class_name": "CalibrationReportsEnhanced",
+          "measure_definition_directory": "./measures/CalibrationReportsEnhanced",
+          "measure_definition_directory_local": "/path/to/dissertation-analysis/dc/analysis/lib/activity_to_osa/measures/CalibrationReportsEnhanced",
+          "measure_definition_display_name": "Calibration Reports Enhanced",
+          "measure_definition_name": "calibration_reports_enhanced",
+          "measure_definition_name_xml": null,
+          "measure_definition_uuid": "e6642d40-7366-4647-8724-53a37991d668",
+          "measure_definition_version_uuid": "8b85be87-ddd0-441f-a4f7-503fbcd28450",
+          "uuid": "e6642d40-7366-4647-8724-53a37991d668",
+          "version_uuid": "8b85be87-ddd0-441f-a4f7-503fbcd28450",
+          "description": "This measure is intended for calibibration of modeled results against user entered utility bill.",
+          "arguments": [
+            {
+              "display_name": "Skip Entire Measure",
+              "display_name_short": "Skip",
+              "name": "__SKIP__",
+              "value_type": "boolean",
+              "default_value": false,
+              "value": false
+            },
+            {
+              "display_name": "Electric NMBE limit (%)",
+              "display_name_short": "Electric NMBE limit (%)",
+              "name": "electric_nmbe_limit",
+              "value_type": "double",
+              "default_value": 5.0,
+              "value": 5.0
+            },
+            {
+              "display_name": "Electric CVRMSE limit (%)",
+              "display_name_short": "Electric CVRMSE limit (%)",
+              "name": "electric_cvrmse_limit",
+              "value_type": "double",
+              "default_value": 15.0,
+              "value": 15.0
+            },
+            {
+              "display_name": "Gas NMBE limit (%)",
+              "display_name_short": "Gas NMBE limit (%)",
+              "name": "gas_nmbe_limit",
+              "value_type": "double",
+              "default_value": 5.0,
+              "value": 5.0
+            },
+            {
+              "display_name": "Gas CVRMSE limit (%)",
+              "display_name_short": "Gas CVRMSE limit (%)",
+              "name": "gas_cvrmse_limit",
+              "value_type": "double",
+              "default_value": 15.0,
+              "value": 15.0
+            },
+            {
+              "display_name": "Fuel Oil#2 NMBE limit (%)",
+              "display_name_short": "Fuel Oil#2 NMBE limit (%)",
+              "name": "fuel_oil_nmbe_limit",
+              "value_type": "double",
+              "default_value": 5.0,
+              "value": 5.0
+            },
+            {
+              "display_name": "Fuel Oil#2 CVRMSE limit (%)",
+              "display_name_short": "Fuel Oil#2 CVRMSE limit (%)",
+              "name": "fuel_oil_cvrmse_limit",
+              "value_type": "double",
+              "default_value": 15.0,
+              "value": 15.0
+            }
+          ],
+          "variables": [],
+          "workflow_index": 14
+        }
+      ]
+    },
+    "seed": {
+      "file_type": "OSM",
+      "path": "./seed/in.osm"
+    },
+    "weather_file": {
+      "file_type": "EPW",
+      "path": "./weather/VA_WASHINGTON-DC-REAGAN-AP_724050S_21.epw"
+    },
+    "file_format_version": 1,
+    "cli_debug": "",
+    "cli_verbose": "",
+    "run_workflow_timeout": 28800,
+    "upload_results_timeout": 28800,
+    "initialize_worker_timeout": 28800,
+    "download_zip": false,
+    "download_reports": true,
+    "download_osw": true,
+    "download_osm": true,
+    "gemfile": true,
+    "server_scripts": {}
+  }
+}
