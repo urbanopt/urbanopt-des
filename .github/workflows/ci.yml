@@ -110,6 +110,10 @@ jobs:
           export RUBYLIB="$cli_root/OpenStudio/Ruby"
           export RUBY_DLL_PATH="$cli_root/OpenStudio/Ruby"
           uo --version
+      - name: Set up uv
+        # URBANopt CLI 1.3.0+ shells out to `uv` for its Python tool dependencies
+        # (`uo install_python`); without uv on PATH the CLI aborts.
+        uses: astral-sh/setup-uv@v8.3.2
       - name: Install Poetry
         uses: abatilo/actions-poetry@v4
         with:
@@ -125,6 +129,46 @@ jobs:
       - name: Run mypy
         working-directory: urbanopt-des
         run: poetry run mypy urbanopt_des
+      - name: Restore cached URBANopt building loads (test01)
+        id: cache_uo_test01
+        uses: actions/cache/restore@v4
+        with:
+          # test01 (test_01_from_scratch_workflow_run_uo) runs URBANopt to generate
+          # the building loads under tests/output/from_scratch_workflow. Those outputs
+          # only change when the URBANopt CLI release changes, so cache the whole
+          # from-scratch workspace and let the (idempotent) test skip regeneration
+          # when a valid cache is restored.
+          path: urbanopt-des/tests/output/from_scratch_workflow
+          # Key on the resolved URBANopt CLI version so a new URBANopt release busts
+          # the cache and regenerates the loads; the integration-test hash busts it
+          # when the run workflow itself changes.
+          key: ${{ runner.os }}-uo-test01-loads-${{ steps.urbanopt_cli.outputs.version }}-${{ hashFiles('urbanopt-des/tests/test_uo_cli_from_scratch_integration_test.py') }}
+          restore-keys: |
+            ${{ runner.os }}-uo-test01-loads-${{ steps.urbanopt_cli.outputs.version }}-
       - name: Run pytest
         working-directory: urbanopt-des
-        run: poetry run pytest -v --cov-report term-missing --cov
+        # URBANopt CLI 1.3.0 builds DES system-parameter files in an isolated
+        # `uv tool run --from urbanopt-des==0.2.0`. urbanopt-des 0.2.0 pins
+        # geojson-modelica-translator (GMT) >=0.13.0,<0.14.0, so uv resolves GMT 0.13.0.
+        # GMT only gained 5G ETS pump-flow sizing (ets_pump_flow_rate) in 0.15.0, so the
+        # pinned toolchain leaves ets_pump_flow_rate at the 0.0005 template default and the
+        # 5G from-scratch integration tests fail. Use uv's override mechanism to force the
+        # newer GMT for the CLI's isolated tool env. This propagates through the wrapper's
+        # subprocess environment into `uo des_params`/`install_python`.
+        # TODO: remove once a URBANopt CLI release bumps its bundled urbanopt-des pin to a
+        # version that requires GMT >=0.15.0. Tracking: urbanopt/urbanopt-des#99.
+        env:
+          UV_OVERRIDE: ${{ github.workspace }}/uv-overrides.txt
+        run: |
+          echo "geojson-modelica-translator>=0.15.0,<0.16.0" > "$UV_OVERRIDE"
+          poetry run pytest -v --cov-report term-missing --cov
+      - name: Save URBANopt building loads (test01) to cache
+        # Persist freshly generated building loads only when there was no exact cache
+        # hit and test01 wrote its run-phase handoff artifact (only written after the
+        # URBANopt run is validated). always() lets this run even if later integration
+        # tests (e.g. DES/Docker) fail, so a valid run phase is still cached.
+        if: always() && steps.cache_uo_test01.outputs.cache-hit != 'true' && hashFiles('urbanopt-des/tests/output/from_scratch_workflow/run_phase_artifact.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: urbanopt-des/tests/output/from_scratch_workflow
+          key: ${{ steps.cache_uo_test01.outputs.cache-primary-key }}

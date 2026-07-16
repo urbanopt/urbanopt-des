@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "urbanopt-des"
-version = "0.2.0"
-description = ""
+version = "0.3.0"
+description = "URBANopt district energy systems analysis tools for model generation and post processing."
 authors = ["Nicholas Long <nicholas.long@nlr.gov>"]
 readme = "README.md"
 packages = [{ include = "urbanopt_des", from = "." }]
@@ -10,7 +10,7 @@ packages = [{ include = "urbanopt_des", from = "." }]
 python = ">=3.10,<3.14"
 cyclopts = "^4.21.0"
 
-# Note, in the past, the we had to keep geopandas below 1.0 to keep Shapely <2.0,
+# Note, in the past, we had to keep geopandas below 1.0 to keep Shapely <2.0,
 # which avoided conflicts with nrel-disco's requirements (via pydss).
 # This should have been resolved with downstream dependencies and we can now use
 # our desired version of geopandas
@@ -49,9 +49,9 @@ warn_unused_ignores = true
 check_untyped_defs = false
 
 [tool.pytest.ini_options]
-filterwarnings = [
-	"ignore:The 'shapely.geos' module is deprecated.*:DeprecationWarning:geopandas._compat",
-]
+# filterwarnings = [
+# 	"ignore:The 'shapely.geos' module is deprecated.*:DeprecationWarning:geopandas._compat",
+# ]
 
 [build-system]
 requires = ["poetry-core>=2.0.1"]

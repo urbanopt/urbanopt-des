@@ -1,8 +1,50 @@
 # Changelog
 
-## Version 0.2.0
-
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## Version 0.3.0
+
+## What's Changed
+
+### Exciting New Features 🎉
+
+- Add helper methods for CLI methods and analyses by @nllong in https://github.com/urbanopt/urbanopt-des/pull/83
+
+### Improvements & Bug Fixes 🐛
+
+- Add methods to fix base workflow OSWs by @nllong in https://github.com/urbanopt/urbanopt-des/pull/74
+- Remove hard codes warmup skip and allow empty results, updated to UO CLI 1.2.0 by @nllong in https://github.com/urbanopt/urbanopt-des/pull/78
+- Add uo update cli method to wrapper by @nllong in https://github.com/urbanopt/urbanopt-des/pull/80
+- Improve aggregate method to create single large load by @nllong in https://github.com/urbanopt/urbanopt-des/pull/81
+- Add more building statistics to export CSV by @nllong in https://github.com/urbanopt/urbanopt-des/pull/89
+
+### Bug Fixes 🐞
+
+- Fix building and DES end uses by adding in pump and fans to DES post processing by @nllong in https://github.com/urbanopt/urbanopt-des/pull/79
+- Update location on where dataframes are saved by @nllong in https://github.com/urbanopt/urbanopt-des/pull/82
+- Copy weather files after copying the project by @nllong in https://github.com/urbanopt/urbanopt-des/pull/87
+
+### Dependency Updates 📦
+
+- deps: bump the dev-deps group across 1 directory with 3 updates by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/73
+- deps: bump cyclopts from 4.5.1 to 4.5.2 in the prod-deps group by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/68
+- deps: bump the dev-deps group with 2 updates by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/75
+- deps: bump mypy from 1.20.2 to 2.1.0 in the dev-deps group across 1 directory by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/77
+- deps: bump cyclopts from 4.10.2 to 4.11.0 in the prod-deps group across 1 directory by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/76
+- deps: bump cyclopts from 4.13.0 to 4.15.0 in the prod-deps group by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/84
+- deps: bump the prod-deps group with 2 updates by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/90
+- deps: bump the dev-deps group across 1 directory with 2 updates by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/95
+- deps: bump cyclopts from 4.16.1 to 4.21.0 in the prod-deps group across 1 directory by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/91
+
+### Maintenance 🧹
+
+- ci: bump the actions-deps group across 1 directory with 3 updates by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/72
+- ci: bump actions/checkout from 6 to 7 in the actions-deps group by @dependabot[bot] in https://github.com/urbanopt/urbanopt-des/pull/93
+- Add test for running uo and uo-des with project from scratch by @nllong in https://github.com/urbanopt/urbanopt-des/pull/92
+
+**Full Changelog**: https://github.com/urbanopt/urbanopt-des/compare/v0.2.0...v0.3.0
+
+## Version 0.2.0
 
 ## What's Changed
 
