@@ -12,7 +12,7 @@ jobs:
         python-version: ["3.10", "3.13"]
     runs-on: ${{ matrix.os }}
     env:
-      FROM_SCRATCH_INTEGRATION_TEST: tests/test_uo_cli_from_scratch_integration_test.py
+      FROM_SCRATCH_INTEGRATION_TEST: test_uo_cli_from_scratch_integration_test.py
     steps:
       - uses: actions/checkout@v7
         with:
@@ -145,7 +145,7 @@ jobs:
           # Key on the resolved URBANopt CLI version so a new URBANopt release busts
           # the cache and regenerates the loads; the integration-test hash busts it
           # when the run workflow itself changes.
-          key: ${{ runner.os }}-uo-test01-loads-${{ steps.urbanopt_cli.outputs.version }}-${{ hashFiles(format('urbanopt-des/{0}', env.FROM_SCRATCH_INTEGRATION_TEST)) }}
+          key: ${{ runner.os }}-uo-test01-loads-${{ steps.urbanopt_cli.outputs.version }}-${{ hashFiles(format('urbanopt-des/tests/{0}', env.FROM_SCRATCH_INTEGRATION_TEST)) }}
           restore-keys: |
             ${{ runner.os }}-uo-test01-loads-${{ steps.urbanopt_cli.outputs.version }}-
       - name: Remove cached run-phase artifact marker (test01)
@@ -171,7 +171,7 @@ jobs:
           echo "geojson-modelica-translator>=0.15.0,<0.16.0" > "$UV_OVERRIDE"
           pytest_args=(-v --cov-report term-missing --cov)
           if [ "$RUN_INTENSIVE_FROM_SCRATCH_TESTS" != "true" ]; then
-            pytest_args+=("--ignore=$FROM_SCRATCH_INTEGRATION_TEST")
+            pytest_args+=("--ignore=tests/$FROM_SCRATCH_INTEGRATION_TEST")
           fi
           poetry run pytest "${pytest_args[@]}"
       - name: Save URBANopt building loads (test01) to cache
