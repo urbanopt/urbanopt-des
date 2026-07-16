@@ -20,6 +20,12 @@ class UOCliWrapper:
 
     DEFAULT_UO_VERSION = "1.3.0"
 
+    # URBANopt CLI 1.3.0 replaced the bundled pip/conda Python install with a
+    # `uv`-based flow: install_python and the des_/ghe_/usg_ commands shell out to
+    # `uv tool run`. These require `uv` on PATH. Older CLIs do not.
+    UV_REQUIRED_MIN_UO_VERSION = (1, 3, 0)
+    UV_INSTALL_URL = "https://docs.astral.sh/uv/getting-started/installation/"
+
     _python_bootstrap_attempted = False
 
     # Substrings emitted by pip (via `uo install_python`) when a dependency cannot
@@ -106,6 +112,59 @@ class UOCliWrapper:
     def uo_command_available(self):
         """Return True when the URBANopt CLI executable is available to wrapper commands."""
         return shutil.which("uo", path=self._command_environment()["PATH"]) is not None
+
+    def uv_command_available(self):
+        """Return True when the ``uv`` executable is available to wrapper commands.
+
+        URBANopt CLI 1.3.0+ shells out to ``uv`` to install and run its Python tool
+        dependencies (``install_python`` and the ``des_*`` commands). This mirrors
+        :meth:`uo_command_available` and checks the same PATH the wrapper uses when
+        it invokes the CLI.
+        """
+        return shutil.which("uv", path=self._command_environment()["PATH"]) is not None
+
+    @staticmethod
+    def _version_tuple(version):
+        """Parse a version string into a 3-part integer tuple for comparison.
+
+        Non-numeric suffixes on each segment are ignored (e.g. ``"1.3.0rc1"`` ->
+        ``(1, 3, 0)``); missing segments default to 0.
+        """
+        parts = []
+        for segment in str(version).split(".")[:3]:
+            digits = ""
+            for char in segment:
+                if char.isdigit():
+                    digits += char
+                else:
+                    break
+            parts.append(int(digits) if digits else 0)
+        while len(parts) < 3:
+            parts.append(0)
+        return tuple(parts)
+
+    def _uv_required(self):
+        """Return True when the configured URBANopt CLI version needs ``uv``."""
+        return self._version_tuple(self.uo_version) >= self.UV_REQUIRED_MIN_UO_VERSION
+
+    def _require_uv(self):
+        """Raise a clear, actionable error when ``uv`` is required but missing.
+
+        Raises:
+            RuntimeError: If the configured URBANopt CLI version needs ``uv`` and
+                it is not available on PATH. Without this, the CLI aborts with a
+                bare ``Errno::ENOENT`` traceback that hides the real cause.
+        """
+        if not self._uv_required():
+            return
+        if self.uv_command_available():
+            return
+        raise RuntimeError(
+            f"URBANopt CLI {self.uo_version} requires 'uv' to install and run its Python "
+            "tool dependencies, but 'uv' was not found on PATH. Install uv (recommended "
+            f"version 0.11.6 or later; see {self.UV_INSTALL_URL}) and make sure it is on "
+            "your PATH before calling install_python()/des_params()/des_create()/des_run()."
+        )
 
     def _bootstrap_python_if_needed(self):
         """Attempt to initialize URBANopt python paths if they are missing.
@@ -202,6 +261,7 @@ class UOCliWrapper:
             RuntimeError: If a dependency failed to install or the command exited
                 with a non-zero status.
         """
+        self._require_uv()
         result = self._run_command("uo install_python")
 
         output = ""
@@ -310,6 +370,7 @@ class UOCliWrapper:
         # print the current path
         print(f"Running command: {final_run_command}")
 
+        self._require_uv()
         self._run_command(final_run_command)
 
     def des_create(self, sys_param_path, feature_path, des_name=None, overwrite=False):
@@ -325,6 +386,7 @@ class UOCliWrapper:
         overwrite_flag = " --overwrite" if overwrite else ""
         final_run_command = f"uo des_create --sys-param {sys_param_path} --feature {feature_path}{optional_args}{overwrite_flag}"
         print(f"Running command: {final_run_command}")
+        self._require_uv()
         self._run_command(final_run_command)
 
     def des_run(self, model_path, start_time=None, stop_time=None, step_size=None, interval=None):
@@ -345,6 +407,7 @@ class UOCliWrapper:
         )
         final_run_command = f"uo des_run --model {model_path}{optional_args}"
         print(f"Running command: {final_run_command}")
+        self._require_uv()
         self._run_command(final_run_command)
 
     def run_des(self, des_folder_path, start_time=None, stop_time=None, step_size=None, output_variables=None):
