@@ -145,6 +145,9 @@ jobs:
           key: ${{ runner.os }}-uo-test01-loads-${{ steps.urbanopt_cli.outputs.version }}-${{ hashFiles('urbanopt-des/tests/test_uo_cli_from_scratch_integration_test.py') }}
           restore-keys: |
             ${{ runner.os }}-uo-test01-loads-${{ steps.urbanopt_cli.outputs.version }}-
+      - name: Remove cached run-phase artifact marker (test01)
+        # Ensures the cache-save guard can't be satisfied by a stale marker restored from cache.
+        run: rm -f urbanopt-des/tests/output/from_scratch_workflow/run_phase_artifact.json
       - name: Run pytest
         working-directory: urbanopt-des
         # URBANopt CLI 1.3.0 builds DES system-parameter files in an isolated
