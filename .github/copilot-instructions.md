@@ -89,10 +89,9 @@ Should print `True`. If `False`, the gem is only available via a `:github` ref â
 ```bash
 cd urbanopt_des/activity_to_osa
 ruby -c Gemfile
-ruby -c openstudio-gems.gemspec
 ```
 
-Both must print `Syntax OK`.
+Must print `Syntax OK`.
 
 ### 6. Check the GMT/uv override workaround in CI
 
