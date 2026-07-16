@@ -131,6 +131,7 @@ jobs:
         run: poetry run mypy urbanopt_des
       - name: Restore cached URBANopt building loads (test01)
         id: cache_uo_test01
+        if: matrix.python-version == '3.13'
         uses: actions/cache/restore@v4
         with:
           # test01 (test_01_from_scratch_workflow_run_uo) runs URBANopt to generate
@@ -146,6 +147,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-uo-test01-loads-${{ steps.urbanopt_cli.outputs.version }}-
       - name: Remove cached run-phase artifact marker (test01)
+        if: matrix.python-version == '3.13'
         # Ensures the cache-save guard can't be satisfied by a stale marker restored from cache.
         run: rm -f urbanopt-des/tests/output/from_scratch_workflow/run_phase_artifact.json
       - name: Run pytest
@@ -164,13 +166,17 @@ jobs:
           UV_OVERRIDE: ${{ github.workspace }}/uv-overrides.txt
         run: |
           echo "geojson-modelica-translator>=0.15.0,<0.16.0" > "$UV_OVERRIDE"
-          poetry run pytest -v --cov-report term-missing --cov
+          if [ "${{ matrix.python-version }}" = "3.13" ]; then
+            poetry run pytest -v --cov-report term-missing --cov
+          else
+            poetry run pytest -v --cov-report term-missing --cov --ignore=tests/test_uo_cli_from_scratch_integration_test.py
+          fi
       - name: Save URBANopt building loads (test01) to cache
         # Persist freshly generated building loads only when there was no exact cache
         # hit and test01 wrote its run-phase handoff artifact (only written after the
         # URBANopt run is validated). always() lets this run even if later integration
         # tests (e.g. DES/Docker) fail, so a valid run phase is still cached.
-        if: always() && steps.cache_uo_test01.outputs.cache-hit != 'true' && hashFiles('urbanopt-des/tests/output/from_scratch_workflow/run_phase_artifact.json') != ''
+        if: matrix.python-version == '3.13' && always() && steps.cache_uo_test01.outputs.cache-hit != 'true' && hashFiles('urbanopt-des/tests/output/from_scratch_workflow/run_phase_artifact.json') != ''
         uses: actions/cache/save@v4
         with:
           path: urbanopt-des/tests/output/from_scratch_workflow
