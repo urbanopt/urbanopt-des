@@ -46,7 +46,7 @@ OpenStudio SDK release (not the URBANopt CLI release).
    version and note the mismatch in the PR description.
 2. Fetch that tag's `Gemfile` (and, for reference only, its `openstudio-gems.gemspec` — see
    "Note" below for why we don't copy the gemspec itself). In the `Gemfile`, use the **`elsif
-   !FINAL_PACKAGE` branch** values (plain rubygems-published versions), not the `LOCAL_DEV`
+!FINAL_PACKAGE` branch** values (plain rubygems-published versions), not the `LOCAL_DEV`
    (path-based) or `FINAL_PACKAGE` (github-pinned rubocop fork) branches — ours is a flat
    consumer Gemfile, not the openstudio-gems build repo itself.
 3. Update in our `Gemfile`: `ruby` version, `addressable`, `regexp_parser`, `oslg`, `tbd`,
@@ -64,12 +64,12 @@ OpenStudio SDK release (not the URBANopt CLI release).
    `grep -rn "pycall\|PyCall\|json_schemer\|JSONSchemer" --include="*.rb" .`).
 
 **Note on why there's no gemspec:** upstream's `openstudio-gems.gemspec` exists because that repo
-*publishes* an `openstudio-gems` RubyGem — the gemspec is that gem's dependency contract, and
+_publishes_ an `openstudio-gems` RubyGem — the gemspec is that gem's dependency contract, and
 their Gemfile re-pins the same deps to exact versions purely for their own build/lockfile
 determinism. We never publish or install "openstudio-gems" as a package; our Gemfile is only ever
 `bundle install`'d directly on the OSA worker (registered via `a.gem_files.add(...)` in
 `uo_building_to_osa.rb`). A gemspec here would just duplicate entries with no benefit, and a
-plain `gemspec` directive also silently pulls in upstream's gemspec *development* dependencies
+plain `gemspec` directive also silently pulls in upstream's gemspec _development_ dependencies
 (`rubocop`, `simplecov`, etc.) that we don't need to run measures. Keep it a single flat Gemfile.
 
 ### 4. Verify every pinned gem version is actually published
@@ -128,7 +128,7 @@ poetry run pytest -v --cov-report term-missing --cov
 
 - `urbanopt_des/activity_to_osa/uo_building_to_osa.rb` and `worker_init.sh` are standalone,
   disconnected scripts (not invoked anywhere in the Python package) for an OpenStudio-Server-based
-  calibration workflow. `worker_init.sh` hardcodes `urbanopt-reporting 0.9.1` against a *different*
+  calibration workflow. `worker_init.sh` hardcodes `urbanopt-reporting 0.9.1` against a _different_
   Gemfile (the OpenStudio Server's own, found via `RUBYLIB` at runtime) — leave it alone unless
   explicitly asked, since its target server's OpenStudio version is unknown/independent of this
   repo's pinned CLI version.
