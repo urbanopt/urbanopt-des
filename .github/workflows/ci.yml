@@ -134,7 +134,7 @@ jobs:
       - name: Restore cached URBANopt building loads (test01)
         id: cache_uo_test01
         if: matrix.python-version == '3.13'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           # test01 (test_01_from_scratch_workflow_run_uo) runs URBANopt to generate
           # the building loads under tests/output/from_scratch_workflow. Those outputs
@@ -180,7 +180,7 @@ jobs:
         # URBANopt run is validated). always() lets this run even if later integration
         # tests (e.g. DES/Docker) fail, so a valid run phase is still cached.
         if: matrix.python-version == '3.13' && always() && steps.cache_uo_test01.outputs.cache-hit != 'true' && hashFiles('urbanopt-des/tests/output/from_scratch_workflow/run_phase_artifact.json') != ''
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: urbanopt-des/tests/output/from_scratch_workflow
           key: ${{ steps.cache_uo_test01.outputs.cache-primary-key }}
