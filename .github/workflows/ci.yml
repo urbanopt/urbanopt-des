@@ -31,7 +31,8 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: urbanopt/geojson-modelica-translator
-          ref: develop
+          # TODO: temporary. Point back to `develop` once the GMT `steam-loss` branch is merged down.
+          ref: steam-loss
           path: geojson-modelica-translator
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
