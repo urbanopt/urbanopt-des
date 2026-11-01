@@ -21,7 +21,7 @@ class MockModelicaReader:
         self._time_length = None
 
         # Find the time length from the first non-scalar variable
-        for var_name, data in mock_data.items():
+        for data in mock_data.values():
             if isinstance(data, list) and len(data) > 1:
                 self._time_length = len(data)
                 break

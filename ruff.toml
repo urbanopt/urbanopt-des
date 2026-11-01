@@ -1,5 +1,7 @@
 fix = true
 line-length = 140
+# Matches the lowest Python version supported in pyproject.toml; ruff 0.17 otherwise defaults to 3.11
+target-version = "py310"
 
 [format]
 # preview = true
@@ -56,6 +58,7 @@ ignore = [
     "PLR0912", # too-many-branches
     "PLR0913", # too-many-arguments
     "PLR0915", # too-many-statements
+    "PLR0917", # too-many-positional-arguments
     "PLR2004", # magic-value-comparison
     "PT009",   # pytest-unittest-assertion
     "Q000",    # bad-quotes-inline-string
@@ -66,6 +69,7 @@ ignore = [
     "S607",    # start-process-with-partial-path
     "S701",    # jinja2-autoescape-false
     "SIM108",  # if-else-block-instead-of-if-exp
+    "TRY002",  # raise-vanilla-class
 ]
 
 [lint.per-file-ignores]

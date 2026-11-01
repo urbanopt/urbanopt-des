@@ -676,7 +676,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
         key_value_pairs = {}
         time_values = None
 
-        for name, pattern in patterns.items():
+        for pattern in patterns.values():
             for var in self.modelica_data.varNames(pattern):
                 time, values = self.modelica_data.values(var)  # Unpack the tuple
                 if time_values is None:
@@ -815,18 +815,20 @@ class ModelicaResults(ResultsBase, LoggingMixin):
 
     def calculate_grid_metrics(
         self,
-        meters: list[str] = [
-            "Total Building Electricity",
-            "Total Building Natural Gas",
-            "Total Electricity",
-            "Total Natural Gas",
-            "Total Thermal Cooling Energy",
-            "Total Thermal Heating Energy",
-            "District Loop Energy",
-        ],
+        meters: list[str] | None = None,
     ):
         """Calculate the grid metrics for this building."""
         # recreate the grid_metrics_daily data frame in case we are overwriting it.
+        if meters is None:
+            meters = [
+                "Total Building Electricity",
+                "Total Building Natural Gas",
+                "Total Electricity",
+                "Total Natural Gas",
+                "Total Thermal Cooling Energy",
+                "Total Thermal Heating Energy",
+                "District Loop Energy",
+            ]
         if self.min_15_with_buildings is None:
             raise ValueError("min_15_with_buildings must be initialized before calculating grid metrics")
 
@@ -960,18 +962,7 @@ class ModelicaResults(ResultsBase, LoggingMixin):
 
     def save_dataframes(
         self,
-        dfs_to_save: list = [
-            "min_5",
-            "min_15",
-            "min_60",
-            "min_15_with_buildings",
-            "min_60_with_buildings",
-            "monthly",
-            "data_annual",
-            "end_use_summary",
-            "grid_metrics_daily",
-            "grid_metrics_annual",
-        ],
+        dfs_to_save: list | None = None,
     ):
         """Save all of the dataframes, assuming they are defined
 
@@ -980,6 +971,19 @@ class ModelicaResults(ResultsBase, LoggingMixin):
             'min_15_with_buildings', 'min_60_with_buildings', 'monthly', 'data_annual', 'end_use_summary',
             'grid_metrics_daily', 'grid_metrics_annual'].
         """
+        if dfs_to_save is None:
+            dfs_to_save = [
+                "min_5",
+                "min_15",
+                "min_60",
+                "min_15_with_buildings",
+                "min_60_with_buildings",
+                "monthly",
+                "data_annual",
+                "end_use_summary",
+                "grid_metrics_daily",
+                "grid_metrics_annual",
+            ]
         if self.min_5 is not None and "min_5" in dfs_to_save:
             self.min_5.to_csv(self.path / "power_5min.csv")
         if self.min_15 is not None and "min_15" in dfs_to_save:

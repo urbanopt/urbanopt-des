@@ -4,7 +4,7 @@
 # helpers to build an analysis
 # mypy: disable-error-code="union-attr,index,arg-type,return-value,attr-defined,assignment,syntax,operator"
 import copy
-import datetime
+import datetime as dt
 import json
 import math
 import warnings
@@ -376,22 +376,24 @@ class URBANoptAnalysis:
 
     def save_dataframes(
         self,
-        dfs_to_save: list = [
-            "min_5",
-            "min_15",
-            "min_60",
-            "min_15_with_buildings",
-            "min_60_with_buildings",
-            "monthly",
-            "annual",
-            "end_use_summary",
-            "grid_metrics_daily",
-            "grid_metrics_annual",
-            "grid_summary",
-        ],
+        dfs_to_save: list | None = None,
     ) -> None:
         """For all of the analyses, save the dataframes. Does NOT save the URBANopt results in the modelica paths."""
 
+        if dfs_to_save is None:
+            dfs_to_save = [
+                "min_5",
+                "min_15",
+                "min_60",
+                "min_15_with_buildings",
+                "min_60_with_buildings",
+                "monthly",
+                "annual",
+                "end_use_summary",
+                "grid_metrics_daily",
+                "grid_metrics_annual",
+                "grid_summary",
+            ]
         self.urbanopt.save_dataframes()
 
         for analysis_name in self.modelica:
@@ -512,8 +514,8 @@ class URBANoptAnalysis:
             }
 
             # add agg columns for each building
-            for key, _ in building_aggs.items():
-                building_aggs[key]["agg_columns"] = []
+            for agg in building_aggs.values():
+                agg["agg_columns"] = []
 
             # Note: Building-level components come from OpenStudio results via combine_with_openstudio_results()
             # Set them as passthrough (empty agg_columns) since they're already created
@@ -1079,13 +1081,13 @@ class URBANoptAnalysis:
                                 if reading["converted_value"] > peaks["electricity"]:
                                     # kwh
                                     peaks["electricity"] = reading["converted_value"]
-                                    peaks["electricity_month"] = datetime.datetime.fromisoformat(reading["start_time"]).month
+                                    peaks["electricity_month"] = dt.datetime.fromisoformat(reading["start_time"]).month
                         elif meter["type"] == "Natural Gas":
                             meter_info["number_of_gas_meters"] += 1
                             for reading in meter["readings"]:
                                 if reading["converted_value"] > peaks["natural_gas"]:
                                     peaks["natural_gas"] = reading["converted_value"]
-                                    peaks["natural_gas_month"] = datetime.datetime.fromisoformat(reading["start_time"]).month
+                                    peaks["natural_gas_month"] = dt.datetime.fromisoformat(reading["start_time"]).month
                         else:
                             meter_info["number_of_other_meters"] += 1
                             print(f"WARNING: Not calculating peak for meter type: {meter['type']}")
@@ -1195,10 +1197,8 @@ class URBANoptAnalysis:
             for analysis_name in ["Non-Connected", *list(self.modelica.keys())]:
                 summary_data_columns.append(analysis_name)
                 if analysis_name == "Non-Connected":
-                    self.urbanopt.grid_metrics_daily
                     df_annual = self.urbanopt.grid_metrics_annual
                 else:
-                    self.modelica[analysis_name].grid_metrics_daily
                     df_annual = self.modelica[analysis_name].grid_metrics_annual
 
                 # print(df_annual)
