@@ -45,6 +45,13 @@ STEAM_VARIABLE_PATTERNS: dict[str, list[str]] = {
     "leak_flow": [r"losMak\.mLea_flow"],
     "makeup_flow": [r"losMak\.mMak_flow"],
     "discharge_flow": [r"losMak\.mDum_flow"],
+    # GMT losMak after 2026-11-01: sewer tempering water and discharged condensate temperature
+    "tempering_flow": [r"losMak\.mTem_flow"],
+    "discharge_temperature": [r"losMak\.TDum"],
+    # Plant states used for the blowdown and deaerator accounting (PlantWaterSide)
+    "boiler_pressure": [r"pla\.boi\.vol\.p", r"pSat"],
+    "feedwater_enthalpy": [r"pla\.pumFW\.port_a\.h_outflow"],
+    "boiler_efficiency": [r"pla\.boi\.eta"],
 }
 
 # Hourly column names produced by SteamResults.hourly
@@ -57,6 +64,12 @@ COL_LOSS = "Supply main heat loss"
 COL_LEAK = "Steam leak flow"
 COL_MAKEUP = "Make-up water flow"
 COL_DISCHARGE = "Discharged condensate flow"
+COL_TEMPERING = "Sewer tempering water flow"
+COL_BLOWDOWN = "Boiler blowdown flow"
+COL_DA_VENT = "Deaerator vent steam flow"
+COL_BLOWDOWN_HEAT = "Blowdown heat"
+COL_DA_VENT_HEAT = "Deaerator vent heat"
+COL_WATER_SIDE_FUEL = "Blowdown and deaerator fuel"
 WATER_DENSITY = 1000.0  # kg/m3, matches losMak.rhoWat
 
 
@@ -72,6 +85,71 @@ class SteamFuel:
     lower_heating_value: float = 50e6  # J/kg
     density: float = 0.84  # kg/m3
     co2_per_kg: float = 2.23  # kg CO2 / kg fuel
+
+
+# Saturated water and steam (steam tables), pressure in kPa and enthalpy in kJ/kg
+_SAT_P_KPA = np.array([101.325, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 1000.0, 1500.0])
+_SAT_HF_KJ = np.array([419.1, 504.7, 561.5, 604.7, 640.2, 670.4, 697.0, 720.9, 762.6, 844.7])
+_SAT_HG_KJ = np.array([2675.6, 2706.2, 2724.9, 2738.1, 2748.1, 2756.1, 2762.8, 2768.3, 2777.1, 2791.0])
+# MBL water media: h = cp (T - 273.15) with cp = 4184 J/(kg K)
+CP_WATER = 4184.0
+
+
+def saturated_liquid_enthalpy(pressure_pa):
+    """Saturated liquid enthalpy (J/kg) at an absolute pressure (Pa), 101 kPa to 1.5 MPa."""
+    return np.interp(np.asarray(pressure_pa, dtype=float) / 1000, _SAT_P_KPA, _SAT_HF_KJ) * 1000
+
+
+def saturated_vapor_enthalpy(pressure_pa):
+    """Saturated vapor enthalpy (J/kg) at an absolute pressure (Pa), 101 kPa to 1.5 MPa."""
+    return np.interp(np.asarray(pressure_pa, dtype=float) / 1000, _SAT_P_KPA, _SAT_HG_KJ) * 1000
+
+
+@dataclass(frozen=True)
+class PlantWaterSide:
+    """Boiler blowdown and deaerator vent losses, added to the simulated plant in post-processing.
+
+    The MBL steam plant (``Buildings.DHC.Plants.Steam.SingleBoiler``) has no blowdown stream and no
+    deaerator, so both are computed from the simulated plant steam flow, make-up water, feedwater
+    temperature, boiler pressure and boiler efficiency, then added to boiler heat, fuel and water use.
+
+    Blowdown: a solids balance on the make-up water, which carries the dissolved solids (returned
+    condensate is nearly pure). With ``C`` cycles of concentration, blowdown = make-up / C, and the
+    make-up also replaces the blowdown, so blowdown = (other make-up) / (C - 1). Blowdown leaves at the
+    saturated liquid enthalpy of the boiler. It flashes at atmospheric pressure (flash steam vented) and
+    the remaining 100 C liquid is tempered with city water to the sewer limit.
+    DOE Steam Tip Sheet #9 (2012): blowdown is typically 4-8% of feedwater, up to 10% with high-solids
+    make-up. The default of 15 cycles gives 6.7% of feedwater with no condensate return.
+
+    Deaerator: feedwater is heated to ``deaerator_temperature`` with plant steam. That heating steam
+    only moves heating from the boiler to the deaerator and is not a loss. A fraction of it is vented
+    with the non-condensable gases; the vented steam is lost and replaced by make-up water.
+    DOE Steam Tip Sheet #18 (2012): the vent is usually 5-14% of the deaerator steam, highest with cold
+    make-up water.
+
+    :param cycles_of_concentration: boiler water solids / make-up water solids (> 1)
+    :param blowdown_heat_recovery: fraction of the blowdown heat recovered (flash tank, heat exchanger)
+    :param deaerator_temperature: deaerator outlet temperature (C)
+    :param deaerator_vent_fraction: vented share of the deaerator heating steam
+    :param makeup_water_temperature: city water temperature (C)
+    :param sewer_temperature_limit: maximum sewer discharge temperature (C)
+    """
+
+    cycles_of_concentration: float = 15.0
+    blowdown_heat_recovery: float = 0.0
+    deaerator_temperature: float = 105.0
+    deaerator_vent_fraction: float = 0.10
+    makeup_water_temperature: float = 12.0
+    sewer_temperature_limit: float = 60.0
+
+    def __post_init__(self) -> None:
+        if self.cycles_of_concentration <= 1:
+            raise ValueError("cycles_of_concentration must be greater than 1")
+        for name in ("blowdown_heat_recovery", "deaerator_vent_fraction"):
+            if not 0 <= getattr(self, name) <= 1:
+                raise ValueError(f"{name} must be between 0 and 1")
+        if self.sewer_temperature_limit <= self.makeup_water_temperature:
+            raise ValueError("sewer_temperature_limit must be above makeup_water_temperature")
 
 
 def _natural_key(name: str) -> list:
@@ -96,6 +174,8 @@ class SteamResults(LoggingMixin):
     :param stop_time: simulation stop time, in seconds. Defaults to the last time in the result.
     :param exclude_startup_seconds: initial period excluded from totals and peaks (startup transient).
     :param fuel: fuel properties.
+    :param water_side: boiler blowdown and deaerator vent losses to add (``PlantWaterSide``); None to report
+        the simulated plant only.
     """
 
     mat_filename: Path | None = None
@@ -105,6 +185,7 @@ class SteamResults(LoggingMixin):
     stop_time: float | None = None
     exclude_startup_seconds: float = SECONDS_PER_HOUR
     fuel: SteamFuel = field(default_factory=SteamFuel)
+    water_side: PlantWaterSide | None = None
 
     def __post_init__(self) -> None:
         if self.reader is None:
@@ -161,7 +242,7 @@ class SteamResults(LoggingMixin):
     def raw_series(self) -> dict[str, pd.Series | None]:
         """Native-resolution time series (W) for each quantity, indexed by seconds."""
         v = self.variables
-        return {
+        series = {
             COL_FUEL: self._series(v["fuel"][0]),
             COL_BOILER: self._series(v["boiler_heat"][0]) if v["boiler_heat"] else None,
             COL_DELIVERED: self._sum_series(v["delivered"]),
@@ -171,7 +252,78 @@ class SteamResults(LoggingMixin):
             COL_LEAK: self._series(v["leak_flow"][0]) if v["leak_flow"] else None,
             COL_MAKEUP: self._series(v["makeup_flow"][0]) if v["makeup_flow"] else None,
             COL_DISCHARGE: self._series(v["discharge_flow"][0]) if v["discharge_flow"] else None,
+            COL_TEMPERING: self._series(v["tempering_flow"][0]) if v["tempering_flow"] else None,
         }
+        if self.water_side is not None:
+            series = self._add_water_side(series)
+        return series
+
+    def _on(self, index: pd.Index, key: str) -> np.ndarray | None:
+        """First variable of ``key`` interpolated onto ``index``, or None if not in the result."""
+        if not self.variables[key]:
+            return None
+        s = self._series(self.variables[key][0])
+        return np.interp(index.to_numpy(), s.index.to_numpy(), s.to_numpy())
+
+    def _add_water_side(self, series: dict) -> dict:
+        """Add boiler blowdown and the deaerator vent to boiler heat, fuel, make-up and tempering water."""
+        ws = self.water_side
+        fuel = series[COL_FUEL]
+        idx = fuel.index
+        steam = self._on(idx, "plant_steam_flow")
+        h_feed = self._on(idx, "feedwater_enthalpy")
+        p_boi = self._on(idx, "boiler_pressure")
+        if steam is None or h_feed is None or p_boi is None:
+            raise KeyError("Blowdown and deaerator accounting needs pla.port_bSerHea.m_flow, pla.pumFW.port_a.h_outflow and pla.boi.vol.p")
+        steam = np.abs(steam)
+        eta = self._on(idx, "boiler_efficiency")
+        if eta is None:
+            boiler = series[COL_BOILER]
+            eta = np.full(len(idx), np.trapezoid(boiler.to_numpy(), boiler.index) / np.trapezoid(fuel.to_numpy(), idx))
+        makeup = self._on(idx, "makeup_flow")
+        makeup = np.zeros(len(idx)) if makeup is None else makeup
+
+        h_mak = CP_WATER * ws.makeup_water_temperature
+        h_da = CP_WATER * ws.deaerator_temperature
+        h_f = saturated_liquid_enthalpy(p_boi)
+        h_g = saturated_vapor_enthalpy(p_boi)
+        c = ws.cycles_of_concentration
+        # deaerator vent and blowdown depend on each other through the feedwater flow; two passes converge
+        blowdown = makeup / (c - 1)
+        for _ in range(2):
+            feed = steam + blowdown
+            heating_steam = feed * np.clip(h_da - h_feed, 0, None) / (h_g - h_da)
+            vent = ws.deaerator_vent_fraction * heating_steam
+            blowdown = (makeup + vent) / (c - 1)
+        q_blowdown = blowdown * (h_f - h_mak) * (1 - ws.blowdown_heat_recovery)
+        q_vent = vent * (h_g - h_mak)
+        extra_fuel = (q_blowdown + q_vent) / eta
+        # blowdown flashes at atmospheric pressure; the 100 C liquid is tempered to the sewer limit
+        h_f_atm, h_fg_atm = _SAT_HF_KJ[0] * 1000, (_SAT_HG_KJ[0] - _SAT_HF_KJ[0]) * 1000
+        liquid = blowdown * (1 - np.clip((h_f - h_f_atm) / h_fg_atm, 0, 1))
+        tempering = liquid * max(100.0 - ws.sewer_temperature_limit, 0) / (ws.sewer_temperature_limit - ws.makeup_water_temperature)
+
+        def as_series(values: np.ndarray) -> pd.Series:
+            return pd.Series(values, index=idx)
+
+        def plus(col: str, values: np.ndarray) -> pd.Series:
+            base = series[col]
+            if base is None:
+                return as_series(values)
+            return as_series(np.interp(idx.to_numpy(), base.index.to_numpy(), base.to_numpy()) + values)
+
+        out = dict(series)
+        out[COL_FUEL] = fuel + extra_fuel
+        out[COL_BOILER] = plus(COL_BOILER, q_blowdown + q_vent)
+        out[COL_MAKEUP] = as_series(makeup + blowdown + vent)
+        # losses simulated with an older GMT that did not report tempering water: leave it unknown
+        out[COL_TEMPERING] = None if (self.has_losses and series[COL_TEMPERING] is None) else plus(COL_TEMPERING, tempering)
+        out[COL_BLOWDOWN] = as_series(blowdown)
+        out[COL_DA_VENT] = as_series(vent)
+        out[COL_BLOWDOWN_HEAT] = as_series(q_blowdown)
+        out[COL_DA_VENT_HEAT] = as_series(q_vent)
+        out[COL_WATER_SIDE_FUEL] = as_series(extra_fuel)
+        return out
 
     @property
     def has_losses(self) -> bool:
@@ -227,7 +379,14 @@ class SteamResults(LoggingMixin):
         month_starts = pd.date_range(t0, periods=13, freq="MS")
         edges = np.clip((month_starts - t0).total_seconds().to_numpy(), t_lo, t_hi)
         data = {}
-        mass_cols = {COL_LEAK: 1000.0, COL_MAKEUP: WATER_DENSITY, COL_DISCHARGE: WATER_DENSITY}
+        mass_cols = {
+            COL_LEAK: 1000.0,
+            COL_MAKEUP: WATER_DENSITY,
+            COL_DISCHARGE: WATER_DENSITY,
+            COL_TEMPERING: WATER_DENSITY,
+            COL_BLOWDOWN: WATER_DENSITY,
+            COL_DA_VENT: 1000.0,
+        }
         for col, series in self.raw_series().items():
             if series is None:
                 continue
@@ -272,9 +431,53 @@ class SteamResults(LoggingMixin):
             "Number of buildings": self.number_of_buildings,
             "Supply main heat loss [GJ]": self._integrate(r[COL_LOSS]) / J_PER_GJ if self.has_losses else 0.0,
             "Steam leaked [t]": self._integrate(r[COL_LEAK]) / 1000 if self.has_losses else 0.0,
-            "Make-up water [m3]": self._integrate(r[COL_MAKEUP]) / WATER_DENSITY if self.has_losses else 0.0,
+            "Make-up water [m3]": self._integrate(r[COL_MAKEUP]) / WATER_DENSITY if r[COL_MAKEUP] is not None else 0.0,
             "Discharged condensate [m3]": self._integrate(r[COL_DISCHARGE]) / WATER_DENSITY if self.has_losses else 0.0,
+            "Discharged condensate temperature [C]": self._discharge_temperature(),
+            "Sewer tempering water [m3]": self._tempering_water(r),
+            "Total water use [m3]": self._makeup_plus_tempering(r),
+        } | self._water_side_summary(r)
+
+    def _water_side_summary(self, r: dict) -> dict[str, float]:
+        if self.water_side is None:
+            return {}
+        fuel_ws = self._integrate(r[COL_WATER_SIDE_FUEL])
+        blowdown = self._integrate(r[COL_BLOWDOWN])
+        feed = self.annual_plant_steam_mass() + blowdown
+        return {
+            "Simulated fuel (no blowdown, deaerator) [GJ]": (self._integrate(r[COL_FUEL]) - fuel_ws) / J_PER_GJ,
+            "Blowdown and deaerator fuel [GJ]": fuel_ws / J_PER_GJ,
+            "Blowdown [m3]": blowdown / WATER_DENSITY,
+            "Blowdown share of feedwater [%]": 100 * blowdown / feed if feed else float("nan"),
+            "Blowdown heat [GJ]": self._integrate(r[COL_BLOWDOWN_HEAT]) / J_PER_GJ,
+            "Deaerator vent steam [t]": self._integrate(r[COL_DA_VENT]) / 1000,
+            "Deaerator vent heat [GJ]": self._integrate(r[COL_DA_VENT_HEAT]) / J_PER_GJ,
         }
+
+    def _tempering_water(self, r: dict) -> float:
+        """City water (m3) that cools the discharged condensate to the sewer limit.
+
+        0 without losses; NaN for loss results from GMT versions that did not report it.
+        """
+        if r[COL_TEMPERING] is None:
+            return float("nan") if self.has_losses else 0.0
+        return self._integrate(r[COL_TEMPERING]) / WATER_DENSITY
+
+    def _makeup_plus_tempering(self, r: dict) -> float:
+        if r[COL_MAKEUP] is None:
+            return 0.0
+        return self._integrate(r[COL_MAKEUP]) / WATER_DENSITY + self._tempering_water(r)
+
+    def _discharge_temperature(self) -> float:
+        """Discharge-flow-weighted mean temperature (C) of the discharged condensate; NaN if not available."""
+        v = self.variables
+        if not v["discharge_temperature"] or not v["discharge_flow"]:
+            return float("nan")
+        m = self._series(v["discharge_flow"][0])
+        t = self._series(v["discharge_temperature"][0])
+        t = pd.Series(np.interp(m.index.to_numpy(), t.index.to_numpy(), t.to_numpy()), index=m.index)
+        mass = self._integrate(m)
+        return self._integrate(m * (t - 273.15)) / mass if mass > 0 else float("nan")
 
     def to_uo_des_columns(self) -> pd.DataFrame:
         """Hourly power (W) using the standard UO DES column names, for comparison with 4G/5G results.
@@ -371,3 +574,43 @@ def steam_loss_parameters(
         "condensate_return_fraction": condensate_return_fraction,
         "makeup_water_temperature": makeup_water_temperature,
     }
+
+
+def compare_steam_scenarios(results: dict[str, SteamResults], baseline: str) -> pd.DataFrame:
+    """Annual metrics of several steam scenarios side by side, with the change from a baseline scenario.
+
+    :param results: {scenario name: SteamResults}
+    :param baseline: name of the baseline scenario in ``results`` (e.g., the lossless run)
+    :return: DataFrame with one row per scenario: fuel, boiler heat, delivered heat, losses, water, CO2,
+        efficiency, peak fuel, and fuel / CO2 change vs the baseline
+    """
+    if baseline not in results:
+        raise KeyError(f"baseline {baseline!r} is not in results")
+    columns = [
+        "Total energy in (fuel, LHV) [GJ]",
+        "Boiler useful heat [GJ]",
+        "Delivered to buildings [GJ]",
+        "Supply main heat loss [GJ]",
+        "Steam leaked [t]",
+        "Make-up water [m3]",
+        "Discharged condensate [m3]",
+        "Sewer tempering water [m3]",
+        "Total water use [m3]",
+        "CO2 [t]",
+        "System efficiency [%]",
+        "Peak fuel rate [kW]",
+    ]
+    optional = ["Blowdown [m3]", "Deaerator vent steam [t]", "Blowdown and deaerator fuel [GJ]"]
+    df = pd.DataFrame({name: r.annual_summary() for name, r in results.items()}).T
+    df = df[columns + [c for c in optional if c in df.columns]]
+    base = df.loc[baseline]
+    fuel = "Total energy in (fuel, LHV) [GJ]"
+    df["Fuel vs baseline [%]"] = 100 * (df[fuel] - base[fuel]) / base[fuel]
+    df["Extra fuel vs baseline [GJ]"] = df[fuel] - base[fuel]
+    df["Extra CO2 vs baseline [t]"] = df["CO2 [t]"] - base["CO2 [t]"]
+    df["Make-up water share of steam [%]"] = [
+        100 * df.loc[name, "Make-up water [m3]"] * 1000 / r.annual_plant_steam_mass() if r.variables["plant_steam_flow"] else float("nan")
+        for name, r in results.items()
+    ]
+    df.index.name = "Scenario"
+    return df

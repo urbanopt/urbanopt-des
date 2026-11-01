@@ -6,7 +6,15 @@ import math
 import pytest
 
 from tests.mock_modelica_reader import MockModelicaReader
-from urbanopt_des.steam_results import SteamResults, compare_to_targets, steam_loss_parameters
+from urbanopt_des.steam_results import (
+    PlantWaterSide,
+    SteamResults,
+    compare_steam_scenarios,
+    compare_to_targets,
+    saturated_liquid_enthalpy,
+    saturated_vapor_enthalpy,
+    steam_loss_parameters,
+)
 
 HOURS = 25  # one day of hourly data, t = 0 ... 86400 s
 SECONDS_INTEGRATED = (HOURS - 1) * 3600 - 3600  # first hour excluded as the startup transient
@@ -115,6 +123,8 @@ def _mock_with_losses() -> MockModelicaReader:
             "losMak.mLea_flow": [0.001] * HOURS,
             "losMak.mDum_flow": [0.002] * HOURS,
             "losMak.mMak_flow": [0.003] * HOURS,
+            "losMak.mTem_flow": [0.0016] * HOURS,
+            "losMak.TDum": [373.15] * HOURS,
         },
     )
     return MockModelicaReader(data)
@@ -129,6 +139,9 @@ def test_loss_metrics():
     assert s["Steam leaked [t]"] == pytest.approx(0.001 * t / 1000)
     assert s["Make-up water [m3]"] == pytest.approx(0.003 * t / 1000)
     assert s["Discharged condensate [m3]"] == pytest.approx(0.002 * t / 1000)
+    assert s["Sewer tempering water [m3]"] == pytest.approx(0.0016 * t / 1000)
+    assert s["Total water use [m3]"] == pytest.approx((0.003 + 0.0016) * t / 1000)
+    assert s["Discharged condensate temperature [C]"] == pytest.approx(100.0)
     m = res.monthly()
     assert m["Make-up water flow"].sum() == pytest.approx(s["Make-up water [m3]"])
 
@@ -162,3 +175,107 @@ def test_steam_loss_parameters_calibration():
         steam_loss_parameters(SteamResults(reader=_mock_with_losses()), 0.1, 0.1)
     with pytest.raises(ValueError, match="leak_share"):
         steam_loss_parameters(baseline, 1.5, 0.1)
+
+
+def test_compare_steam_scenarios():
+    base_data = dict(_mock()._mock_data) | {"pla.port_bSerHea.m_flow": [-0.5] * HOURS}
+    loss_data = dict(_mock_with_losses()._mock_data) | {"pla.port_bSerHea.m_flow": [-0.5] * HOURS}
+    loss_data["pla.QFue_flow"] = [x * 1.2 for x in loss_data["pla.QFue_flow"]]
+    results = {
+        "S0": SteamResults(reader=MockModelicaReader(base_data)),
+        "S2": SteamResults(reader=MockModelicaReader(loss_data)),
+    }
+    df = compare_steam_scenarios(results, "S0")
+    assert list(df.index) == ["S0", "S2"]
+    assert df.loc["S0", "Fuel vs baseline [%]"] == pytest.approx(0.0)
+    assert df.loc["S2", "Fuel vs baseline [%]"] == pytest.approx(20.0)
+    assert df.loc["S0", "Make-up water [m3]"] == 0.0
+    # make-up 0.003 kg/s against 0.5 kg/s of steam
+    assert df.loc["S2", "Make-up water share of steam [%]"] == pytest.approx(0.6)
+    with pytest.raises(KeyError):
+        compare_steam_scenarios(results, "missing")
+
+
+def test_tempering_missing_in_old_results():
+    data = dict(_mock_with_losses()._mock_data)
+    data.pop("losMak.mTem_flow")
+    data.pop("losMak.TDum")
+    s = SteamResults(reader=MockModelicaReader(data)).annual_summary()
+    assert math.isnan(s["Sewer tempering water [m3]"])
+    assert math.isnan(s["Discharged condensate temperature [C]"])
+
+
+def test_lossless_has_no_water_use():
+    s = SteamResults(reader=_mock()).annual_summary()
+    assert s["Total water use [m3]"] == 0.0
+    assert s["Sewer tempering water [m3]"] == 0.0
+
+
+def _mock_water_side(feed_temperature: float = 60.0, losses: bool = True) -> MockModelicaReader:
+    base = _mock_with_losses() if losses else _mock()
+    data = dict(base._mock_data)
+    data.update(
+        {
+            "pla.port_bSerHea.m_flow": [-0.5] * HOURS,
+            "pla.pumFW.port_a.h_outflow": [4184.0 * feed_temperature] * HOURS,
+            "pla.boi.vol.p": [5e5] * HOURS,
+            "pla.boi.eta": [0.7] * HOURS,
+        }
+    )
+    return MockModelicaReader(data)
+
+
+def test_saturation_enthalpies():
+    assert saturated_liquid_enthalpy(5e5) == pytest.approx(640.2e3)
+    assert saturated_vapor_enthalpy(101325) == pytest.approx(2675.6e3)
+
+
+def test_water_side_blowdown_and_deaerator():
+    ws = PlantWaterSide(cycles_of_concentration=11, deaerator_vent_fraction=0.1)
+    plain = SteamResults(reader=_mock_water_side()).annual_summary()
+    res = SteamResults(reader=_mock_water_side(), water_side=ws)
+    s = res.annual_summary()
+    t = SECONDS_INTEGRATED
+
+    h_da, h_feed, h_g, h_f, h_mak = 4184.0 * 105, 4184.0 * 60, 2748.1e3, 640.2e3, 4184.0 * 12
+    blowdown = 0.003 / 10
+    for _ in range(2):
+        vent = 0.1 * (0.5 + blowdown) * (h_da - h_feed) / (h_g - h_da)
+        blowdown = (0.003 + vent) / 10
+    assert s["Blowdown [m3]"] == pytest.approx(blowdown * t / 1000)
+    assert s["Deaerator vent steam [t]"] == pytest.approx(vent * t / 1000)
+    assert s["Make-up water [m3]"] == pytest.approx((0.003 + blowdown + vent) * t / 1000)
+    q = blowdown * (h_f - h_mak) + vent * (h_g - h_mak)
+    assert s["Blowdown and deaerator fuel [GJ]"] == pytest.approx(q / 0.7 * t / 1e9)
+    # simulated fuel is unchanged; the total adds the blowdown and deaerator fuel
+    assert s["Simulated fuel (no blowdown, deaerator) [GJ]"] == pytest.approx(plain["Total energy in (fuel, LHV) [GJ]"])
+    assert s["Total energy in (fuel, LHV) [GJ]"] == pytest.approx(plain["Total energy in (fuel, LHV) [GJ]"] + q / 0.7 * t / 1e9)
+    assert s["Boiler useful heat [GJ]"] == pytest.approx(plain["Boiler useful heat [GJ]"] + q * t / 1e9)
+    # blowdown is tempered after flashing at atmospheric pressure
+    flash = (h_f - 419.1e3) / (2675.6e3 - 419.1e3)
+    extra_tempering = blowdown * (1 - flash) * 40 / 48 * t / 1000
+    assert s["Sewer tempering water [m3]"] == pytest.approx(plain["Sewer tempering water [m3]"] + extra_tempering)
+    assert s["Total water use [m3]"] == pytest.approx(s["Make-up water [m3]"] + s["Sewer tempering water [m3]"])
+    m = res.monthly()
+    assert m["Boiler blowdown flow"].sum() == pytest.approx(s["Blowdown [m3]"])
+
+
+def test_water_side_without_losses_and_hot_feedwater():
+    """Lossless plant with feedwater above the deaerator temperature: no make-up, no vent, no blowdown."""
+    s = SteamResults(reader=_mock_water_side(feed_temperature=110.0, losses=False), water_side=PlantWaterSide()).annual_summary()
+    assert s["Blowdown [m3]"] == 0.0
+    assert s["Deaerator vent steam [t]"] == 0.0
+    assert s["Total water use [m3]"] == 0.0
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"cycles_of_concentration": 1.0}, "cycles_of_concentration"),
+        ({"deaerator_vent_fraction": 1.5}, "deaerator_vent_fraction"),
+        ({"sewer_temperature_limit": 10.0}, "sewer_temperature_limit"),
+    ],
+)
+def test_water_side_validation(kwargs, match):
+    with pytest.raises(ValueError, match=match):
+        PlantWaterSide(**kwargs)
