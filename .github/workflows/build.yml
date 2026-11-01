@@ -28,7 +28,7 @@ jobs:
         if: steps.check_gmt.outputs.using_local == 'false'
         uses: actions/setup-python@v7
         with:
-          python-version: "3.x"
+          python-version: "3.13"
       - name: Install Poetry
         if: steps.check_gmt.outputs.using_local == 'false'
         uses: abatilo/actions-poetry@v4
