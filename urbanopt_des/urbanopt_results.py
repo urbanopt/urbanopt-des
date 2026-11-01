@@ -84,20 +84,22 @@ class URBANoptResults(ResultsBase):
 
     def calculate_grid_metrics(
         self,
-        meters: list[str] = [
-            "Total Building Electricity",
-            "Total Building Natural Gas",
-            "Total Electricity",
-            "Total Natural Gas",
-            "Total Thermal Cooling Energy",
-            "Total Thermal Heating Energy",
-            "District Loop Energy",
-        ],
+        meters: list[str] | None = None,
     ):
         # TODO: move this to a base class!!!
 
         """Calculate the grid metrics for this building."""
         # recreate the grid_metrics_daily data frame in case we are overwriting it.
+        if meters is None:
+            meters = [
+                "Total Building Electricity",
+                "Total Building Natural Gas",
+                "Total Electricity",
+                "Total Natural Gas",
+                "Total Thermal Cooling Energy",
+                "Total Thermal Heating Energy",
+                "District Loop Energy",
+            ]
         self.grid_metrics_daily = None
 
         for meter in meters:
@@ -281,8 +283,8 @@ class URBANoptResults(ResultsBase):
             }
 
             # add agg columns for each building
-            for key, _ in building_aggs.items():
-                building_aggs[key]["agg_columns"] = []
+            for agg in building_aggs.values():
+                agg["agg_columns"] = []
 
             for i in building_names:
                 # By fuels
@@ -694,36 +696,36 @@ class URBANoptResults(ResultsBase):
         }
 
         # fill in the unit conversions based on the parenthetical units in the key
-        for key, _ in columns.items():
+        for key, column in columns.items():
             # units_original is the units in the column name from URBANopt's default feature report
             # units is the name that we want to use for the units in the data frame
             # conversion is the conversion factor to convert the units_original to the units
 
             # The order of the items below is important!
             if key.endswith("Emissions_Intensity"):
-                columns[key]["unit_original"] = "KG/FT2"
-                columns[key]["units"] = "kgCO2e/m2"
-                columns[key]["conversion"] = 10.7639
-                columns[key]["name"] = key
-                columns[key]["description"] = key
+                column["unit_original"] = "KG/FT2"
+                column["units"] = "kgCO2e/m2"
+                column["conversion"] = 10.7639
+                column["name"] = key
+                column["description"] = key
             elif key.endswith("Emissions"):
-                columns[key]["unit_original"] = "MT"
-                columns[key]["units"] = "mtCO2e"
-                columns[key]["conversion"] = 1.0
-                columns[key]["name"] = key
-                columns[key]["description"] = key
+                column["unit_original"] = "MT"
+                column["units"] = "mtCO2e"
+                column["conversion"] = 1.0
+                column["name"] = key
+                column["description"] = key
             elif "Electricity" in key:
-                columns[key]["unit_original"] = "kWh"
-                columns[key]["units"] = "Wh"
-                columns[key]["conversion"] = 1000.0
-                columns[key]["name"] = key
-                columns[key]["description"] = key
+                column["unit_original"] = "kWh"
+                column["units"] = "Wh"
+                column["conversion"] = 1000.0
+                column["name"] = key
+                column["description"] = key
             elif "NaturalGas" in key or ("DistrictCooling" in key or "DistrictHeating" in key):
-                columns[key]["unit_original"] = "kBtu"
-                columns[key]["units"] = "Wh"
-                columns[key]["conversion"] = 293.071  # 1 kBtu = 293.071 Wh
-                columns[key]["name"] = key
-                columns[key]["description"] = key
+                column["unit_original"] = "kBtu"
+                column["units"] = "Wh"
+                column["conversion"] = 293.071  # 1 kBtu = 293.071 Wh
+                column["name"] = key
+                column["description"] = key
             elif key == "Datetime":
                 continue
             else:

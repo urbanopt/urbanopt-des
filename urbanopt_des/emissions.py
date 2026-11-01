@@ -4,7 +4,7 @@
 # Create a class to load in the CSV files in the emissions folder and
 # convert hours to a datetime object.
 
-import datetime
+import datetime as dt
 from pathlib import Path
 
 import pandas as pd
@@ -56,14 +56,14 @@ class HourlyEmissionsData:
         self.data = pd.read_csv(path, header=0)
 
         # create two new columns, one for the datetime based on the future_year and one based on the analysis_year.
-        self.data["datetime"] = datetime.datetime(future_year, 1, 1) + pd.to_timedelta(self.data["hour"], unit="h")
+        self.data["datetime"] = dt.datetime(future_year, 1, 1) + pd.to_timedelta(self.data["hour"], unit="h")
         # If the year is a leap year, then shift the datetime by one day, effectively eliminating the leap day.
         # This isn't working yet, moving on...
         # if self.data['datetime'][0].is_leap_year:
         # after 2/28/future_year, shift all hours back by 24 hours
         # self.data.loc[self.data['datetime'] > datetime.datetime(future_year, 3, 1), 'datetime'] = self.data.loc[self.data['datetime'] > datetime.datetime(future_year, 3, 1), 'datetime'] - pd.to_timedelta(1, unit='d')
 
-        self.data["analysis_datetime_end"] = datetime.datetime(analysis_year, 1, 1) + pd.to_timedelta(self.data["hour"], unit="h")
+        self.data["analysis_datetime_end"] = dt.datetime(analysis_year, 1, 1) + pd.to_timedelta(self.data["hour"], unit="h")
         self.data["analysis_datetime_start"] = self.data["analysis_datetime_end"] - pd.to_timedelta(1, unit="h")
 
         # move the datetime columns to the front

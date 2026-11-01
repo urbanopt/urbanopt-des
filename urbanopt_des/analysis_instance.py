@@ -65,14 +65,14 @@ class AnalysisInstance:
         """
         result = prepend_str
 
-        for _, variable in self.variables.items():
+        for variable in self.variables.values():
             # clean up the variable value to not include periods and other characters
             value = str(variable["value"]).replace(".", "_")
             result += f"_{variable['short_name']}_{value}"
 
         return result
 
-    def save_analysis_name_to_file(self, filename: Path, override_name: None | str = None) -> None:
+    def save_analysis_name_to_file(self, filename: Path, override_name: str | None = None) -> None:
         """Save off the analysis name to a file that can be used for
         later reference and post processing. Right now this is a simple file
         but ideally the instance of the analysis that is written should be the same
@@ -97,5 +97,7 @@ class AnalysisInstance:
             filename.parent.mkdir(parents=True)
 
         with open(filename, "w") as f:
-            for variable_name in self.variables:
-                f.write(f"{variable_name},{self.variables[variable_name]['value']},{self.variables[variable_name]['short_name']}\n")
+            f.writelines(
+                f"{variable_name},{self.variables[variable_name]['value']},{self.variables[variable_name]['short_name']}\n"
+                for variable_name in self.variables
+            )
